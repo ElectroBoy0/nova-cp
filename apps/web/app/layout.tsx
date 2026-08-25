@@ -19,6 +19,10 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 // ---- Metadata ----
+const appUrlString =
+  process.env.NEXT_PUBLIC_APP_URL?.trim() ||
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://novacp.app")
+
 export const metadata: Metadata = {
   title: {
     default: "NovaCP — The OS for Competitive Programmers",
@@ -37,11 +41,11 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "NovaCP Team" }],
   creator: "NovaCP",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://novacp.app"),
+  metadataBase: new URL(appUrlString),
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: process.env.NEXT_PUBLIC_APP_URL ?? "https://novacp.app",
+    url: appUrlString,
     siteName: "NovaCP",
     title: "NovaCP — The OS for Competitive Programmers",
     description:

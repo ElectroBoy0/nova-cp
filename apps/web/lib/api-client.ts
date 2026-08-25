@@ -4,7 +4,7 @@ const IS_SERVER = typeof window === "undefined"
 // Server-side (SSR/Server Actions) calls go directly to FastAPI
 // Client-side calls go to the Next.js proxy route (relative URL)
 const API_BASE = IS_SERVER
-  ? process.env.API_URL ?? "http://localhost:8000"
+  ? (process.env.API_URL?.trim() || "http://localhost:8000")
   : ""
 const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY ?? ""
 
@@ -41,10 +41,12 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   const { body, params, server = false, ...fetchOptions } = options
 
   // Build URL with query params
-  // On the client, we must provide a base URL (like window.location.origin) to the URL constructor for relative paths
-  const url = IS_SERVER 
-    ? new URL(`${API_BASE}${path}`)
-    : new URL(path, window.location.origin)
+  const base = IS_SERVER
+    ? API_BASE
+    : (typeof window !== "undefined" ? window.location.origin : "http://localhost:3000")
+  const url = path.startsWith("http://") || path.startsWith("https://")
+    ? new URL(path)
+    : new URL(path.startsWith("/") ? path : `/${path}`, base)
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined) {
