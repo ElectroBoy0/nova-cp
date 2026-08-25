@@ -7,13 +7,21 @@ from app.config import settings
 # -------------------------------------------------------
 # Redis Client
 # Single connection pool shared across the application.
-# Uses hiredis parser for better performance.
-# -------------------------------------------------------
+is_tls = settings.REDIS_URL.startswith("rediss://")
+redis_kwargs: dict = {
+    "encoding": "utf-8",
+    "decode_responses": True,
+    "max_connections": settings.REDIS_MAX_CONNECTIONS,
+    "retry_on_timeout": True,
+    "health_check_interval": 15,
+    "socket_keepalive": True,
+}
+if is_tls:
+    redis_kwargs["ssl_cert_reqs"] = "none"
+
 redis_client: redis.Redis = redis.from_url(
     settings.REDIS_URL,
-    encoding="utf-8",
-    decode_responses=True,
-    max_connections=settings.REDIS_MAX_CONNECTIONS,
+    **redis_kwargs,
 )
 
 

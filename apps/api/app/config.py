@@ -56,6 +56,17 @@ class Settings(BaseSettings):
 
     # ---- Redis ----
     REDIS_URL: str
+
+    @field_validator("REDIS_URL", mode="before")
+    @classmethod
+    def normalize_redis_url(cls, v: str) -> str:
+        if not v or not isinstance(v, str):
+            return v
+        # Upstash and secure Redis endpoints require rediss:// (TLS)
+        if "upstash.io" in v and v.startswith("redis://"):
+            v = "rediss://" + v[len("redis://"):]
+        return v
+
     REDIS_MAX_CONNECTIONS: int = 20
     # Default TTL for cached contest lists (30 minutes)
     REDIS_CONTEST_CACHE_TTL: int = 1800
