@@ -25,6 +25,29 @@ class Settings(BaseSettings):
 
     # ---- Database ----
     DATABASE_URL: str
+
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def normalize_database_url(cls, v: str) -> str:
+        if not v or not isinstance(v, str):
+            return v
+        # Convert postgres:// or postgresql:// to postgresql+asyncpg://
+        if v.startswith("postgres://"):
+            v = "postgresql+asyncpg://" + v[len("postgres://"):]
+        elif v.startswith("postgresql://") and not v.startswith("postgresql+asyncpg://"):
+            v = "postgresql+asyncpg://" + v[len("postgresql://"):]
+        
+        # asyncpg uses ssl=... instead of sslmode=...
+        if "sslmode=" in v:
+            v = (
+                v.replace("sslmode=require", "ssl=require")
+                .replace("sslmode=verify-ca", "ssl=require")
+                .replace("sslmode=verify-full", "ssl=require")
+                .replace("sslmode=prefer", "ssl=prefer")
+                .replace("sslmode=disable", "ssl=disable")
+            )
+        return v
+
     # Connection pool settings — tuned for 10K users on a single instance
     DB_POOL_SIZE: int = 10
     DB_MAX_OVERFLOW: int = 20
