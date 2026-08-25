@@ -1,0 +1,103 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: novacp_postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-novacp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-novacp_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-novacp}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/docker/postgres/init.sql:/docker-entrypoint-initdb.d/01_init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-novacp} -d ${POSTGRES_DB:-novacp}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - novacp_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: novacp_redis
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD:-novacp_redis_dev}
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-novacp_redis_dev}", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    restart: unless-stopped
+    networks:
+      - novacp_network
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+      target: development
+    container_name: novacp_api
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-novacp}:${POSTGRES_PASSWORD:-novacp_dev}@postgres:5432/${POSTGRES_DB:-novacp}
+      REDIS_URL: redis://:${REDIS_PASSWORD:-novacp_redis_dev}@redis:6379/0
+      DEBUG: "true"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./apps/api:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - novacp_network
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./apps/api/app
+          target: /app/app
+
+  web:
+    build:
+      context: .
+      dockerfile: ./apps/web/Dockerfile
+    container_name: novacp_web
+    env_file:
+      - .env
+    environment:
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+      API_URL: http://api:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    restart: unless-stopped
+    networks:
+      - novacp_network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  novacp_network:
+    driver: bridge

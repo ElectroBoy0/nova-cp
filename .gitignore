@@ -1,0 +1,62 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+.uv/
+
+# Next.js
+apps/web/.next/
+apps/web/out/
+
+# Environment files — NEVER commit these
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.production
+apps/api/.env
+
+# Turborepo
+.turbo/
+
+# Docker local overrides
+docker-compose.override.yml
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.tsbuildinfo
+coverage/
+.coverage
+htmlcov/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Alembic — versions are committed, but not generated cache
+apps/api/migrations/versions/__pycache__/

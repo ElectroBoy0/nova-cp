@@ -1,0 +1,179 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+# Cancel in-progress runs for the same branch/PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# -------------------------------------------------------
+# Jobs
+# -------------------------------------------------------
+jobs:
+
+  # ---- Detect what changed ----
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    outputs:
+      web: ${{ steps.filter.outputs.web }}
+      api: ${{ steps.filter.outputs.api }}
+      packages: ${{ steps.filter.outputs.packages }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            web:
+              - 'apps/web/**'
+            api:
+              - 'apps/api/**'
+            packages:
+              - 'packages/**'
+              - 'turbo.json'
+              - 'package.json'
+              - 'pnpm-workspace.yaml'
+
+  # ---- TypeScript: Lint + Type Check ----
+  ts-quality:
+    name: TypeScript — Lint & Type Check
+    needs: changes
+    if: >
+      needs.changes.outputs.web == 'true' ||
+      needs.changes.outputs.packages == 'true' ||
+      github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
+        run: pnpm turbo run type-check --filter="@novacp/web" --filter="@novacp/types"
+
+      - name: Lint
+        run: pnpm turbo run lint --filter="@novacp/web"
+
+  # ---- Prettier: Format check ----
+  format:
+    name: Prettier — Format check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install root dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check formatting
+        run: pnpm format:check
+
+  # ---- Python: Lint + Test ----
+  python-quality:
+    name: Python — Lint & Test
+    needs: changes
+    if: >
+      needs.changes.outputs.api == 'true' ||
+      github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: latest
+          enable-cache: true
+          cache-dependency-glob: apps/api/pyproject.toml
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        working-directory: apps/api
+        run: uv sync --all-extras
+
+      - name: Ruff lint
+        working-directory: apps/api
+        run: uv run ruff check . --output-format=github
+
+      - name: Ruff format check
+        working-directory: apps/api
+        run: uv run ruff format --check .
+
+      - name: Run tests with coverage
+        working-directory: apps/api
+        run: |
+          uv run pytest tests/ \
+            --cov=app \
+            --cov-report=term-missing \
+            --cov-report=xml \
+            -v
+        env:
+          DATABASE_URL: sqlite+aiosqlite:///:memory:
+          REDIS_URL: redis://localhost:6379/1
+          INTERNAL_API_KEY: ci-test-key
+          DEBUG: "true"
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          files: apps/api/coverage.xml
+          flags: api
+          fail_ci_if_error: false
+
+  # ---- Build (on main branch only) ----
+  build-web:
+    name: Build — Next.js
+    needs: [ts-quality, format]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm turbo run build --filter="@novacp/web"
+        env:
+          # Stub env vars for build — real values are set in deployment environment
+          AUTH_SECRET: ci-build-stub-secret
+          NEXT_PUBLIC_APP_URL: https://novacp.app
+          NEXT_PUBLIC_API_URL: https://api.novacp.app

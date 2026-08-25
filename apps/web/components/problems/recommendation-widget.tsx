@@ -1,0 +1,61 @@
+"use client"
+
+import { BrainCircuit } from "lucide-react"
+import type { ProblemRecommendation } from "@/types/problems"
+import { useRecommendationFeedback } from "@/hooks/use-problems"
+import { Skeleton } from "@/components/ui/skeleton"
+import { RecommendationCard } from "./recommendation-card"
+
+export function RecommendationWidget({ userId, recommendations, isLoading }: { userId: string, recommendations?: ProblemRecommendation[], isLoading: boolean }) {
+  const { mutate: submitFeedback } = useRecommendationFeedback()
+
+  const handleSolve = (problemId: string, recommendationType: string) => {
+    if (userId) {
+      submitFeedback({
+        userId: userId,
+        feedback: { problem_id: problemId, recommendation_type: recommendationType, event_type: "started" }
+      })
+    }
+  }
+
+  const handleSkip = (problemId: string, recommendationType: string) => {
+    if (userId) {
+      submitFeedback({
+        userId: userId,
+        feedback: { problem_id: problemId, recommendation_type: recommendationType, event_type: "skipped" }
+      })
+      // Ideally, trigger a refetch of recommendations here or optimistically remove the item
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+        {[1, 2, 3].map(i => <Skeleton key={i} className="h-48 rounded-xl" />)}
+      </div>
+    )
+  }
+
+  if (!recommendations || recommendations.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-48 space-y-4 rounded-xl border border-dashed border-border bg-surface-1/30">
+        <BrainCircuit className="h-8 w-8 text-muted-foreground/50" />
+        <p className="text-sm text-muted-foreground">Train the AI to get personalized recommendations.</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 items-stretch">
+      {recommendations.map((rec, idx) => (
+        <RecommendationCard 
+          key={`${rec.explanation?.recommendation_type || 'rec'}-${rec.problem?.id || idx}-${idx}`} 
+          rec={rec} 
+          userId={userId}
+          onSolve={handleSolve}
+          onSkip={handleSkip}
+        />
+      ))}
+    </div>
+  )
+}
