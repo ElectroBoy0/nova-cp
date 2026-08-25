@@ -6,7 +6,8 @@ from app.config import settings
 
 # -------------------------------------------------------
 # Redis Client
-# Single connection pool shared across the application.
+from redis.asyncio.connection import _AsyncRESP2Parser
+
 is_tls = settings.REDIS_URL.startswith("rediss://")
 redis_kwargs: dict = {
     "encoding": "utf-8",
@@ -15,6 +16,7 @@ redis_kwargs: dict = {
     "retry_on_timeout": True,
     "health_check_interval": 15,
     "socket_keepalive": True,
+    "parser_class": _AsyncRESP2Parser,
 }
 if is_tls:
     redis_kwargs["ssl_cert_reqs"] = "none"

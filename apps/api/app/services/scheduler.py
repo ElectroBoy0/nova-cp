@@ -58,7 +58,7 @@ class TaskScheduler:
                 logger.info(f"Job runner for {job_name} was cancelled.")
                 break
             except Exception as e:
-                logger.exception(f"Unexpected error in scheduler loop for {job_name}: {e}")
+                logger.warning("Scheduler job %s deferred (Redis connection): %s", job_name, e)
 
             # Sleep until next interval
             try:
