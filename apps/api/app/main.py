@@ -153,6 +153,11 @@ app.include_router(
     prefix="/health",
     tags=["Health"],
 )
+app.include_router(
+    health.router,
+    prefix="/api/v1/health",
+    tags=["Health"],
+)
 
 app.include_router(
     users.router,
