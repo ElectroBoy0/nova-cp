@@ -64,7 +64,7 @@ RUN chown -R novacp:novacp /app
 # Switch to non-root user
 USER novacp
 
-ENV PORT 8000
+ENV PORT=8000
 EXPOSE 8000
 
 # Production: support dynamic Railway $PORT

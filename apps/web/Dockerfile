@@ -20,18 +20,18 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
 COPY . .
 
-ENV NEXT_TELEMETRY_DISABLED 1
-ENV NODE_ENV production
-ENV BUILD_STANDALONE true
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+ENV BUILD_STANDALONE=true
 
 RUN pnpm --filter @novacp/web build
 
 # ---- 3. Runner ----
 FROM base AS runner
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
 RUN addgroup --system --gid 1001 nodejs \
     && adduser --system --uid 1001 nextjs
