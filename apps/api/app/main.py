@@ -145,8 +145,15 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
 
 
 # -------------------------------------------------------
-# Routers
-# -------------------------------------------------------
+@app.get("/", tags=["Health"])
+async def root():
+    return {
+        "status": "ok",
+        "app": settings.APP_NAME,
+        "version": settings.APP_VERSION,
+        "environment": "production" if not settings.DEBUG else "development",
+    }
+
 
 app.include_router(
     health.router,
