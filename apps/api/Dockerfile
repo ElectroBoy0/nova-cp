@@ -24,7 +24,7 @@ WORKDIR /app
 FROM base AS development
 
 # Copy dependency files first (layer cache)
-COPY pyproject.toml .python-version ./
+COPY pyproject.toml uv.lock* .python-version ./
 
 # Install ALL deps including dev (--all-extras)
 RUN uv sync --all-extras --no-install-project
@@ -47,7 +47,7 @@ CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "800
 FROM base AS production
 
 # Copy dependency files
-COPY pyproject.toml .python-version ./
+COPY pyproject.toml uv.lock* .python-version ./
 
 # Install only production deps
 RUN uv sync --no-dev --no-install-project
@@ -58,14 +58,14 @@ COPY . .
 # Install project
 RUN uv sync --no-dev
 
+# Fix permissions for non-root user
+RUN chown -R novacp:novacp /app
+
 # Switch to non-root user
 USER novacp
 
+ENV PORT 8000
 EXPOSE 8000
 
-# Production: multiple workers, no reload
-CMD ["uv", "run", "uvicorn", "app.main:app", \
-     "--host", "0.0.0.0", \
-     "--port", "8000", \
-     "--workers", "2", \
-     "--log-level", "info"]
+# Production: support dynamic Railway $PORT
+CMD ["sh", "-c", "uv run uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 2 --log-level info"]
