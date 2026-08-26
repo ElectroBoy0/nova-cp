@@ -99,7 +99,7 @@ class Settings(BaseSettings):
 
     # ---- AI Provider ----
     GEMINI_API_KEY: str | None = None
-    GEMINI_MODEL: str = "gemini-3.5-flash"
+    GEMINI_MODEL: str = "gemini-2.0-flash-thinking-exp"
     REDIS_HINT_CACHE_TTL: int = 86400  # 24 hours
 
 
