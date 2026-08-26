@@ -123,13 +123,26 @@ cd ../..
 
 ### 6. Start Development Servers
 
+Run the frontend and backend development servers in separate terminals (or run the backend via Docker):
+
 ```bash
+# Terminal 1 — Next.js Frontend:
 pnpm dev
+
+# Terminal 2 — FastAPI Backend (with hot-reload):
+cd apps/api
+uv run uvicorn app.main:app --reload --port 8000
 ```
 
-- **Frontend**: [http://localhost:3000](http://localhost:3000)
-- **Backend API**: [http://localhost:8000](http://localhost:8000)
-- **Interactive API Docs (Swagger UI)**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **Local Frontend**: [http://localhost:3000](http://localhost:3000)
+- **Local Backend API**: [http://localhost:8000](http://localhost:8000)
+- **Local API Docs (Swagger UI)**: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+> [!TIP]
+> Looking for the live deployed app? Visit the production links at the top of the page:
+>
+> - **Production Web App**: [https://nova-cp-web.vercel.app/](https://nova-cp-web.vercel.app/)
+> - **Production API**: [https://novacpweb-production.up.railway.app/](https://novacpweb-production.up.railway.app/)
 
 ---
 
