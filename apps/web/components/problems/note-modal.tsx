@@ -20,7 +20,7 @@ interface NoteModalProps {
 
 export function NoteModal({ userId, problemId, problemName, isOpen, onClose }: NoteModalProps) {
   const [content, setContent] = useState("")
-  
+
   const { data: note, isLoading } = useNote(userId, problemId)
   const upsertNote = useUpsertNote()
   const deleteNote = useDeleteNote()
@@ -36,18 +36,12 @@ export function NoteModal({ userId, problemId, problemName, isOpen, onClose }: N
 
   const handleSave = () => {
     if (!userId) return
-    upsertNote.mutate(
-      { userId, problemId, content },
-      { onSuccess: onClose }
-    )
+    upsertNote.mutate({ userId, problemId, content }, { onSuccess: onClose })
   }
 
   const handleDelete = () => {
     if (!userId) return
-    deleteNote.mutate(
-      { userId, problemId },
-      { onSuccess: onClose }
-    )
+    deleteNote.mutate({ userId, problemId }, { onSuccess: onClose })
   }
 
   return (
@@ -62,7 +56,7 @@ export function NoteModal({ userId, problemId, problemName, isOpen, onClose }: N
             Jot down your thought process, key ideas, or bugs you encountered.
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="py-4">
           {isLoading ? (
             <div className="flex h-32 items-center justify-center">
@@ -77,27 +71,24 @@ export function NoteModal({ userId, problemId, problemName, isOpen, onClose }: N
             />
           )}
         </div>
-        
+
         <div className="flex items-center justify-between">
           <Button
             variant="ghost"
             size="icon"
             onClick={handleDelete}
             disabled={!note || deleteNote.isPending}
-            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+            className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
             title="Delete Note"
           >
             <Trash2 className="h-4 w-4" />
           </Button>
-          
+
           <div className="flex gap-2">
             <Button variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleSave} 
-              disabled={upsertNote.isPending || !content.trim()}
-            >
+            <Button onClick={handleSave} disabled={upsertNote.isPending || !content.trim()}>
               {upsertNote.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save Note
             </Button>

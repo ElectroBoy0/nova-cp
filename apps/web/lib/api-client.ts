@@ -3,9 +3,7 @@ import type { ApiResponse, ApiError, PaginatedResponse } from "@novacp/types"
 const IS_SERVER = typeof window === "undefined"
 // Server-side (SSR/Server Actions) calls go directly to FastAPI
 // Client-side calls go to the Next.js proxy route (relative URL)
-const API_BASE = IS_SERVER
-  ? (process.env.API_URL?.trim() || "http://localhost:8000")
-  : ""
+const API_BASE = IS_SERVER ? process.env.API_URL?.trim() || "http://localhost:8000" : ""
 const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY ?? ""
 
 // -------------------------------------------------------
@@ -43,10 +41,13 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   // Build URL with query params
   const base = IS_SERVER
     ? API_BASE
-    : (typeof window !== "undefined" ? window.location.origin : "http://localhost:3000")
-  const url = path.startsWith("http://") || path.startsWith("https://")
-    ? new URL(path)
-    : new URL(path.startsWith("/") ? path : `/${path}`, base)
+    : typeof window !== "undefined"
+      ? window.location.origin
+      : "http://localhost:3000"
+  const url =
+    path.startsWith("http://") || path.startsWith("https://")
+      ? new URL(path)
+      : new URL(path.startsWith("/") ? path : `/${path}`, base)
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined) {

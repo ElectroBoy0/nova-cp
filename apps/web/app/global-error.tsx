@@ -40,10 +40,14 @@ export default function GlobalError({
           >
             Critical System Error
           </div>
-          <h1 style={{ fontSize: "24px", fontWeight: "800", margin: "0 0 12px 0", color: "#FFFFFF" }}>
+          <h1
+            style={{ fontSize: "24px", fontWeight: "800", margin: "0 0 12px 0", color: "#FFFFFF" }}
+          >
             NovaCP encountered an issue
           </h1>
-          <p style={{ fontSize: "14px", color: "#94A3B8", margin: "0 0 24px 0", lineHeight: "1.5" }}>
+          <p
+            style={{ fontSize: "14px", color: "#94A3B8", margin: "0 0 24px 0", lineHeight: "1.5" }}
+          >
             A fatal layout error occurred. Click below to reload the workspace.
           </p>
           <button
@@ -66,4 +70,3 @@ export default function GlobalError({
     </html>
   )
 }
-

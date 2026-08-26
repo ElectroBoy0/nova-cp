@@ -21,8 +21,10 @@ export function getProblemStatementDetails(problem: Problem): ProblemStatementDe
 
   // Categorize primary domain from tags
   const isDP = tags.includes("dp") || tags.includes("dynamic programming")
-  const isGraph = tags.includes("graphs") || tags.includes("trees") || tags.includes("dfs and similar")
-  const isMath = tags.includes("math") || tags.includes("number theory") || tags.includes("combinatorics")
+  const isGraph =
+    tags.includes("graphs") || tags.includes("trees") || tags.includes("dfs and similar")
+  const isMath =
+    tags.includes("math") || tags.includes("number theory") || tags.includes("combinatorics")
   const isString = tags.includes("strings") || tags.includes("string suffix structures")
   const isDataStructures = tags.includes("data structures") || tags.includes("data_structures")
   const isGreedy = tags.includes("greedy") || tags.includes("sortings")

@@ -31,7 +31,20 @@ const config: NextAuthConfig = {
   },
 
   callbacks: {
-    async jwt({ token, user, account }: { token: JWT; user?: { id?: string | null, email?: string | null, name?: string | null, image?: string | null }; account?: { provider?: string; providerAccountId?: string } | null }): Promise<JWT> {
+    async jwt({
+      token,
+      user,
+      account,
+    }: {
+      token: JWT
+      user?: {
+        id?: string | null
+        email?: string | null
+        name?: string | null
+        image?: string | null
+      }
+      account?: { provider?: string; providerAccountId?: string } | null
+    }): Promise<JWT> {
       if (user?.id) {
         token.id = user.id
       }
@@ -39,18 +52,18 @@ const config: NextAuthConfig = {
         token.provider = account.provider
         token.providerAccountId = account.providerAccountId
       }
-      
+
       // On initial sign-in (when user and account are present), sync the user to the backend
       if (user && account && user.email) {
         try {
           const API_BASE = process.env.API_URL ?? "http://localhost:8000"
           const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY ?? ""
-          
+
           const res = await fetch(`${API_BASE}/api/v1/users/sync`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "X-Internal-API-Key": INTERNAL_API_KEY
+              "X-Internal-API-Key": INTERNAL_API_KEY,
             },
             body: JSON.stringify({
               user_id: user.id,
@@ -58,9 +71,9 @@ const config: NextAuthConfig = {
               name: user.name,
               image: user.image,
               provider: account.provider,
-            })
+            }),
           })
-          
+
           if (res.ok) {
             const data = await res.json()
             // IMPORTANT: Replace the OAuth provider ID with our internal PostgreSQL UUID
@@ -86,7 +99,15 @@ const config: NextAuthConfig = {
   },
 
   events: {
-    async signIn({ user, account, isNewUser }: { user: { email?: string | null }; account?: { provider?: string } | null; isNewUser?: boolean }) {
+    async signIn({
+      user,
+      account,
+      isNewUser,
+    }: {
+      user: { email?: string | null }
+      account?: { provider?: string } | null
+      isNewUser?: boolean
+    }) {
       if (process.env.NODE_ENV === "development") {
         console.warn(`[Auth] Sign in: ${user.email} via ${account?.provider} (new: ${isNewUser})`)
       }

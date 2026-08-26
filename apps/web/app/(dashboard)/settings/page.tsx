@@ -16,14 +16,15 @@ export default async function SettingsPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex min-h-screen flex-col">
       <Topbar title="Settings" description="Preferences & account control center" />
 
-      <div className="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6">
+      <div className="mx-auto w-full max-w-7xl flex-1 space-y-6 p-6 md:p-8">
         <div className="space-y-1">
           <h2 className="text-xl font-bold tracking-tight text-foreground">Control Center</h2>
           <p className="text-xs text-muted-foreground">
-            Configure your competitive programming profile, practice difficulty, focus topics, and system alerts.
+            Configure your competitive programming profile, practice difficulty, focus topics, and
+            system alerts.
           </p>
         </div>
 

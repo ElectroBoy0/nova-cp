@@ -23,8 +23,7 @@ export function ContestCenter() {
   const [sort, setSort] = useState<"nearest" | "platform">("nearest")
 
   // Fetch all contests (200 limit is sufficient for all 3 platforms)
-  const { data, isLoading, isError, error, dataUpdatedAt, refetch } =
-    useContests({ limit: 200 })
+  const { data, isLoading, isError, error, dataUpdatedAt, refetch } = useContests({ limit: 200 })
 
   const syncMutation = useSyncContests()
 
@@ -96,9 +95,7 @@ export function ContestCenter() {
   if (isError && !isLoading && allContests.length === 0) {
     return (
       <ErrorState
-        message={
-          error instanceof Error ? error.message : "Failed to load contests."
-        }
+        message={error instanceof Error ? error.message : "Failed to load contests."}
         onRetry={() => refetch()}
       />
     )
@@ -122,11 +119,7 @@ export function ContestCenter() {
       {/* ---- Toolbar ---- */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         {/* Platform filters */}
-        <PlatformFilter
-          value={platform}
-          onChange={setPlatform}
-          counts={platformCounts}
-        />
+        <PlatformFilter value={platform} onChange={setPlatform} counts={platformCounts} />
 
         {/* Right-side controls */}
         <div className="flex items-center gap-2">
@@ -164,10 +157,7 @@ export function ContestCenter() {
             aria-label="Sync contests from all platforms"
           >
             <RefreshCw
-              className={cn(
-                "h-3.5 w-3.5",
-                syncMutation.isPending && "animate-spin"
-              )}
+              className={cn("h-3.5 w-3.5", syncMutation.isPending && "animate-spin")}
               aria-hidden="true"
             />
             {syncMutation.isPending ? "Syncing…" : "Sync"}
@@ -202,15 +192,9 @@ export function ContestCenter() {
         <p className="text-[11px] text-muted-foreground/60">
           Last updated at {lastUpdated}
           {syncMutation.isSuccess && (
-            <span className="ml-2 text-emerald-400">
-              · Sync complete ✓
-            </span>
+            <span className="ml-2 text-emerald-400">· Sync complete ✓</span>
           )}
-          {syncMutation.isError && (
-            <span className="ml-2 text-destructive">
-              · Sync failed
-            </span>
-          )}
+          {syncMutation.isError && <span className="ml-2 text-destructive">· Sync failed</span>}
         </p>
       )}
 
@@ -220,9 +204,7 @@ export function ContestCenter() {
           key={s}
           title={s}
           status={s}
-          contests={
-            s === "running" ? live : s === "upcoming" ? upcoming : finished
-          }
+          contests={s === "running" ? live : s === "upcoming" ? upcoming : finished}
           isLoading={isLoading}
         />
       ))}
@@ -230,15 +212,8 @@ export function ContestCenter() {
       {/* ---- Empty state when search has no results ---- */}
       {!isLoading && filtered.length === 0 && search.length > 0 && (
         <div className="py-12 text-center">
-          <p className="text-sm text-muted-foreground">
-            No contests match &quot;{search}&quot;
-          </p>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSearch("")}
-            className="mt-2 text-xs"
-          >
+          <p className="text-sm text-muted-foreground">No contests match &quot;{search}&quot;</p>
+          <Button variant="ghost" size="sm" onClick={() => setSearch("")} className="mt-2 text-xs">
             Clear search
           </Button>
         </div>
@@ -250,22 +225,11 @@ export function ContestCenter() {
 // -------------------------------------------------------
 // ErrorState
 // -------------------------------------------------------
-function ErrorState({
-  message,
-  onRetry,
-}: {
-  message: string
-  onRetry: () => void
-}) {
+function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center rounded-xl border border-destructive/20 bg-destructive/5 px-6 py-12 text-center">
-      <AlertTriangle
-        className="mb-3 h-8 w-8 text-destructive/60"
-        aria-hidden="true"
-      />
-      <p className="mb-1 text-sm font-medium text-foreground">
-        Failed to load contests
-      </p>
+      <AlertTriangle className="mb-3 h-8 w-8 text-destructive/60" aria-hidden="true" />
+      <p className="mb-1 text-sm font-medium text-foreground">Failed to load contests</p>
       <p className="mb-4 text-xs text-muted-foreground">{message}</p>
       <Button variant="outline" size="sm" onClick={onRetry}>
         <RefreshCw className="h-3.5 w-3.5" />

@@ -26,7 +26,9 @@ interface ProblemTableProps {
 
 export function ProblemTable({ problems, isLoading, userId }: ProblemTableProps) {
   const addBookmark = useAddBookmark()
-  const [noteModalProblem, setNoteModalProblem] = useState<{id: string, name: string} | null>(null)
+  const [noteModalProblem, setNoteModalProblem] = useState<{ id: string; name: string } | null>(
+    null
+  )
 
   const handleBookmark = (problemId: string) => {
     if (!userId) return
@@ -45,7 +47,7 @@ export function ProblemTable({ problems, isLoading, userId }: ProblemTableProps)
 
   if (problems.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 border rounded-md border-dashed">
+      <div className="flex h-64 flex-col items-center justify-center rounded-md border border-dashed">
         <p className="text-muted-foreground">No problems found matching your criteria.</p>
       </div>
     )
@@ -65,9 +67,10 @@ export function ProblemTable({ problems, isLoading, userId }: ProblemTableProps)
         </TableHeader>
         <TableBody>
           {problems.map((problem, i) => (
-            <TableRow key={`${problem.platform || 'cf'}-${problem.id || i}-${i}`}>
+            <TableRow key={`${problem.platform || "cf"}-${problem.id || i}-${i}`}>
               <TableCell className="font-medium text-muted-foreground">
-                {problem.contest_id}{problem.index}
+                {problem.contest_id}
+                {problem.index}
               </TableCell>
               <TableCell>
                 <div className="font-medium">{problem.name}</div>
@@ -119,7 +122,7 @@ export function ProblemTable({ problems, isLoading, userId }: ProblemTableProps)
                   </Button>
                   <Link
                     href={`/solve?problemId=${problem.id}`}
-                    className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 transition-colors"
+                    className="inline-flex items-center gap-1 rounded border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary transition-colors hover:bg-primary/20"
                   >
                     <Terminal className="h-3 w-3" />
                     Solve
@@ -129,7 +132,7 @@ export function ProblemTable({ problems, isLoading, userId }: ProblemTableProps)
                     target="_blank"
                     rel="noreferrer"
                     title="Open on Codeforces"
-                    className="inline-flex items-center justify-center rounded p-1 text-muted-foreground hover:text-foreground transition-colors"
+                    className="inline-flex items-center justify-center rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
                   </a>

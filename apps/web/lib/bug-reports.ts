@@ -4,7 +4,11 @@ import type { BugReport, BugReportCreateInput } from "@/types/bug-report"
 /**
  * Compresses an image client-side using HTML5 Canvas before uploading
  */
-export async function compressScreenshot(file: File, maxDimension = 1600, quality = 0.82): Promise<File> {
+export async function compressScreenshot(
+  file: File,
+  maxDimension = 1600,
+  quality = 0.82
+): Promise<File> {
   // If not in browser or not an image, return raw
   if (typeof window === "undefined" || !file.type.startsWith("image/")) {
     return file
@@ -84,7 +88,10 @@ export async function uploadScreenshot(file: File): Promise<{ url: string }> {
 /**
  * Submits a bug report linked to the user
  */
-export async function submitBugReport(userId: string, input: BugReportCreateInput): Promise<BugReport> {
+export async function submitBugReport(
+  userId: string,
+  input: BugReportCreateInput
+): Promise<BugReport> {
   const res = await fetch(`/api/v1/bug-reports?user_id=${userId}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

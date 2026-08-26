@@ -1,7 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { getUpsolveQueue, getUpsolveStats, generateUpsolveQueue, updateUpsolveStatus } from "@/lib/upsolve"
+import {
+  getUpsolveQueue,
+  getUpsolveStats,
+  generateUpsolveQueue,
+  updateUpsolveStatus,
+} from "@/lib/upsolve"
 
-export function useUpsolveQueue(userId: string | undefined, params?: { status?: string; limit?: number; offset?: number }) {
+export function useUpsolveQueue(
+  userId: string | undefined,
+  params?: { status?: string; limit?: number; offset?: number }
+) {
   return useQuery({
     queryKey: ["upsolve", "queue", userId, params],
     queryFn: () => getUpsolveQueue(userId!, params),

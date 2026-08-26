@@ -40,7 +40,9 @@ export function TestcasesPanel({ testCases, onChangeTestCases }: TestcasesPanelP
 
   const handleUpdateCurrent = (field: "input" | "expected_output", value: string) => {
     if (!currentCase) return
-    const updated = testCases.map((tc) => (tc.id === currentCase.id ? { ...tc, [field]: value } : tc))
+    const updated = testCases.map((tc) =>
+      tc.id === currentCase.id ? { ...tc, [field]: value } : tc
+    )
     onChangeTestCases(updated)
   }
 
@@ -48,37 +50,37 @@ export function TestcasesPanel({ testCases, onChangeTestCases }: TestcasesPanelP
     if (!status || status === "PENDING") return null
     if (status === "PASSED") {
       return (
-        <span className="flex items-center gap-1 text-[11px] font-mono font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
+        <span className="flex items-center gap-1 rounded border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 font-mono text-[11px] font-semibold text-emerald-400">
           <CheckCircle2 className="h-3 w-3" /> Passed
         </span>
       )
     }
     if (status === "WRONG_ANSWER") {
       return (
-        <span className="flex items-center gap-1 text-[11px] font-mono font-semibold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/30">
+        <span className="flex items-center gap-1 rounded border border-rose-500/30 bg-rose-500/10 px-2 py-0.5 font-mono text-[11px] font-semibold text-rose-400">
           <XCircle className="h-3 w-3" /> Wrong Answer
         </span>
       )
     }
     if (status === "TIME_LIMIT_EXCEEDED") {
       return (
-        <span className="flex items-center gap-1 text-[11px] font-mono font-semibold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">
+        <span className="flex items-center gap-1 rounded border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 font-mono text-[11px] font-semibold text-amber-400">
           <Clock className="h-3 w-3" /> Time Limit Exceeded
         </span>
       )
     }
     return (
-      <span className="flex items-center gap-1 text-[11px] font-mono font-semibold text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded border border-orange-500/30">
+      <span className="flex items-center gap-1 rounded border border-orange-500/30 bg-orange-500/10 px-2 py-0.5 font-mono text-[11px] font-semibold text-orange-400">
         <AlertTriangle className="h-3 w-3" /> {status}
       </span>
     )
   }
 
   return (
-    <div className="flex flex-col h-full bg-surface-1/40">
+    <div className="flex h-full flex-col bg-surface-1/40">
       {/* Testcase Tabs Bar */}
-      <div className="flex items-center justify-between border-b border-border/80 px-3 py-1.5 bg-surface-1/80">
-        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+      <div className="flex items-center justify-between border-b border-border/80 bg-surface-1/80 px-3 py-1.5">
+        <div className="scrollbar-none flex items-center gap-1.5 overflow-x-auto">
           {testCases.map((tc, index) => {
             const isActive = tc.id === (currentCase?.id || activeTab)
             const dotColor =
@@ -97,9 +99,9 @@ export function TestcasesPanel({ testCases, onChangeTestCases }: TestcasesPanelP
                 key={tc.id}
                 type="button"
                 onClick={() => setActiveTab(tc.id)}
-                className={`group flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono transition-all ${
+                className={`group flex items-center gap-1.5 rounded px-2.5 py-1 font-mono text-xs transition-all ${
                   isActive
-                    ? "bg-surface-2 text-foreground font-semibold border border-border shadow-xs"
+                    ? "shadow-xs border border-border bg-surface-2 font-semibold text-foreground"
                     : "text-muted-foreground hover:bg-surface-2/50 hover:text-foreground"
                 }`}
               >
@@ -108,7 +110,7 @@ export function TestcasesPanel({ testCases, onChangeTestCases }: TestcasesPanelP
                 {testCases.length > 1 && (
                   <Trash2
                     onClick={(e) => handleDeleteTestCase(tc.id, e)}
-                    className="h-3 w-3 opacity-0 group-hover:opacity-100 hover:text-rose-400 transition-opacity ml-1"
+                    className="ml-1 h-3 w-3 opacity-0 transition-opacity hover:text-rose-400 group-hover:opacity-100"
                   />
                 )}
               </button>
@@ -131,12 +133,12 @@ export function TestcasesPanel({ testCases, onChangeTestCases }: TestcasesPanelP
           <div className="flex items-center gap-2">
             {getStatusBadge(currentCase.status)}
             {currentCase.time_ms !== undefined && currentCase.time_ms > 0 && (
-              <span className="flex items-center gap-1 text-[11px] font-mono text-muted-foreground">
+              <span className="flex items-center gap-1 font-mono text-[11px] text-muted-foreground">
                 <Clock className="h-3 w-3" /> {currentCase.time_ms}ms
               </span>
             )}
             {currentCase.memory_kb !== undefined && currentCase.memory_kb > 0 && (
-              <span className="flex items-center gap-1 text-[11px] font-mono text-muted-foreground">
+              <span className="flex items-center gap-1 font-mono text-[11px] text-muted-foreground">
                 <Cpu className="h-3 w-3" /> {currentCase.memory_kb}KB
               </span>
             )}
@@ -146,23 +148,25 @@ export function TestcasesPanel({ testCases, onChangeTestCases }: TestcasesPanelP
 
       {/* Inputs & Outputs */}
       {currentCase ? (
-        <div className="flex-1 p-3 grid grid-cols-1 md:grid-cols-2 gap-3 overflow-y-auto">
+        <div className="grid flex-1 grid-cols-1 gap-3 overflow-y-auto p-3 md:grid-cols-2">
           {/* Input */}
           <div className="flex flex-col space-y-1.5">
-            <label className="text-[11px] font-mono font-medium text-muted-foreground">Input (stdin)</label>
+            <label className="font-mono text-[11px] font-medium text-muted-foreground">
+              Input (stdin)
+            </label>
             <textarea
               rows={4}
               value={currentCase.input}
               onChange={(e) => handleUpdateCurrent("input", e.target.value)}
               placeholder="Paste input testcase data..."
-              className="flex-1 w-full p-2.5 rounded bg-[#090d13] border border-border/80 font-mono text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+              className="w-full flex-1 resize-none rounded border border-border/80 bg-[#090d13] p-2.5 font-mono text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
 
           {/* Expected & Actual Outputs */}
           <div className="flex flex-col space-y-2">
             <div className="space-y-1">
-              <label className="text-[11px] font-mono font-medium text-muted-foreground">
+              <label className="font-mono text-[11px] font-medium text-muted-foreground">
                 Expected Output (optional)
               </label>
               <textarea
@@ -170,20 +174,22 @@ export function TestcasesPanel({ testCases, onChangeTestCases }: TestcasesPanelP
                 value={currentCase.expected_output || ""}
                 onChange={(e) => handleUpdateCurrent("expected_output", e.target.value)}
                 placeholder="Expected output for automated pass/fail diffing..."
-                className="w-full p-2.5 rounded bg-[#090d13] border border-border/80 font-mono text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+                className="w-full resize-none rounded border border-border/80 bg-[#090d13] p-2.5 font-mono text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
 
             {currentCase.actual_output !== undefined && (
               <div className="flex-1 space-y-1">
-                <label className="text-[11px] font-mono font-medium text-muted-foreground">Actual Output (stdout)</label>
+                <label className="font-mono text-[11px] font-medium text-muted-foreground">
+                  Actual Output (stdout)
+                </label>
                 <pre
-                  className={`w-full p-2.5 rounded border font-mono text-xs overflow-x-auto min-h-[50px] ${
+                  className={`min-h-[50px] w-full overflow-x-auto rounded border p-2.5 font-mono text-xs ${
                     currentCase.status === "PASSED"
-                      ? "bg-emerald-950/20 border-emerald-500/30 text-emerald-300"
+                      ? "border-emerald-500/30 bg-emerald-950/20 text-emerald-300"
                       : currentCase.status === "WRONG_ANSWER"
-                        ? "bg-rose-950/20 border-rose-500/30 text-rose-300"
-                        : "bg-[#090d13] border-border text-foreground"
+                        ? "border-rose-500/30 bg-rose-950/20 text-rose-300"
+                        : "border-border bg-[#090d13] text-foreground"
                   }`}
                 >
                   {currentCase.actual_output || "(empty stdout)"}

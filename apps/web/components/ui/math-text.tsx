@@ -52,12 +52,12 @@ export function MathText({ content, className }: MathTextProps) {
   return (
     <div
       className={cn(
-        "text-xs text-foreground/90 leading-relaxed font-sans",
-        "[&_p]:mb-2.5 [&_p:last-child]:mb-0",
-        "[&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2 [&_ul]:space-y-1",
-        "[&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-2 [&_ol]:space-y-1",
+        "font-sans text-xs leading-relaxed text-foreground/90",
+        "[&_p:last-child]:mb-0 [&_p]:mb-2.5",
+        "[&_ul]:my-2 [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5",
+        "[&_ol]:my-2 [&_ol]:list-decimal [&_ol]:space-y-1 [&_ol]:pl-5",
         "[&_li]:leading-relaxed",
-        "[&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:bg-surface-2 [&_code]:border [&_code]:border-border [&_code]:font-mono [&_code]:text-[11px]",
+        "[&_code]:rounded [&_code]:border [&_code]:border-border [&_code]:bg-surface-2 [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[11px]",
         "[&_strong]:font-semibold [&_strong]:text-foreground",
         "[&_em]:italic",
         className

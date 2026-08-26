@@ -20,7 +20,11 @@ async function proxyRequest(req: NextRequest, { params }: { params: Promise<{ pa
     targetUserId = path[1]
   } else if (path[0] === "daily-mission" && path.length >= 2) {
     targetUserId = path[1]
-  } else if (path[0] === "problems" && (path[1] === "recommendations" || path[1] === "feedback") && path.length >= 3) {
+  } else if (
+    path[0] === "problems" &&
+    (path[1] === "recommendations" || path[1] === "feedback") &&
+    path.length >= 3
+  ) {
     targetUserId = path[2]
   } else if (path[0] === "snippets") {
     targetUserId = req.nextUrl.searchParams.get("user_id")
@@ -34,7 +38,10 @@ async function proxyRequest(req: NextRequest, { params }: { params: Promise<{ pa
       return NextResponse.json({ detail: "Authentication required" }, { status: 401 })
     }
     if (session.user.id !== targetUserId) {
-      return NextResponse.json({ detail: "Forbidden: Access denied to user resource" }, { status: 403 })
+      return NextResponse.json(
+        { detail: "Forbidden: Access denied to user resource" },
+        { status: 403 }
+      )
     }
   }
 
@@ -67,7 +74,7 @@ async function proxyRequest(req: NextRequest, { params }: { params: Promise<{ pa
 
     // Read the response text (to safely handle empty responses or JSON)
     const text = await response.text()
-    
+
     // Create new response
     const proxyResponse = new NextResponse(text, {
       status: response.status,
@@ -77,7 +84,9 @@ async function proxyRequest(req: NextRequest, { params }: { params: Promise<{ pa
     // Copy backend response headers to the proxy response
     response.headers.forEach((value, key) => {
       // Don't copy encoding headers as Next.js will handle compression
-      if (!["content-encoding", "content-length", "transfer-encoding"].includes(key.toLowerCase())) {
+      if (
+        !["content-encoding", "content-length", "transfer-encoding"].includes(key.toLowerCase())
+      ) {
         proxyResponse.headers.set(key, value)
       }
     })
@@ -85,10 +94,7 @@ async function proxyRequest(req: NextRequest, { params }: { params: Promise<{ pa
     return proxyResponse
   } catch (error) {
     console.error(`[API Proxy Error] to ${url}:`, error)
-    return NextResponse.json(
-      { detail: "Internal Server Error from Proxy" },
-      { status: 500 }
-    )
+    return NextResponse.json({ detail: "Internal Server Error from Proxy" }, { status: 500 })
   }
 }
 

@@ -27,16 +27,16 @@ Each ADR follows this structure:
 
 ## Index
 
-| ADR | Title | Status |
-|---|---|---|
-| [ADR-001](./ADR-001-monorepo-with-turborepo.md) | Monorepo with Turborepo + pnpm | Accepted |
-| [ADR-002](./ADR-002-nextjs-15-frontend.md) | Next.js 15 as Frontend Framework | Accepted |
-| [ADR-003](./ADR-003-fastapi-python-backend.md) | FastAPI Python Backend | Accepted |
-| [ADR-004](./ADR-004-postgresql-primary-database.md) | PostgreSQL as Primary Database | Accepted |
-| [ADR-005](./ADR-005-redis-caching-and-sync-state.md) | Redis for Caching and Sync State | Accepted |
-| [ADR-006](./ADR-006-bff-pattern-internal-api-key.md) | BFF Pattern with Internal API Key Auth | Accepted |
-| [ADR-007](./ADR-007-authjs-v5-oauth.md) | Auth.js v5 with GitHub and Google OAuth | Accepted |
-| [ADR-008](./ADR-008-docker-compose-local-dev.md) | Docker Compose for Local Development Infrastructure | Accepted |
+| ADR                                                  | Title                                               | Status   |
+| ---------------------------------------------------- | --------------------------------------------------- | -------- |
+| [ADR-001](./ADR-001-monorepo-with-turborepo.md)      | Monorepo with Turborepo + pnpm                      | Accepted |
+| [ADR-002](./ADR-002-nextjs-15-frontend.md)           | Next.js 15 as Frontend Framework                    | Accepted |
+| [ADR-003](./ADR-003-fastapi-python-backend.md)       | FastAPI Python Backend                              | Accepted |
+| [ADR-004](./ADR-004-postgresql-primary-database.md)  | PostgreSQL as Primary Database                      | Accepted |
+| [ADR-005](./ADR-005-redis-caching-and-sync-state.md) | Redis for Caching and Sync State                    | Accepted |
+| [ADR-006](./ADR-006-bff-pattern-internal-api-key.md) | BFF Pattern with Internal API Key Auth              | Accepted |
+| [ADR-007](./ADR-007-authjs-v5-oauth.md)              | Auth.js v5 with GitHub and Google OAuth             | Accepted |
+| [ADR-008](./ADR-008-docker-compose-local-dev.md)     | Docker Compose for Local Development Infrastructure | Accepted |
 
 ---
 

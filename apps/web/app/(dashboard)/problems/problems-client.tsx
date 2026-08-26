@@ -32,20 +32,26 @@ export function ProblemsClient({ userId }: { userId?: string }) {
         <h2 className="text-3xl font-bold tracking-tight">Problem Explorer</h2>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-6">
-        <div className="w-full md:w-64 shrink-0">
-          <ProblemFilters filters={filters} setFilters={(f: typeof filters) => { setFilters(f); setPage(0); }} />
+      <div className="flex flex-col gap-6 md:flex-row">
+        <div className="w-full shrink-0 md:w-64">
+          <ProblemFilters
+            filters={filters}
+            setFilters={(f: typeof filters) => {
+              setFilters(f)
+              setPage(0)
+            }}
+          />
         </div>
 
         <div className="flex-1 space-y-4">
           <ProblemTable problems={data?.items || []} isLoading={isLoading} userId={userId} />
-          
+
           {data && data.total > limit && (
             <div className="flex items-center justify-end space-x-2">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setPage(p => Math.max(0, p - 1))}
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
                 disabled={page === 0}
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -57,7 +63,7 @@ export function ProblemsClient({ userId }: { userId?: string }) {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setPage(p => p + 1)}
+                onClick={() => setPage((p) => p + 1)}
                 disabled={(page + 1) * limit >= data.total}
               >
                 Next

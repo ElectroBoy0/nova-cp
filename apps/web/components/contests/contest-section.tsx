@@ -39,10 +39,7 @@ export function ContestSection({
     <section aria-labelledby={`section-${status}`} className="mb-8">
       {/* Section heading */}
       <div className="mb-3 flex items-center gap-2">
-        <h3
-          id={`section-${status}`}
-          className="text-sm font-semibold text-foreground"
-        >
+        <h3 id={`section-${status}`} className="text-sm font-semibold text-foreground">
           {STATUS_LABELS[status]}
         </h3>
         {!isLoading && (
@@ -64,10 +61,7 @@ export function ContestSection({
       {/* Empty state (only for live/upcoming) */}
       {!isLoading && contests.length === 0 && status !== "finished" && (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card/30 px-4 py-10 text-center">
-          <Trophy
-            className="mb-3 h-8 w-8 text-muted-foreground/30"
-            aria-hidden="true"
-          />
+          <Trophy className="mb-3 h-8 w-8 text-muted-foreground/30" aria-hidden="true" />
           <p className="text-sm text-muted-foreground">
             No {title.toLowerCase()} contests right now.
           </p>
@@ -84,7 +78,11 @@ export function ContestSection({
         >
           <AnimatePresence mode="popLayout">
             {contests.map((contest, i) => (
-              <ContestCard key={`${contest.platform || 'contest'}-${contest.id || i}-${i}`} contest={contest} index={i} />
+              <ContestCard
+                key={`${contest.platform || "contest"}-${contest.id || i}-${i}`}
+                contest={contest}
+                index={i}
+              />
             ))}
           </AnimatePresence>
         </motion.div>

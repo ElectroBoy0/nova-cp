@@ -74,7 +74,7 @@ const INTENSITY_MODES = [
 export function OnboardingDialog({ user, open, onComplete }: OnboardingDialogProps) {
   const [step, setStep] = useState<1 | 2 | 3>(1)
   const [isOpen, setIsOpen] = useState(
-    open !== undefined ? open : (user ? !user.onboarding_completed : false)
+    open !== undefined ? open : user ? !user.onboarding_completed : false
   )
 
   // Form states
@@ -147,40 +147,46 @@ export function OnboardingDialog({ user, open, onComplete }: OnboardingDialogPro
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-xl p-0 gap-0 border-border/80 bg-card/95 backdrop-blur-xl overflow-hidden shadow-2xl">
+      <DialogContent className="gap-0 overflow-hidden border-border/80 bg-card/95 p-0 shadow-2xl backdrop-blur-xl sm:max-w-xl">
         {/* Header with Progress Steps */}
-        <div className="p-6 pb-4 border-b border-border/60 bg-surface-1/40">
-          <div className="flex items-center justify-between mb-4">
+        <div className="border-b border-border/60 bg-surface-1/40 p-6 pb-4">
+          <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-primary/10 border border-primary/30 text-primary">
+              <div className="rounded-lg border border-primary/30 bg-primary/10 p-1.5 text-primary">
                 <Terminal className="h-4 w-4" />
               </div>
-              <span className="text-xs font-mono font-semibold tracking-wider text-muted-foreground uppercase">
+              <span className="font-mono text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 NovaCP Setup
               </span>
             </div>
 
             {/* Step badges */}
-            <div className="flex items-center gap-1.5 text-xs font-mono">
+            <div className="flex items-center gap-1.5 font-mono text-xs">
               <span
-                className={`px-2 py-0.5 rounded-full ${
-                  step === 1 ? "bg-primary text-primary-foreground font-bold" : "bg-muted text-muted-foreground"
+                className={`rounded-full px-2 py-0.5 ${
+                  step === 1
+                    ? "bg-primary font-bold text-primary-foreground"
+                    : "bg-muted text-muted-foreground"
                 }`}
               >
                 1
               </span>
               <span className="text-muted-foreground">•</span>
               <span
-                className={`px-2 py-0.5 rounded-full ${
-                  step === 2 ? "bg-primary text-primary-foreground font-bold" : "bg-muted text-muted-foreground"
+                className={`rounded-full px-2 py-0.5 ${
+                  step === 2
+                    ? "bg-primary font-bold text-primary-foreground"
+                    : "bg-muted text-muted-foreground"
                 }`}
               >
                 2
               </span>
               <span className="text-muted-foreground">•</span>
               <span
-                className={`px-2 py-0.5 rounded-full ${
-                  step === 3 ? "bg-primary text-primary-foreground font-bold" : "bg-muted text-muted-foreground"
+                className={`rounded-full px-2 py-0.5 ${
+                  step === 3
+                    ? "bg-primary font-bold text-primary-foreground"
+                    : "bg-muted text-muted-foreground"
                 }`}
               >
                 3
@@ -193,22 +199,27 @@ export function OnboardingDialog({ user, open, onComplete }: OnboardingDialogPro
             {step === 2 && "Select Default Language"}
             {step === 3 && "Set Practice Intensity"}
           </DialogTitle>
-          <DialogDescription className="text-xs text-muted-foreground mt-1">
-            {step === 1 && "Link your competitive programming profile to unlock tailored problem recommendations."}
-            {step === 2 && "Choose your primary language for code editor boilerplates and test execution."}
-            {step === 3 && "Customize daily missions and problem recommendation difficulty for your goals."}
+          <DialogDescription className="mt-1 text-xs text-muted-foreground">
+            {step === 1 &&
+              "Link your competitive programming profile to unlock tailored problem recommendations."}
+            {step === 2 &&
+              "Choose your primary language for code editor boilerplates and test execution."}
+            {step === 3 &&
+              "Customize daily missions and problem recommendation difficulty for your goals."}
           </DialogDescription>
         </div>
 
         {/* Step Contents */}
-        <div className="p-6 space-y-5">
+        <div className="space-y-5 p-6">
           {/* STEP 1: Codeforces Handle */}
           {step === 1 && (
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-xs font-medium text-foreground flex items-center justify-between">
+                <label className="flex items-center justify-between text-xs font-medium text-foreground">
                   <span>Codeforces Handle</span>
-                  <span className="text-[10px] text-muted-foreground font-mono">Case-insensitive</span>
+                  <span className="font-mono text-[10px] text-muted-foreground">
+                    Case-insensitive
+                  </span>
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -216,14 +227,14 @@ export function OnboardingDialog({ user, open, onComplete }: OnboardingDialogPro
                     placeholder="e.g. tourist, Benq, your_handle"
                     value={handle}
                     onChange={(e) => setHandle(e.target.value)}
-                    className="pl-9 font-mono text-sm bg-background border-border/80"
+                    className="border-border/80 bg-background pl-9 font-mono text-sm"
                     autoFocus
                   />
                 </div>
               </div>
 
               {user.cf_handle && (
-                <div className="p-3 rounded-lg border border-purple-500/20 bg-purple-500/5 flex items-center justify-between">
+                <div className="flex items-center justify-between rounded-lg border border-purple-500/20 bg-purple-500/5 p-3">
                   <div className="flex items-center gap-2.5">
                     <Trophy className="h-4 w-4 text-purple-400" />
                     <div>
@@ -231,17 +242,21 @@ export function OnboardingDialog({ user, open, onComplete }: OnboardingDialogPro
                         {user.cf_handle.handle}
                       </div>
                       <div className="text-[10px] text-muted-foreground">
-                        Rating: {user.cf_handle.rating || "Unrated"} • {user.cf_handle.rank || "Newbie"}
+                        Rating: {user.cf_handle.rating || "Unrated"} •{" "}
+                        {user.cf_handle.rank || "Newbie"}
                       </div>
                     </div>
                   </div>
-                  <Badge variant="outline" className="text-[10px] border-purple-500/30 text-purple-400">
+                  <Badge
+                    variant="outline"
+                    className="border-purple-500/30 text-[10px] text-purple-400"
+                  >
                     Linked
                   </Badge>
                 </div>
               )}
 
-              <div className="pt-2 flex items-center justify-between">
+              <div className="flex items-center justify-between pt-2">
                 <Button
                   type="button"
                   variant="ghost"
@@ -256,7 +271,7 @@ export function OnboardingDialog({ user, open, onComplete }: OnboardingDialogPro
                   size="sm"
                   onClick={handleNextFromHandle}
                   disabled={linkMutation.isPending}
-                  className="gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
+                  className="gap-1.5 bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
                 >
                   {linkMutation.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                   <span>Continue</span>
@@ -269,7 +284,7 @@ export function OnboardingDialog({ user, open, onComplete }: OnboardingDialogPro
           {/* STEP 2: Preferred Language */}
           {step === 2 && (
             <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                 {LANGUAGES.map((lang) => {
                   const isSelected = language === lang.id
                   return (
@@ -277,18 +292,18 @@ export function OnboardingDialog({ user, open, onComplete }: OnboardingDialogPro
                       key={lang.id}
                       type="button"
                       onClick={() => setLanguage(lang.id)}
-                      className={`p-3.5 rounded-xl border text-left transition-all flex flex-col justify-between ${
+                      className={`flex flex-col justify-between rounded-xl border p-3.5 text-left transition-all ${
                         isSelected
                           ? "border-primary bg-primary/10 shadow-sm"
                           : "border-border/60 bg-surface-1/40 hover:border-border hover:bg-surface-1"
                       }`}
                     >
-                      <div className="flex items-center justify-between w-full mb-1">
-                        <span className="font-semibold text-sm text-foreground flex items-center gap-2">
+                      <div className="mb-1 flex w-full items-center justify-between">
+                        <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
                           <Code2 className="h-4 w-4 text-primary" />
                           {lang.name}
                         </span>
-                        {isSelected && <Check className="h-4 w-4 text-primary shrink-0" />}
+                        {isSelected && <Check className="h-4 w-4 shrink-0 text-primary" />}
                       </div>
                       <span className="text-[11px] text-muted-foreground">{lang.desc}</span>
                     </button>
@@ -296,7 +311,7 @@ export function OnboardingDialog({ user, open, onComplete }: OnboardingDialogPro
                 })}
               </div>
 
-              <div className="pt-2 flex items-center justify-between">
+              <div className="flex items-center justify-between pt-2">
                 <Button
                   type="button"
                   variant="ghost"
@@ -310,7 +325,7 @@ export function OnboardingDialog({ user, open, onComplete }: OnboardingDialogPro
                   type="button"
                   size="sm"
                   onClick={() => setStep(3)}
-                  className="gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
+                  className="gap-1.5 bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
                 >
                   <span>Next: Practice Goals</span>
                   <ChevronRight className="h-3.5 w-3.5" />
@@ -323,7 +338,9 @@ export function OnboardingDialog({ user, open, onComplete }: OnboardingDialogPro
           {step === 3 && (
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-xs font-medium text-foreground">Recommendation Intensity</label>
+                <label className="text-xs font-medium text-foreground">
+                  Recommendation Intensity
+                </label>
                 <div className="grid grid-cols-1 gap-2">
                   {INTENSITY_MODES.map((mode) => {
                     const isSelected = intensity === mode.id
@@ -333,32 +350,34 @@ export function OnboardingDialog({ user, open, onComplete }: OnboardingDialogPro
                         key={mode.id}
                         type="button"
                         onClick={() => setIntensity(mode.id as any)}
-                        className={`p-3 rounded-xl border text-left transition-all flex items-center justify-between ${
+                        className={`flex items-center justify-between rounded-xl border p-3 text-left transition-all ${
                           isSelected
                             ? "border-primary bg-primary/10 shadow-sm"
                             : "border-border/60 bg-surface-1/40 hover:border-border hover:bg-surface-1"
                         }`}
                       >
                         <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-lg border ${mode.color}`}>
+                          <div className={`rounded-lg border p-2 ${mode.color}`}>
                             <Icon className="h-4 w-4" />
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="text-xs font-semibold text-foreground">{mode.title}</span>
-                              <Badge variant="outline" className="text-[10px] py-0 px-1.5">
+                              <span className="text-xs font-semibold text-foreground">
+                                {mode.title}
+                              </span>
+                              <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
                                 {mode.badge}
                               </Badge>
                               {mode.recommended && (
-                                <Badge className="text-[9px] py-0 px-1 bg-purple-500/20 text-purple-300 border-purple-500/30">
+                                <Badge className="border-purple-500/30 bg-purple-500/20 px-1 py-0 text-[9px] text-purple-300">
                                   Recommended
                                 </Badge>
                               )}
                             </div>
-                            <p className="text-[11px] text-muted-foreground mt-0.5">{mode.desc}</p>
+                            <p className="mt-0.5 text-[11px] text-muted-foreground">{mode.desc}</p>
                           </div>
                         </div>
-                        {isSelected && <Check className="h-4 w-4 text-primary shrink-0 ml-2" />}
+                        {isSelected && <Check className="ml-2 h-4 w-4 shrink-0 text-primary" />}
                       </button>
                     )
                   })}
@@ -367,11 +386,11 @@ export function OnboardingDialog({ user, open, onComplete }: OnboardingDialogPro
 
               {/* Daily Problem Goal */}
               <div className="space-y-2 pt-1">
-                <label className="text-xs font-medium text-foreground flex items-center justify-between">
+                <label className="flex items-center justify-between text-xs font-medium text-foreground">
                   <span className="flex items-center gap-1.5">
                     <Target className="h-3.5 w-3.5 text-primary" /> Daily Problem Target
                   </span>
-                  <span className="text-[11px] font-mono text-primary font-bold">
+                  <span className="font-mono text-[11px] font-bold text-primary">
                     {dailyTarget} {dailyTarget === 1 ? "problem" : "problems"} / day
                   </span>
                 </label>
@@ -381,7 +400,7 @@ export function OnboardingDialog({ user, open, onComplete }: OnboardingDialogPro
                       key={target}
                       type="button"
                       onClick={() => setDailyTarget(target)}
-                      className={`py-2 text-xs font-mono font-semibold rounded-lg border transition-all ${
+                      className={`rounded-lg border py-2 font-mono text-xs font-semibold transition-all ${
                         dailyTarget === target
                           ? "border-primary bg-primary/15 text-primary"
                           : "border-border/60 bg-surface-1/40 text-muted-foreground hover:bg-surface-1"
@@ -393,7 +412,7 @@ export function OnboardingDialog({ user, open, onComplete }: OnboardingDialogPro
                 </div>
               </div>
 
-              <div className="pt-3 flex items-center justify-between">
+              <div className="flex items-center justify-between pt-3">
                 <Button
                   type="button"
                   variant="ghost"
@@ -408,7 +427,7 @@ export function OnboardingDialog({ user, open, onComplete }: OnboardingDialogPro
                   size="sm"
                   onClick={handleFinish}
                   disabled={updateSettingsMutation.isPending}
-                  className="gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-md shadow-purple-900/20 font-semibold"
+                  className="gap-1.5 bg-primary font-semibold text-primary-foreground shadow-md shadow-purple-900/20 hover:bg-primary/90"
                 >
                   {updateSettingsMutation.isPending ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />

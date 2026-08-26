@@ -20,7 +20,10 @@ function buildGoogleCalendarUrl(contest: Contest): string {
     : new Date(start.getTime() + 2 * 60 * 60 * 1000) // default 2h
 
   const fmt = (d: Date) =>
-    d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z/, "Z")
+    d
+      .toISOString()
+      .replace(/[-:]/g, "")
+      .replace(/\.\d{3}Z/, "Z")
 
   return (
     `https://calendar.google.com/calendar/r/eventedit?` +
@@ -82,9 +85,7 @@ export function ContestCard({ contest, index = 0 }: ContestCardProps) {
       className={cn(
         "group relative flex flex-col gap-3 rounded-xl border bg-card p-4 transition-colors duration-150",
         "hover:border-border/80 hover:bg-card/80 sm:flex-row sm:items-center sm:gap-4 sm:p-4",
-        isLive
-          ? "border-emerald-500/20 bg-emerald-400/[0.03]"
-          : "border-border"
+        isLive ? "border-emerald-500/20 bg-emerald-400/[0.03]" : "border-border"
       )}
       role="article"
       aria-label={`${contest.contest_name} on ${contest.platform}`}
@@ -98,7 +99,7 @@ export function ContestCard({ contest, index = 0 }: ContestCardProps) {
       )}
 
       {/* ---- Left: Platform icon + name ---- */}
-      <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:gap-4 min-w-0">
+      <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
         {/* Platform badge */}
         <PlatformBadge platform={contest.platform} className="w-fit shrink-0" />
 
@@ -108,7 +109,7 @@ export function ContestCard({ contest, index = 0 }: ContestCardProps) {
             href={contest.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="block truncate text-sm font-medium text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:underline"
+            className="block truncate text-sm font-medium text-foreground transition-colors hover:text-primary focus-visible:underline focus-visible:outline-none"
             title={contest.contest_name}
           >
             {contest.contest_name}
@@ -137,10 +138,7 @@ export function ContestCard({ contest, index = 0 }: ContestCardProps) {
         {/* Countdown */}
         {!isFinished && (
           <div className="hidden min-w-[72px] text-right sm:block">
-            <CountdownTimer
-              startTime={contest.start_time}
-              status={contest.status}
-            />
+            <CountdownTimer startTime={contest.start_time} status={contest.status} />
           </div>
         )}
 

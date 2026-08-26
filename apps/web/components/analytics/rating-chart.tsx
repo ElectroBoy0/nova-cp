@@ -28,10 +28,10 @@ export function RatingChart({ history, currentRating, maxRating }: RatingChartPr
 
   if (!history || history.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 border border-dashed border-border rounded-xl bg-card p-6 text-center">
-        <Activity className="h-10 w-10 text-muted-foreground/40 mb-3" />
+      <div className="flex h-64 flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card p-6 text-center">
+        <Activity className="mb-3 h-10 w-10 text-muted-foreground/40" />
         <h4 className="text-base font-medium text-foreground">No Rating History Yet</h4>
-        <p className="text-xs text-muted-foreground mt-1 max-w-sm">
+        <p className="mt-1 max-w-sm text-xs text-muted-foreground">
           Participate in Codeforces rated contests to track your rating progression over time.
         </p>
       </div>
@@ -52,7 +52,12 @@ export function RatingChart({ history, currentRating, maxRating }: RatingChartPr
   // Normalize history items
   const normalizedData = history.map((item, idx) => {
     if (typeof item === "number") {
-      const prevRating = idx > 0 ? (typeof history[idx - 1] === "number" ? (history[idx - 1] as number) : (history[idx - 1] as RatingHistoryItem).new_rating || 0) : 0
+      const prevRating =
+        idx > 0
+          ? typeof history[idx - 1] === "number"
+            ? (history[idx - 1] as number)
+            : (history[idx - 1] as RatingHistoryItem).new_rating || 0
+          : 0
       return {
         index: idx + 1,
         rating: item,
@@ -67,7 +72,11 @@ export function RatingChart({ history, currentRating, maxRating }: RatingChartPr
       const oldRating = item.old_rating ?? 0
       const change = rating - oldRating
       const dateStr = item.time
-        ? new Date(item.time * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+        ? new Date(item.time * 1000).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })
         : `Contest ${idx + 1}`
 
       return {
@@ -87,7 +96,7 @@ export function RatingChart({ history, currentRating, maxRating }: RatingChartPr
   const minVal = Math.min(...ratings)
   const maxVal = Math.max(...ratings)
   const peakVal = maxRating ?? maxVal
-  const latestVal = currentRating ?? (ratings[ratings.length - 1] ?? 0)
+  const latestVal = currentRating ?? ratings[ratings.length - 1] ?? 0
   const initialVal = normalizedData[0]?.oldRating || ratings[0] || 0
   const diff = latestVal - initialVal
 
@@ -110,12 +119,16 @@ export function RatingChart({ history, currentRating, maxRating }: RatingChartPr
   })
 
   // Build SVG path strings
-  const linePath = points.reduce((acc, p, idx) => `${acc} ${idx === 0 ? "M" : "L"} ${p.x},${p.y}`, "")
+  const linePath = points.reduce(
+    (acc, p, idx) => `${acc} ${idx === 0 ? "M" : "L"} ${p.x},${p.y}`,
+    ""
+  )
   const lastPoint = points[points.length - 1]
   const firstPoint = points[0]
-  const areaPath = firstPoint && lastPoint
-    ? `${linePath} L ${lastPoint.x},${paddingTop + chartHeight} L ${firstPoint.x},${paddingTop + chartHeight} Z`
-    : linePath
+  const areaPath =
+    firstPoint && lastPoint
+      ? `${linePath} L ${lastPoint.x},${paddingTop + chartHeight} L ${firstPoint.x},${paddingTop + chartHeight} Z`
+      : linePath
 
   // Threshold grid lines
   const thresholds = [800, 1200, 1400, 1600, 1900, 2100, 2400].filter((t) => t >= yMin && t <= yMax)
@@ -124,11 +137,11 @@ export function RatingChart({ history, currentRating, maxRating }: RatingChartPr
   const step = Math.max(1, Math.floor(points.length / 6))
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6 shadow-sm relative">
+    <div className="relative rounded-xl border border-border bg-card p-6 shadow-sm">
       {/* Header Summary */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-border/50">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-border/50 pb-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <div className="mb-1 flex items-center gap-2">
             <h3 className="text-base font-semibold text-foreground">Rating Trajectory</h3>
             <Badge variant="secondary" className="font-mono text-xs">
               {history.length} {history.length === 1 ? "Contest" : "Contests"}
@@ -141,13 +154,17 @@ export function RatingChart({ history, currentRating, maxRating }: RatingChartPr
 
         <div className="flex items-center gap-6">
           <div>
-            <span className="text-[10px] text-muted-foreground uppercase font-medium block">Current</span>
+            <span className="block text-[10px] font-medium uppercase text-muted-foreground">
+              Current
+            </span>
             <span className="font-mono text-xl font-bold text-foreground">{latestVal}</span>
           </div>
 
           <div>
-            <span className="text-[10px] text-muted-foreground uppercase font-medium block">Peak</span>
-            <span className="font-mono text-xl font-bold text-emerald-400 flex items-center gap-1">
+            <span className="block text-[10px] font-medium uppercase text-muted-foreground">
+              Peak
+            </span>
+            <span className="flex items-center gap-1 font-mono text-xl font-bold text-emerald-400">
               <Trophy className="h-3.5 w-3.5" />
               {peakVal}
             </span>
@@ -155,18 +172,29 @@ export function RatingChart({ history, currentRating, maxRating }: RatingChartPr
 
           {bestRank !== null && (
             <div>
-              <span className="text-[10px] text-muted-foreground uppercase font-medium block">Best Rank</span>
-              <span className="font-mono text-xl font-bold text-violet-400 flex items-center gap-1">
-                <Award className="h-3.5 w-3.5" />
-                #{bestRank}
+              <span className="block text-[10px] font-medium uppercase text-muted-foreground">
+                Best Rank
+              </span>
+              <span className="flex items-center gap-1 font-mono text-xl font-bold text-violet-400">
+                <Award className="h-3.5 w-3.5" />#{bestRank}
               </span>
             </div>
           )}
 
           <div>
-            <span className="text-[10px] text-muted-foreground uppercase font-medium block">Net Change</span>
-            <span className={`font-mono text-sm font-semibold flex items-center gap-0.5 ${diff > 0 ? "text-emerald-400" : diff < 0 ? "text-rose-400" : "text-muted-foreground"}`}>
-              {diff > 0 ? <TrendingUp className="h-3.5 w-3.5" /> : diff < 0 ? <TrendingDown className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
+            <span className="block text-[10px] font-medium uppercase text-muted-foreground">
+              Net Change
+            </span>
+            <span
+              className={`flex items-center gap-0.5 font-mono text-sm font-semibold ${diff > 0 ? "text-emerald-400" : diff < 0 ? "text-rose-400" : "text-muted-foreground"}`}
+            >
+              {diff > 0 ? (
+                <TrendingUp className="h-3.5 w-3.5" />
+              ) : diff < 0 ? (
+                <TrendingDown className="h-3.5 w-3.5" />
+              ) : (
+                <Minus className="h-3.5 w-3.5" />
+              )}
               {diff > 0 ? `+${diff}` : diff}
             </span>
           </div>
@@ -178,17 +206,17 @@ export function RatingChart({ history, currentRating, maxRating }: RatingChartPr
         {/* HTML Tooltip Overlay (Absolute Positioned for perfect visibility) */}
         {hoveredPoint && (
           <div
-            className="absolute z-20 pointer-events-none transform -translate-x-1/2 -translate-y-full mb-3 transition-all duration-75"
+            className="pointer-events-none absolute z-20 mb-3 -translate-x-1/2 -translate-y-full transform transition-all duration-75"
             style={{
               left: `${(hoveredPoint.x / width) * 100}%`,
               top: `${(hoveredPoint.y / height) * 100}%`,
             }}
           >
-            <div className="bg-popover border border-border shadow-xl rounded-lg p-3 text-xs min-w-[220px] max-w-[280px] space-y-1.5 animate-in fade-in zoom-in-95 duration-100">
-              <div className="font-semibold text-foreground leading-snug line-clamp-2">
+            <div className="min-w-[220px] max-w-[280px] space-y-1.5 rounded-lg border border-border bg-popover p-3 text-xs shadow-xl duration-100 animate-in fade-in zoom-in-95">
+              <div className="line-clamp-2 font-semibold leading-snug text-foreground">
                 {hoveredPoint.contestName}
               </div>
-              <div className="flex items-center justify-between text-muted-foreground text-[11px] pt-1 border-t border-border/50">
+              <div className="flex items-center justify-between border-t border-border/50 pt-1 text-[11px] text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
                   {hoveredPoint.dateStr}
@@ -203,7 +231,9 @@ export function RatingChart({ history, currentRating, maxRating }: RatingChartPr
                   <span className="text-muted-foreground">{hoveredPoint.oldRating}</span>
                   <span>→</span>
                   <span className="text-foreground">{hoveredPoint.rating}</span>
-                  <span className={`text-[10px] px-1 py-0.5 rounded ${hoveredPoint.change >= 0 ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"}`}>
+                  <span
+                    className={`rounded px-1 py-0.5 text-[10px] ${hoveredPoint.change >= 0 ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"}`}
+                  >
                     {hoveredPoint.change >= 0 ? `+${hoveredPoint.change}` : hoveredPoint.change}
                   </span>
                 </div>
@@ -214,7 +244,7 @@ export function RatingChart({ history, currentRating, maxRating }: RatingChartPr
 
         <svg
           viewBox={`0 0 ${width} ${height}`}
-          className="w-full h-auto overflow-visible select-none"
+          className="h-auto w-full select-none overflow-visible"
         >
           <defs>
             <linearGradient id="ratingGradient" x1="0" y1="0" x2="0" y2="1">
@@ -309,7 +339,7 @@ export function RatingChart({ history, currentRating, maxRating }: RatingChartPr
                   fill={isHovered ? "#ddd6fe" : "#a78bfa"}
                   stroke="#ffffff"
                   strokeWidth={isHovered ? "3" : "2"}
-                  className="transition-all duration-150 cursor-pointer"
+                  className="cursor-pointer transition-all duration-150"
                   onMouseEnter={() => setHoveredPoint(p)}
                   onMouseLeave={() => setHoveredPoint(null)}
                 />

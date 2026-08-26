@@ -2,14 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
-import {
-  Play,
-  RotateCcw,
-  ExternalLink,
-  Layers,
-  Loader2,
-  Keyboard,
-} from "lucide-react"
+import { Play, RotateCcw, ExternalLink, Layers, Loader2, Keyboard } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -46,7 +39,9 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
   const problems = problemsData?.items || []
 
   const currentProblem: Problem | null =
-    problems.find((p) => p.id === problemIdParam || `${p.contest_id}${p.index}` === problemIdParam) ??
+    problems.find(
+      (p) => p.id === problemIdParam || `${p.contest_id}${p.index}` === problemIdParam
+    ) ??
     problems[0] ??
     null
 
@@ -205,7 +200,14 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
       }
 
       // ⌘/ or Shift+? -> Toggle Shortcuts Guide
-      if ((e.key === "/" && (e.metaKey || e.ctrlKey)) || (e.key === "?" && !e.metaKey && !e.ctrlKey && document.activeElement?.tagName !== "INPUT" && document.activeElement?.tagName !== "TEXTAREA")) {
+      if (
+        (e.key === "/" && (e.metaKey || e.ctrlKey)) ||
+        (e.key === "?" &&
+          !e.metaKey &&
+          !e.ctrlKey &&
+          document.activeElement?.tagName !== "INPUT" &&
+          document.activeElement?.tagName !== "TEXTAREA")
+      ) {
         e.preventDefault()
         setShowShortcutsModal((prev) => !prev)
         return
@@ -229,11 +231,11 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
   return (
     <div
       className={cn(
-        "flex h-screen w-full flex-col bg-background text-foreground overflow-hidden",
-        (isDraggingHorizontal || isDraggingVertical) && "select-none cursor-col-resize"
+        "flex h-screen w-full flex-col overflow-hidden bg-background text-foreground",
+        (isDraggingHorizontal || isDraggingVertical) && "cursor-col-resize select-none"
       )}
     >
-      <header className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-surface-1 px-4 z-10">
+      <header className="z-10 flex h-12 shrink-0 items-center justify-between border-b border-border bg-surface-1 px-4">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
@@ -248,11 +250,12 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
           <select
             value={currentProblem?.id || ""}
             onChange={(e) => handleSelectProblem(e.target.value)}
-            className="px-2.5 py-1 text-xs font-mono font-medium rounded-md bg-surface-2 border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary max-w-[220px] sm:max-w-xs truncate"
+            className="max-w-[220px] truncate rounded-md border border-border bg-surface-2 px-2.5 py-1 font-mono text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary sm:max-w-xs"
           >
             {problems.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.contest_id}{p.index} · {p.name} {p.rating ? `(${p.rating})` : ""}
+                {p.contest_id}
+                {p.index} · {p.name} {p.rating ? `(${p.rating})` : ""}
               </option>
             ))}
           </select>
@@ -262,7 +265,7 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
           <select
             value={language}
             onChange={(e) => setLanguage(e.target.value as SupportedLanguage)}
-            className="px-2.5 py-1 text-xs font-mono font-medium rounded-md bg-surface-2 border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+            className="rounded-md border border-border bg-surface-2 px-2.5 py-1 font-mono text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
           >
             {LANGUAGE_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -276,7 +279,7 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
             size="sm"
             onClick={handleResetTemplate}
             title="Reset boilerplate"
-            className="text-muted-foreground hover:text-foreground text-xs gap-1 h-7"
+            className="h-7 gap-1 text-xs text-muted-foreground hover:text-foreground"
           >
             <RotateCcw className="h-3 w-3" />
             <span className="hidden sm:inline">Reset</span>
@@ -285,7 +288,7 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
           <select
             value={fontSize}
             onChange={(e) => setFontSize(Number(e.target.value))}
-            className="hidden md:block px-2 py-1 text-xs font-mono rounded bg-surface-2 border border-border text-muted-foreground focus:outline-none"
+            className="hidden rounded border border-border bg-surface-2 px-2 py-1 font-mono text-xs text-muted-foreground focus:outline-none md:block"
           >
             <option value={12}>12px</option>
             <option value={14}>14px</option>
@@ -298,7 +301,7 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
             size="sm"
             onClick={handleRunCode}
             disabled={runCodeMutation.isPending}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs h-8 px-3 gap-1.5 shadow-sm active:scale-[0.98] transition-transform"
+            className="h-8 gap-1.5 bg-primary px-3 text-xs font-semibold text-primary-foreground shadow-sm transition-transform hover:bg-primary/90 active:scale-[0.98]"
           >
             {runCodeMutation.isPending ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -306,7 +309,7 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
               <Play className="h-3.5 w-3.5 fill-current" />
             )}
             <span>Run Code</span>
-            <kbd className="hidden lg:inline ml-1 px-1 py-0.2 rounded bg-primary-foreground/20 text-[10px] font-mono">
+            <kbd className="py-0.2 ml-1 hidden rounded bg-primary-foreground/20 px-1 font-mono text-[10px] lg:inline">
               ⌘↵
             </kbd>
           </Button>
@@ -316,7 +319,7 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
               href={`https://codeforces.com/problemset/problem/${currentProblem.contest_id}/${currentProblem.index}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded hover:bg-surface-2 transition-colors"
+              className="hidden items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-surface-2 hover:text-foreground sm:flex"
             >
               <span>Submit on CF</span>
               <ExternalLink className="h-3 w-3" />
@@ -328,20 +331,23 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
             size="icon-sm"
             onClick={() => setShowShortcutsModal(true)}
             title="Keyboard Shortcuts (⌘/ or ?)"
-            className="text-muted-foreground hover:text-foreground h-8 w-8"
+            className="h-8 w-8 text-muted-foreground hover:text-foreground"
           >
             <Keyboard className="h-4 w-4" />
           </Button>
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="relative flex flex-1 overflow-hidden">
         {leftPanelVisible && (
           <div
             style={{ width: `${leftPanelWidth}px` }}
-            className="hidden md:block h-full overflow-hidden shrink-0 bg-surface-1/30"
+            className="hidden h-full shrink-0 overflow-hidden bg-surface-1/30 md:block"
           >
-            <ProblemPanel problem={currentProblem} onLoadSampleTests={(samples) => setTestCases(samples)} />
+            <ProblemPanel
+              problem={currentProblem}
+              onLoadSampleTests={(samples) => setTestCases(samples)}
+            />
           </div>
         )}
 
@@ -353,18 +359,18 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
             }}
             onDoubleClick={() => setLeftPanelWidth(480)}
             className={cn(
-              "hidden md:flex w-1.5 hover:w-2 -mr-1 z-30 cursor-col-resize items-center justify-center transition-all group shrink-0",
-              isDraggingHorizontal ? "bg-primary w-2" : "hover:bg-primary/50 bg-border/60"
+              "group z-30 -mr-1 hidden w-1.5 shrink-0 cursor-col-resize items-center justify-center transition-all hover:w-2 md:flex",
+              isDraggingHorizontal ? "w-2 bg-primary" : "bg-border/60 hover:bg-primary/50"
             )}
           >
-            <div className="h-8 w-1 rounded-full bg-muted-foreground/30 group-hover:bg-primary-foreground/80 transition-colors" />
+            <div className="h-8 w-1 rounded-full bg-muted-foreground/30 transition-colors group-hover:bg-primary-foreground/80" />
           </div>
         )}
 
-        <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0">
+        <div className="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
           <div
             style={{ height: `${editorHeightPercent}%` }}
-            className="min-h-[160px] overflow-hidden shrink-0"
+            className="min-h-[160px] shrink-0 overflow-hidden"
           >
             <MonacoCodeEditor
               language={language}
@@ -382,14 +388,14 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
             }}
             onDoubleClick={() => setEditorHeightPercent(58)}
             className={cn(
-              "h-1.5 hover:h-2 z-20 cursor-row-resize flex items-center justify-center transition-all group shrink-0 border-t border-border/50",
-              isDraggingVertical ? "bg-primary h-2" : "hover:bg-primary/50 bg-surface-2/60"
+              "group z-20 flex h-1.5 shrink-0 cursor-row-resize items-center justify-center border-t border-border/50 transition-all hover:h-2",
+              isDraggingVertical ? "h-2 bg-primary" : "bg-surface-2/60 hover:bg-primary/50"
             )}
           >
-            <div className="w-8 h-1 rounded-full bg-muted-foreground/30 group-hover:bg-primary-foreground/80 transition-colors" />
+            <div className="h-1 w-8 rounded-full bg-muted-foreground/30 transition-colors group-hover:bg-primary-foreground/80" />
           </div>
 
-          <div className="flex-1 min-h-[140px] overflow-hidden">
+          <div className="min-h-[140px] flex-1 overflow-hidden">
             <TerminalPanel
               testCases={testCases}
               onChangeTestCases={setTestCases}
@@ -402,10 +408,10 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
 
       {/* Keyboard Shortcuts Dialog */}
       <Dialog open={showShortcutsModal} onOpenChange={setShowShortcutsModal}>
-        <DialogContent className="sm:max-w-md bg-card/95 backdrop-blur-xl border-border/80 p-0 gap-0 overflow-hidden shadow-2xl">
-          <DialogHeader className="p-5 pb-3 border-b border-border/60 bg-surface-1/40">
-            <div className="flex items-center gap-2 mb-1">
-              <div className="p-1 rounded-md bg-primary/10 text-primary border border-primary/20">
+        <DialogContent className="gap-0 overflow-hidden border-border/80 bg-card/95 p-0 shadow-2xl backdrop-blur-xl sm:max-w-md">
+          <DialogHeader className="border-b border-border/60 bg-surface-1/40 p-5 pb-3">
+            <div className="mb-1 flex items-center gap-2">
+              <div className="rounded-md border border-primary/20 bg-primary/10 p-1 text-primary">
                 <Keyboard className="h-4 w-4" />
               </div>
               <DialogTitle className="text-base font-bold text-foreground">
@@ -417,49 +423,71 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
             </DialogDescription>
           </DialogHeader>
 
-          <div className="p-5 space-y-2.5 text-xs font-mono">
-            <div className="flex items-center justify-between p-2 rounded-lg bg-surface-1/50 border border-border/40">
+          <div className="space-y-2.5 p-5 font-mono text-xs">
+            <div className="flex items-center justify-between rounded-lg border border-border/40 bg-surface-1/50 p-2">
               <span className="font-sans text-muted-foreground">Execute Code (Sandbox)</span>
               <div className="flex items-center gap-1">
-                <kbd className="px-2 py-0.5 rounded bg-muted border border-border text-[11px] font-bold text-foreground">⌘</kbd>
-                <kbd className="px-2 py-0.5 rounded bg-muted border border-border text-[11px] font-bold text-foreground">↵ Enter</kbd>
+                <kbd className="rounded border border-border bg-muted px-2 py-0.5 text-[11px] font-bold text-foreground">
+                  ⌘
+                </kbd>
+                <kbd className="rounded border border-border bg-muted px-2 py-0.5 text-[11px] font-bold text-foreground">
+                  ↵ Enter
+                </kbd>
               </div>
             </div>
 
-            <div className="flex items-center justify-between p-2 rounded-lg bg-surface-1/50 border border-border/40">
+            <div className="flex items-center justify-between rounded-lg border border-border/40 bg-surface-1/50 p-2">
               <span className="font-sans text-muted-foreground">Command Palette / Search</span>
               <div className="flex items-center gap-1">
-                <kbd className="px-2 py-0.5 rounded bg-muted border border-border text-[11px] font-bold text-foreground">⌘</kbd>
-                <kbd className="px-2 py-0.5 rounded bg-muted border border-border text-[11px] font-bold text-foreground">K</kbd>
+                <kbd className="rounded border border-border bg-muted px-2 py-0.5 text-[11px] font-bold text-foreground">
+                  ⌘
+                </kbd>
+                <kbd className="rounded border border-border bg-muted px-2 py-0.5 text-[11px] font-bold text-foreground">
+                  K
+                </kbd>
               </div>
             </div>
 
-            <div className="flex items-center justify-between p-2 rounded-lg bg-surface-1/50 border border-border/40">
+            <div className="flex items-center justify-between rounded-lg border border-border/40 bg-surface-1/50 p-2">
               <span className="font-sans text-muted-foreground">Toggle Problem Statement</span>
               <div className="flex items-center gap-1">
-                <kbd className="px-2 py-0.5 rounded bg-muted border border-border text-[11px] font-bold text-foreground">⌘</kbd>
-                <kbd className="px-2 py-0.5 rounded bg-muted border border-border text-[11px] font-bold text-foreground">B</kbd>
+                <kbd className="rounded border border-border bg-muted px-2 py-0.5 text-[11px] font-bold text-foreground">
+                  ⌘
+                </kbd>
+                <kbd className="rounded border border-border bg-muted px-2 py-0.5 text-[11px] font-bold text-foreground">
+                  B
+                </kbd>
               </div>
             </div>
 
-            <div className="flex items-center justify-between p-2 rounded-lg bg-surface-1/50 border border-border/40">
+            <div className="flex items-center justify-between rounded-lg border border-border/40 bg-surface-1/50 p-2">
               <span className="font-sans text-muted-foreground">Open Control Center</span>
               <div className="flex items-center gap-1">
-                <kbd className="px-2 py-0.5 rounded bg-muted border border-border text-[11px] font-bold text-foreground">⌘</kbd>
-                <kbd className="px-2 py-0.5 rounded bg-muted border border-border text-[11px] font-bold text-foreground">S</kbd>
+                <kbd className="rounded border border-border bg-muted px-2 py-0.5 text-[11px] font-bold text-foreground">
+                  ⌘
+                </kbd>
+                <kbd className="rounded border border-border bg-muted px-2 py-0.5 text-[11px] font-bold text-foreground">
+                  S
+                </kbd>
               </div>
             </div>
 
-            <div className="flex items-center justify-between p-2 rounded-lg bg-surface-1/50 border border-border/40">
+            <div className="flex items-center justify-between rounded-lg border border-border/40 bg-surface-1/50 p-2">
               <span className="font-sans text-muted-foreground">Close Modals / Overlays</span>
-              <kbd className="px-2 py-0.5 rounded bg-muted border border-border text-[11px] font-bold text-foreground">ESC</kbd>
+              <kbd className="rounded border border-border bg-muted px-2 py-0.5 text-[11px] font-bold text-foreground">
+                ESC
+              </kbd>
             </div>
 
-            <div className="flex items-center justify-between p-2 rounded-lg bg-surface-1/50 border border-border/40">
+            <div className="flex items-center justify-between rounded-lg border border-border/40 bg-surface-1/50 p-2">
               <span className="font-sans text-muted-foreground">Toggle Shortcuts Guide</span>
               <div className="flex items-center gap-1">
-                <kbd className="px-2 py-0.5 rounded bg-muted border border-border text-[11px] font-bold text-foreground">⌘</kbd>
-                <kbd className="px-2 py-0.5 rounded bg-muted border border-border text-[11px] font-bold text-foreground">/</kbd>
+                <kbd className="rounded border border-border bg-muted px-2 py-0.5 text-[11px] font-bold text-foreground">
+                  ⌘
+                </kbd>
+                <kbd className="rounded border border-border bg-muted px-2 py-0.5 text-[11px] font-bold text-foreground">
+                  /
+                </kbd>
               </div>
             </div>
           </div>

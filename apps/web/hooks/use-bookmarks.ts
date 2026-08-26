@@ -11,7 +11,7 @@ import {
   getNotes,
   getNote,
   upsertNote,
-  deleteNote
+  deleteNote,
 } from "@/lib/bookmarks"
 
 // ==========================
@@ -30,8 +30,13 @@ export function useCreateCollection() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ userId, data }: { userId: string; data: { name: string; description?: string } }) =>
-      createCollection(userId, data),
+    mutationFn: ({
+      userId,
+      data,
+    }: {
+      userId: string
+      data: { name: string; description?: string }
+    }) => createCollection(userId, data),
     onSuccess: (_, { userId }) => {
       queryClient.invalidateQueries({ queryKey: ["collections", userId] })
     },
@@ -42,8 +47,15 @@ export function useUpdateCollection() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ userId, collectionId, data }: { userId: string; collectionId: string; data: { name?: string; description?: string } }) =>
-      updateCollection(userId, collectionId, data),
+    mutationFn: ({
+      userId,
+      collectionId,
+      data,
+    }: {
+      userId: string
+      collectionId: string
+      data: { name?: string; description?: string }
+    }) => updateCollection(userId, collectionId, data),
     onSuccess: (_, { userId }) => {
       queryClient.invalidateQueries({ queryKey: ["collections", userId] })
     },
@@ -67,7 +79,10 @@ export function useDeleteCollection() {
 // Bookmarks
 // ==========================
 
-export function useBookmarks(userId: string | undefined, params?: { collection_id?: string; limit?: number; offset?: number }) {
+export function useBookmarks(
+  userId: string | undefined,
+  params?: { collection_id?: string; limit?: number; offset?: number }
+) {
   return useQuery({
     queryKey: ["bookmarks", userId, params],
     queryFn: () => getBookmarks(userId!, params),
@@ -79,8 +94,13 @@ export function useAddBookmark() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ userId, data }: { userId: string; data: { problem_id: string; collection_id?: string; note?: string } }) =>
-      addBookmark(userId, data),
+    mutationFn: ({
+      userId,
+      data,
+    }: {
+      userId: string
+      data: { problem_id: string; collection_id?: string; note?: string }
+    }) => addBookmark(userId, data),
     onSuccess: (_, { userId }) => {
       queryClient.invalidateQueries({ queryKey: ["bookmarks", userId] })
       queryClient.invalidateQueries({ queryKey: ["collections", userId] })
@@ -105,8 +125,15 @@ export function useMoveBookmark() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ userId, bookmarkId, collectionId }: { userId: string; bookmarkId: string; collectionId: string | null }) =>
-      moveBookmark(userId, bookmarkId, collectionId),
+    mutationFn: ({
+      userId,
+      bookmarkId,
+      collectionId,
+    }: {
+      userId: string
+      bookmarkId: string
+      collectionId: string | null
+    }) => moveBookmark(userId, bookmarkId, collectionId),
     onSuccess: (_, { userId }) => {
       queryClient.invalidateQueries({ queryKey: ["bookmarks", userId] })
       queryClient.invalidateQueries({ queryKey: ["collections", userId] })
@@ -139,8 +166,15 @@ export function useUpsertNote() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ userId, problemId, content }: { userId: string; problemId: string; content: string }) =>
-      upsertNote(userId, problemId, content),
+    mutationFn: ({
+      userId,
+      problemId,
+      content,
+    }: {
+      userId: string
+      problemId: string
+      content: string
+    }) => upsertNote(userId, problemId, content),
     onSuccess: (_, { userId, problemId }) => {
       queryClient.invalidateQueries({ queryKey: ["note", userId, problemId] })
       queryClient.invalidateQueries({ queryKey: ["notes", userId] })

@@ -10,11 +10,7 @@ interface CountdownTimerProps {
   className?: string
 }
 
-export function CountdownTimer({
-  startTime,
-  status,
-  className,
-}: CountdownTimerProps) {
+export function CountdownTimer({ startTime, status, className }: CountdownTimerProps) {
   const countdown = useCountdown(status === "upcoming" ? startTime : null)
 
   if (status === "running") {
@@ -35,16 +31,7 @@ export function CountdownTimer({
   }
 
   if (status === "finished") {
-    return (
-      <span
-        className={cn(
-          "font-mono text-xs text-muted-foreground",
-          className
-        )}
-      >
-        Ended
-      </span>
-    )
+    return <span className={cn("font-mono text-xs text-muted-foreground", className)}>Ended</span>
   }
 
   // Upcoming
@@ -52,10 +39,7 @@ export function CountdownTimer({
     // Before hydration: render a placeholder with the same width to avoid layout shift
     return (
       <span
-        className={cn(
-          "inline-block h-4 w-20 animate-pulse rounded bg-muted",
-          className
-        )}
+        className={cn("inline-block h-4 w-20 animate-pulse rounded bg-muted", className)}
         aria-label="Loading countdown"
       />
     )
@@ -63,10 +47,7 @@ export function CountdownTimer({
 
   return (
     <span
-      className={cn(
-        "font-mono text-xs font-medium tabular-nums text-violet-400",
-        className
-      )}
+      className={cn("font-mono text-xs font-medium tabular-nums text-violet-400", className)}
       aria-live="polite"
       aria-label={`Starts in ${countdown}`}
     >

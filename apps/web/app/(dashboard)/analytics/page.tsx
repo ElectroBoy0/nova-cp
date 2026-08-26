@@ -10,13 +10,13 @@ export const metadata = {
 
 export default async function AnalyticsPage() {
   const session = await auth()
-  
+
   if (!session?.user?.id) {
     redirect("/login")
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full flex-col">
       <Topbar title="Analytics" description="Performance insights and topic mastery" />
       <AnalyticsClient userId={session.user.id} />
     </div>

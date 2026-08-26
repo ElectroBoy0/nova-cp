@@ -14,12 +14,12 @@ import { useQueryClient } from "@tanstack/react-query"
 import { OnboardingDialog } from "@/components/onboarding/onboarding-dialog"
 import type { Contest } from "@/types/contests"
 
-export function DashboardClient({ userId, firstName }: { userId: string, firstName: string }) {
+export function DashboardClient({ userId, firstName }: { userId: string; firstName: string }) {
   const { data: user, isLoading: isUserLoading } = useUserProfile(userId)
   const { data: analytics, isLoading: isDashboardLoading } = useUserDashboard(userId)
   const linkMutation = useLinkHandle()
   const queryClient = useQueryClient()
-  
+
   const syncStatus = user?.cf_handle?.sync_status
   const prevSyncStatus = useRef(syncStatus)
 
@@ -29,20 +29,25 @@ export function DashboardClient({ userId, firstName }: { userId: string, firstNa
     }
     prevSyncStatus.current = syncStatus
   }, [syncStatus, queryClient, userId])
-  
-  const { data: recommendations, isPending: isLoadingRecommendations } = useRecommendations(user?.id ?? "")
+
+  const { data: recommendations, isPending: isLoadingRecommendations } = useRecommendations(
+    user?.id ?? ""
+  )
 
   const isInitialLoading = isDashboardLoading || isUserLoading
   const hasLinkedHandle = !!user?.cf_handle
   const rating = user?.cf_handle?.rating ?? "—"
-  
+
   // Real stats
   const totalSolved = analytics?.total_solved ?? "—"
   const totalContests = analytics?.contest_count ?? "—"
   const streak = analytics?.current_streak_days ?? "—"
 
   // Upcoming Contests
-  const { data: contestsData, isLoading: isContestsLoading } = useContests({ status: "upcoming", limit: 3 })
+  const { data: contestsData, isLoading: isContestsLoading } = useContests({
+    status: "upcoming",
+    limit: 3,
+  })
   const upcomingContests = contestsData?.contests?.slice(0, 3) || []
 
   // Live Contests
@@ -50,7 +55,9 @@ export function DashboardClient({ userId, firstName }: { userId: string, firstNa
   const liveContests = liveContestsData?.contests || []
 
   const rawRatingHistory = user?.cf_handle?.rating_history || []
-  const ratingHistory = rawRatingHistory.map(r => typeof r === "number" ? r : (r as { new_rating?: number }).new_rating || 0)
+  const ratingHistory = rawRatingHistory.map((r) =>
+    typeof r === "number" ? r : (r as { new_rating?: number }).new_rating || 0
+  )
 
   const formatDate = (isoString: string) => {
     return new Date(isoString).toLocaleString(undefined, {
@@ -70,9 +77,9 @@ export function DashboardClient({ userId, firstName }: { userId: string, firstNa
   return (
     <div className="flex-1 p-6">
       {/* ---- Greeting & Header Action ---- */}
-      <div className="mb-10 animate-fade-up flex items-start justify-between">
+      <div className="mb-10 flex animate-fade-up items-start justify-between">
         <div>
-          <h2 className="mb-1 text-3xl font-semibold tracking-tight text-balance text-foreground">
+          <h2 className="mb-1 text-balance text-3xl font-semibold tracking-tight text-foreground">
             Good to see you, {firstName} 👋
           </h2>
           <p className="text-sm text-muted-foreground">
@@ -81,24 +88,28 @@ export function DashboardClient({ userId, firstName }: { userId: string, firstNa
               : "Link your Codeforces handle to unlock your personalized dashboard."}
           </p>
         </div>
-        
+
         {hasLinkedHandle && (
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="gap-2"
             onClick={handleSyncNow}
             disabled={user.cf_handle?.sync_status === "syncing" || linkMutation.isPending}
           >
-            <RefreshCw className={`h-4 w-4 ${user.cf_handle?.sync_status === "syncing" || linkMutation.isPending ? "animate-spin" : ""}`} />
-            {user.cf_handle?.sync_status === "syncing" || linkMutation.isPending ? "Syncing..." : "Sync Data"}
+            <RefreshCw
+              className={`h-4 w-4 ${user.cf_handle?.sync_status === "syncing" || linkMutation.isPending ? "animate-spin" : ""}`}
+            />
+            {user.cf_handle?.sync_status === "syncing" || linkMutation.isPending
+              ? "Syncing..."
+              : "Sync Data"}
           </Button>
         )}
       </div>
 
       {/* ---- Live Contest Banner ---- */}
       {liveContests.length > 0 && (
-        <div className="mb-8 animate-fade-up flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-3 text-emerald-400">
+        <div className="mb-8 flex animate-fade-up items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-3 text-emerald-400">
           <div className="flex items-center gap-3">
             <span className="relative flex h-3 w-3 shrink-0" aria-hidden="true">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
@@ -106,7 +117,9 @@ export function DashboardClient({ userId, firstName }: { userId: string, firstNa
             </span>
             <div>
               <p className="text-sm font-semibold text-foreground">
-                {liveContests.length === 1 ? "A contest is live right now!" : "Multiple contests are live right now!"}
+                {liveContests.length === 1
+                  ? "A contest is live right now!"
+                  : "Multiple contests are live right now!"}
               </p>
               <p className="text-xs text-muted-foreground">
                 {liveContests[0]?.platform} - {liveContests[0]?.contest_name}
@@ -114,7 +127,12 @@ export function DashboardClient({ userId, firstName }: { userId: string, firstNa
               </p>
             </div>
           </div>
-          <Button variant="outline" size="sm" asChild className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20">
+          <Button
+            variant="outline"
+            size="sm"
+            asChild
+            className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20"
+          >
             <Link href="/contests">View Contests</Link>
           </Button>
         </div>
@@ -122,12 +140,16 @@ export function DashboardClient({ userId, firstName }: { userId: string, firstNa
 
       {/* ---- Live Sync Banner ---- */}
       {(user?.cf_handle?.sync_status === "syncing" || linkMutation.isPending) && (
-        <div className="mb-8 animate-fade-up flex items-center justify-between rounded-xl border border-sky-500/30 bg-sky-500/10 px-5 py-3 text-sky-400">
+        <div className="mb-8 flex animate-fade-up items-center justify-between rounded-xl border border-sky-500/30 bg-sky-500/10 px-5 py-3 text-sky-400">
           <div className="flex items-center gap-3">
             <RefreshCw className="h-5 w-5 animate-spin text-sky-400" />
             <div>
-              <p className="text-sm font-semibold text-foreground">Syncing Codeforces Submissions</p>
-              <p className="text-xs text-muted-foreground">Fetching your latest submissions and recalculating topic mastery...</p>
+              <p className="text-sm font-semibold text-foreground">
+                Syncing Codeforces Submissions
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Fetching your latest submissions and recalculating topic mastery...
+              </p>
             </div>
           </div>
         </div>
@@ -135,7 +157,7 @@ export function DashboardClient({ userId, firstName }: { userId: string, firstNa
 
       {/* ---- No Handle CTA ---- */}
       {!hasLinkedHandle && !isInitialLoading && (
-        <div className="mb-8 animate-fade-up stagger-1 rounded-xl border border-primary/30 bg-primary/5 px-5 py-4">
+        <div className="stagger-1 mb-8 animate-fade-up rounded-xl border border-primary/30 bg-primary/5 px-5 py-4">
           <div className="flex items-start gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
               <Link2 className="h-5 w-5 text-primary" aria-hidden="true" />
@@ -160,25 +182,33 @@ export function DashboardClient({ userId, firstName }: { userId: string, firstNa
       )}
 
       {/* ---- Stat Pills ---- */}
-      <div className="mb-8 grid grid-cols-2 gap-3 animate-fade-up stagger-2 lg:grid-cols-4">
+      <div className="stagger-2 mb-8 grid animate-fade-up grid-cols-2 gap-3 lg:grid-cols-4">
         {[
-          { label: "Current Rating", value: rating, icon: BarChart3, color: "text-violet-400", isRating: true },
+          {
+            label: "Current Rating",
+            value: rating,
+            icon: BarChart3,
+            color: "text-violet-400",
+            isRating: true,
+          },
           { label: "Problems Solved", value: totalSolved, icon: Star, color: "text-sky-400" },
           { label: "Contests", value: totalContests, icon: Trophy, color: "text-emerald-400" },
           { label: "Day Streak", value: streak, icon: Flame, color: "text-amber-400" },
         ].map((stat) => {
           const Icon = stat.icon
-          
+
           let sparklinePoints = ""
           if (stat.isRating && ratingHistory.length >= 2) {
             const min = Math.min(...ratingHistory)
             const max = Math.max(...ratingHistory)
             const range = max - min || 1
-            sparklinePoints = ratingHistory.map((val: number, i: number) => {
-              const x = (i / (ratingHistory.length - 1)) * 100
-              const y = 100 - ((val - min) / range) * 100
-              return `${x},${y}`
-            }).join(" ")
+            sparklinePoints = ratingHistory
+              .map((val: number, i: number) => {
+                const x = (i / (ratingHistory.length - 1)) * 100
+                const y = 100 - ((val - min) / range) * 100
+                return `${x},${y}`
+              })
+              .join(" ")
           }
 
           return (
@@ -187,7 +217,11 @@ export function DashboardClient({ userId, firstName }: { userId: string, firstNa
               className="relative overflow-hidden rounded-xl border border-border/40 bg-surface-1/50 p-4 transition-colors hover:border-border/80"
             >
               {stat.isRating && sparklinePoints && (
-                <svg className="absolute bottom-0 left-0 h-1/2 w-full opacity-10 text-violet-400" preserveAspectRatio="none" viewBox="0 0 100 100">
+                <svg
+                  className="absolute bottom-0 left-0 h-1/2 w-full text-violet-400 opacity-10"
+                  preserveAspectRatio="none"
+                  viewBox="0 0 100 100"
+                >
                   <polyline
                     fill="none"
                     stroke="currentColor"
@@ -198,7 +232,9 @@ export function DashboardClient({ userId, firstName }: { userId: string, firstNa
                 </svg>
               )}
               <div className="relative mb-2 flex items-center justify-between">
-                <span className="text-[11px] uppercase tracking-wider text-muted-foreground">{stat.label}</span>
+                <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                  {stat.label}
+                </span>
                 <Icon className={`h-4 w-4 ${stat.color}`} aria-hidden="true" />
               </div>
               <div className="relative font-mono text-2xl font-semibold text-foreground">
@@ -214,12 +250,14 @@ export function DashboardClient({ userId, firstName }: { userId: string, firstNa
         {/* Left column (65%) */}
         <div className="space-y-6 lg:col-span-2">
           {/* Recommendations Section */}
-          <div className="space-y-4 animate-fade-up stagger-3">
-            <h3 className="text-sm font-medium tracking-wide uppercase text-muted-foreground">Smart Recommendations</h3>
-            <RecommendationWidget 
+          <div className="stagger-3 animate-fade-up space-y-4">
+            <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+              Smart Recommendations
+            </h3>
+            <RecommendationWidget
               userId={userId}
-              recommendations={recommendations} 
-              isLoading={isLoadingRecommendations} 
+              recommendations={recommendations}
+              isLoading={isLoadingRecommendations}
             />
           </div>
         </div>
@@ -227,7 +265,7 @@ export function DashboardClient({ userId, firstName }: { userId: string, firstNa
         {/* Right column (35%) */}
         <div className="space-y-6">
           {/* Upcoming Contests Widget */}
-          <div className="animate-fade-up stagger-4 rounded-xl border border-border/40 bg-card">
+          <div className="stagger-4 animate-fade-up rounded-xl border border-border/40 bg-card">
             <div className="flex items-center justify-between border-b border-border/50 px-5 py-4">
               <div className="flex items-center gap-2">
                 <Trophy className="h-4 w-4 text-emerald-400" aria-hidden="true" />
@@ -261,32 +299,32 @@ export function DashboardClient({ userId, firstName }: { userId: string, firstNa
                 ) : upcomingContests.length > 0 ? (
                   upcomingContests.map((contest: Contest, idx: number) => (
                     <a
-                      key={`${contest.platform || 'contest'}-${contest.id || idx}-${idx}`}
+                      key={`${contest.platform || "contest"}-${contest.id || idx}-${idx}`}
                       href={contest.url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="group flex items-center justify-between rounded-lg border border-border/50 bg-surface-2/30 p-3 transition-colors hover:bg-surface-2/80"
                     >
                       <div className="flex items-center gap-3 overflow-hidden">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-background border border-border/50">
-                           <Trophy className="h-4 w-4 text-muted-foreground group-hover:text-emerald-400 transition-colors" />
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border/50 bg-background">
+                          <Trophy className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-emerald-400" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                          <p className="truncate text-sm font-medium text-foreground transition-colors group-hover:text-primary">
                             {contest.contest_name}
                           </p>
-                          <p className="text-xs text-muted-foreground mt-0.5">
+                          <p className="mt-0.5 text-xs text-muted-foreground">
                             {formatDate(contest.start_time)}
                           </p>
                         </div>
                       </div>
-                      <div className="shrink-0 ml-4">
+                      <div className="ml-4 shrink-0">
                         <PlatformBadge platform={contest.platform} size="sm" />
                       </div>
                     </a>
                   ))
                 ) : (
-                  <p className="text-center text-sm text-muted-foreground py-4">
+                  <p className="py-4 text-center text-sm text-muted-foreground">
                     No upcoming contests found.
                   </p>
                 )}
@@ -295,8 +333,8 @@ export function DashboardClient({ userId, firstName }: { userId: string, firstNa
           </div>
 
           {/* Topic Mastery Widget */}
-          <div className="animate-fade-up stagger-5 rounded-xl border border-border/40 bg-card flex flex-col h-[300px]">
-            <div className="flex items-center justify-between border-b border-border/50 px-5 py-4 shrink-0">
+          <div className="stagger-5 flex h-[300px] animate-fade-up flex-col rounded-xl border border-border/40 bg-card">
+            <div className="flex shrink-0 items-center justify-between border-b border-border/50 px-5 py-4">
               <div className="flex items-center gap-2">
                 <BarChart3 className="h-4 w-4 text-emerald-400" aria-hidden="true" />
                 <h3 className="text-sm font-semibold text-foreground">Topic Mastery</h3>
@@ -308,7 +346,7 @@ export function DashboardClient({ userId, firstName }: { userId: string, firstNa
                 </a>
               </Button>
             </div>
-            <div className="p-5 flex-1 overflow-hidden flex flex-col">
+            <div className="flex flex-1 flex-col overflow-hidden p-5">
               {isInitialLoading ? (
                 <div className="space-y-4">
                   {[1, 2, 3].map((i) => (
@@ -322,22 +360,27 @@ export function DashboardClient({ userId, firstName }: { userId: string, firstNa
                   ))}
                 </div>
               ) : analytics?.topic_mastery ? (
-                <div className="space-y-4 overflow-y-auto pr-2 custom-scrollbar">
+                <div className="custom-scrollbar space-y-4 overflow-y-auto pr-2">
                   {Object.entries(analytics.topic_mastery)
                     .sort((a, b) => b[1].solved - a[1].solved)
                     .slice(0, 5)
                     .map(([topic, stats]) => {
-                      const percentage = stats.attempts > 0 ? Math.round((stats.solved / stats.attempts) * 100) : 0
+                      const percentage =
+                        stats.attempts > 0 ? Math.round((stats.solved / stats.attempts) * 100) : 0
                       return (
                         <div key={topic} className="space-y-1.5">
                           <div className="flex items-center justify-between">
-                            <span className="text-xs text-muted-foreground truncate pr-2">{topic}</span>
-                            <span className="text-xs font-medium text-foreground">{stats.solved}/{stats.attempts}</span>
+                            <span className="truncate pr-2 text-xs text-muted-foreground">
+                              {topic}
+                            </span>
+                            <span className="text-xs font-medium text-foreground">
+                              {stats.solved}/{stats.attempts}
+                            </span>
                           </div>
-                          <div className="h-1.5 w-full bg-surface-2 overflow-hidden rounded-full">
-                            <div 
-                              className="h-full bg-emerald-500 rounded-full" 
-                              style={{ width: `${percentage}%` }} 
+                          <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-2">
+                            <div
+                              className="h-full rounded-full bg-emerald-500"
+                              style={{ width: `${percentage}%` }}
                             />
                           </div>
                         </div>
@@ -345,7 +388,7 @@ export function DashboardClient({ userId, firstName }: { userId: string, firstNa
                     })}
                 </div>
               ) : (
-                <div className="flex-1 flex flex-col items-center justify-center text-center">
+                <div className="flex flex-1 flex-col items-center justify-center text-center">
                   <p className="text-sm text-muted-foreground">
                     {hasLinkedHandle ? "Syncing data..." : "Link handle to see your top topics"}
                   </p>

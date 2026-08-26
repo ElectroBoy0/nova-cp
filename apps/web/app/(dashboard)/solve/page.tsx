@@ -19,16 +19,13 @@ export default async function SolvePage({
   return (
     <Suspense
       fallback={
-        <div className="flex h-screen w-full items-center justify-center bg-background text-muted-foreground gap-2 text-xs">
+        <div className="flex h-screen w-full items-center justify-center gap-2 bg-background text-xs text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin text-primary" />
           <span>Initializing NovaCP Workspace...</span>
         </div>
       }
     >
-      <WorkspaceClient
-        userId={session?.user?.id}
-        initialProblemId={resolvedParams.problemId}
-      />
+      <WorkspaceClient userId={session?.user?.id} initialProblemId={resolvedParams.problemId} />
     </Suspense>
   )
 }

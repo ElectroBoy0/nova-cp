@@ -30,9 +30,7 @@ export async function Topbar({ title, description }: TopbarProps) {
       <div className="flex items-center gap-3">
         <div>
           <h1 className="text-sm font-semibold text-foreground">{title}</h1>
-          {description && (
-            <p className="text-xs text-muted-foreground">{description}</p>
-          )}
+          {description && <p className="text-xs text-muted-foreground">{description}</p>}
         </div>
       </div>
 
@@ -42,7 +40,7 @@ export async function Topbar({ title, description }: TopbarProps) {
       {/* Right controls */}
       <div className="flex items-center gap-2">
         {session?.user?.id && <TopbarStreak userId={session.user.id} />}
-        
+
         {/* In-App Notification Center */}
         {session?.user?.id && <NotificationCenter userId={session.user.id} />}
 

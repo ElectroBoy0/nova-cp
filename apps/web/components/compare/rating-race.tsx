@@ -10,7 +10,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend
+  Legend,
 } from "recharts"
 
 interface RatingRaceProps {
@@ -55,7 +55,7 @@ export function RatingRace({ history, userHandle, rivalHandle }: RatingRaceProps
             ))}
           </div>
           {data.contest_name && (
-            <p className="mt-2 text-xs text-muted-foreground border-t border-border pt-2 max-w-[200px] truncate">
+            <p className="mt-2 max-w-[200px] truncate border-t border-border pt-2 text-xs text-muted-foreground">
               {data.contest_name}
             </p>
           )}
@@ -72,13 +72,10 @@ export function RatingRace({ history, userHandle, rivalHandle }: RatingRaceProps
       </div>
       <div className="h-72 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart
-            data={history}
-            margin={{ top: 5, right: 10, left: -20, bottom: 0 }}
-          >
+          <LineChart data={history} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
-            <XAxis 
-              dataKey="time" 
+            <XAxis
+              dataKey="time"
               tickFormatter={formatUnixDate}
               stroke="#94a3b8"
               fontSize={12}
@@ -86,8 +83,8 @@ export function RatingRace({ history, userHandle, rivalHandle }: RatingRaceProps
               axisLine={false}
               minTickGap={30}
             />
-            <YAxis 
-              domain={['auto', 'auto']}
+            <YAxis
+              domain={["auto", "auto"]}
               stroke="#94a3b8"
               fontSize={12}
               tickLine={false}

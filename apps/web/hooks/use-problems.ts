@@ -1,15 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { 
-  getProblems, 
-  getRecommendations, 
-  getDailyMission, 
-  submitRecommendationFeedback, 
-  getHint, 
+import {
+  getProblems,
+  getRecommendations,
+  getDailyMission,
+  submitRecommendationFeedback,
+  getHint,
   submitHintFeedback,
   getProblemStatement,
-  type ProblemStatementResponse
+  type ProblemStatementResponse,
 } from "@/lib/problems"
-import type { RecommendationFeedback, ProblemRecommendation, HintFeedbackCreate } from "@/types/problems"
+import type {
+  RecommendationFeedback,
+  ProblemRecommendation,
+  HintFeedbackCreate,
+} from "@/types/problems"
 
 export function useProblemStatement(problemId: string | undefined) {
   return useQuery({
@@ -62,11 +66,14 @@ export function useRecommendationFeedback() {
     onMutate: async ({ userId, feedback }) => {
       if (feedback.event_type === "skipped" || feedback.event_type === "solved_externally") {
         await queryClient.cancelQueries({ queryKey: ["recommendations", userId] })
-        const previous = queryClient.getQueryData<ProblemRecommendation[]>(["recommendations", userId])
-        
+        const previous = queryClient.getQueryData<ProblemRecommendation[]>([
+          "recommendations",
+          userId,
+        ])
+
         if (previous) {
-          queryClient.setQueryData<ProblemRecommendation[]>(["recommendations", userId], 
-            old => old ? old.filter(rec => rec.problem.id !== feedback.problem_id) : []
+          queryClient.setQueryData<ProblemRecommendation[]>(["recommendations", userId], (old) =>
+            old ? old.filter((rec) => rec.problem.id !== feedback.problem_id) : []
           )
         }
         return { previous }
@@ -76,7 +83,7 @@ export function useRecommendationFeedback() {
       if (context?.previous) {
         queryClient.setQueryData(["recommendations", variables.userId], context.previous)
       }
-    }
+    },
   })
 }
 

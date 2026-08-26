@@ -104,7 +104,12 @@ public class Main {
 `,
 }
 
-export const LANGUAGE_OPTIONS: { value: SupportedLanguage; label: string; monacoLang: string; ext: string }[] = [
+export const LANGUAGE_OPTIONS: {
+  value: SupportedLanguage
+  label: string
+  monacoLang: string
+  ext: string
+}[] = [
   { value: "cpp", label: "C++ (C++20)", monacoLang: "cpp", ext: "cpp" },
   { value: "python", label: "Python (3.12)", monacoLang: "python", ext: "py" },
   { value: "java", label: "Java (OpenJDK 17)", monacoLang: "java", ext: "java" },

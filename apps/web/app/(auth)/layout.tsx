@@ -5,8 +5,11 @@ export default function LoginLayout({ children }: { children: React.ReactNode })
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background">
       {/* Background gradient */}
-      <div className="pointer-events-none absolute inset-0 hero-gradient" aria-hidden="true" />
-      <div className="pointer-events-none absolute inset-0 bg-grid opacity-[0.03]" aria-hidden="true" />
+      <div className="hero-gradient pointer-events-none absolute inset-0" aria-hidden="true" />
+      <div
+        className="bg-grid pointer-events-none absolute inset-0 opacity-[0.03]"
+        aria-hidden="true"
+      />
 
       {/* Logo */}
       <Link

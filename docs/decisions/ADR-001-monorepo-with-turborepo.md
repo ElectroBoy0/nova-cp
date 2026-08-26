@@ -36,20 +36,22 @@ Turborepo orchestrates the task graph (`build`, `dev`, `lint`, `test`) with cach
 ## Consequences
 
 **Positive:**
+
 - `@novacp/types` can be imported in the web app as a first-class workspace package without any publishing step
 - `pnpm dev` from root starts all JavaScript services concurrently with Turborepo's task graph
 - Turborepo's remote caching (optional) can drastically speed up CI builds
 - Single `git` history, single PR process for cross-cutting changes
 
 **Negative:**
+
 - Developers need both `pnpm ≥ 9` and `uv` installed — slightly higher onboarding friction
 - Turborepo does not natively cache Python builds; the API caching relies solely on Docker layer caching
 - `pnpm-lock.yaml` can produce large diffs when dependencies change
 
 ## Alternatives Considered
 
-| Option | Reason Rejected |
-|---|---|
+| Option                    | Reason Rejected                                                                                        |
+| ------------------------- | ------------------------------------------------------------------------------------------------------ |
 | Separate repos (polyrepo) | Type sharing requires publishing `@novacp/types` to npm on every change; cross-repo PRs are cumbersome |
-| Nx | More configuration overhead; Turborepo is simpler for our current scale |
-| Yarn workspaces | pnpm is faster and has stricter hoisting rules that prevent phantom dependency bugs |
+| Nx                        | More configuration overhead; Turborepo is simpler for our current scale                                |
+| Yarn workspaces           | pnpm is faster and has stricter hoisting rules that prevent phantom dependency bugs                    |

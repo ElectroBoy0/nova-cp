@@ -10,16 +10,16 @@ export const metadata = {
 
 export default async function BookmarksPage() {
   const session = await auth()
-  
+
   if (!session?.user?.id) {
     redirect("/login")
   }
 
   return (
     <div className="flex h-screen flex-col bg-background">
-      <Topbar 
-        title="Bookmarks & Lists" 
-        description="Your personal collections of hand-picked problems." 
+      <Topbar
+        title="Bookmarks & Lists"
+        description="Your personal collections of hand-picked problems."
       />
       <div className="flex-1 overflow-hidden">
         <BookmarksClient userId={session.user.id} />

@@ -54,8 +54,15 @@ export function useUpdateSnippet() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ userId, snippetId, data }: { userId: string; snippetId: string; data: SnippetUpdate }) =>
-      updateSnippet(userId, snippetId, data),
+    mutationFn: ({
+      userId,
+      snippetId,
+      data,
+    }: {
+      userId: string
+      snippetId: string
+      data: SnippetUpdate
+    }) => updateSnippet(userId, snippetId, data),
     onSuccess: (_, { userId, snippetId }) => {
       queryClient.invalidateQueries({ queryKey: ["snippet", userId, snippetId] })
       queryClient.invalidateQueries({ queryKey: ["snippets", userId] })

@@ -49,15 +49,14 @@ export interface CompareResponse {
 // Query Keys
 // -------------------------------------------------------
 export const compareKeys = {
-  compare: (userId: string, rivalHandle: string) => 
-    ["compare", userId, rivalHandle] as const,
+  compare: (userId: string, rivalHandle: string) => ["compare", userId, rivalHandle] as const,
 }
 
 // -------------------------------------------------------
 // Fetcher
 // -------------------------------------------------------
 export async function fetchCompareData(
-  userId: string, 
+  userId: string,
   rivalHandle: string
 ): Promise<CompareResponse> {
   return apiClient.get<CompareResponse>(`/api/v1/users/${userId}/compare/${rivalHandle}`)
@@ -83,4 +82,3 @@ export function useCompare(userId?: string, rivalHandle?: string | null) {
     isValidating: query.isFetching,
   }
 }
-

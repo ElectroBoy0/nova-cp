@@ -88,7 +88,11 @@ function formatRelativeTime(dateString: string | null | undefined): string {
 
 function getRankBadgeStyle(rank: string | null | undefined) {
   const r = (rank || "").toLowerCase()
-  if (r.includes("legendary") || r.includes("international grandmaster") || r.includes("grandmaster")) {
+  if (
+    r.includes("legendary") ||
+    r.includes("international grandmaster") ||
+    r.includes("grandmaster")
+  ) {
     return "text-rose-400 bg-rose-500/10 border-rose-500/30"
   }
   if (r.includes("master")) {
@@ -124,10 +128,14 @@ function getNextRankProgress(rating: number | null | undefined) {
     { name: "Legendary Grandmaster", min: 3000 },
   ]
 
-  const nextTier = tiers.find((t) => t.min > cur) || { name: "Peak Rating", min: Math.max(cur + 100, 3000) }
+  const nextTier = tiers.find((t) => t.min > cur) || {
+    name: "Peak Rating",
+    min: Math.max(cur + 100, 3000),
+  }
   const prevTierMin = [...tiers].reverse().find((t) => t.min <= cur)?.min || 0
   const range = nextTier.min - prevTierMin
-  const progress = range > 0 ? Math.min(Math.max(Math.round(((cur - prevTierMin) / range) * 100), 0), 100) : 100
+  const progress =
+    range > 0 ? Math.min(Math.max(Math.round(((cur - prevTierMin) / range) * 100), 0), 100) : 100
 
   return {
     nextRank: nextTier.name,
@@ -179,7 +187,11 @@ export function SettingsForm({ userId }: { userId: string }) {
   // Notification Settings State
   const [contestReminders, setContestReminders] = useState(true)
   const [contestLeadTime, setContestLeadTime] = useState(60)
-  const [contestPlatforms, setContestPlatforms] = useState<string[]>(["codeforces", "codechef", "atcoder"])
+  const [contestPlatforms, setContestPlatforms] = useState<string[]>([
+    "codeforces",
+    "codechef",
+    "atcoder",
+  ])
   const [streakSaver, setStreakSaver] = useState(true)
   const [streakSaverTime, setStreakSaverTime] = useState("20:00")
   const [dailyMissionAlert, setDailyMissionAlert] = useState(true)
@@ -329,18 +341,20 @@ export function SettingsForm({ userId }: { userId: string }) {
   }
 
   // Save Preferences Helper
-  const handleUpdatePreferences = (updated: Partial<{
-    primary_language: string
-    recommendation_mode: "comfort" | "challenge" | "hardcore"
-    daily_target_problems: number
-    preferred_topics: string[]
-    editor_keybinding: "standard" | "vim"
-    sound_effects: boolean
-    timezone: string
-    target_rating: number
-    bio: string
-    github_handle: string
-  }>) => {
+  const handleUpdatePreferences = (
+    updated: Partial<{
+      primary_language: string
+      recommendation_mode: "comfort" | "challenge" | "hardcore"
+      daily_target_problems: number
+      preferred_topics: string[]
+      editor_keybinding: "standard" | "vim"
+      sound_effects: boolean
+      timezone: string
+      target_rating: number
+      bio: string
+      github_handle: string
+    }>
+  ) => {
     const newPrefs = {
       ...(user?.custom_preferences || {}),
       primary_language: updated.primary_language ?? language,
@@ -371,18 +385,20 @@ export function SettingsForm({ userId }: { userId: string }) {
   }
 
   // Save Notification Setting Helper
-  const handleUpdateNotifications = (updated: Partial<{
-    contest_reminders: boolean
-    contest_lead_time_minutes: number
-    contest_platforms: string[]
-    streak_saver: boolean
-    streak_saver_time: string
-    daily_mission_alert: boolean
-    sync_updates: boolean
-    recommendation_updates: boolean
-    weekly_digest: boolean
-    upsolve_reminders: boolean
-  }>) => {
+  const handleUpdateNotifications = (
+    updated: Partial<{
+      contest_reminders: boolean
+      contest_lead_time_minutes: number
+      contest_platforms: string[]
+      streak_saver: boolean
+      streak_saver_time: string
+      daily_mission_alert: boolean
+      sync_updates: boolean
+      recommendation_updates: boolean
+      weekly_digest: boolean
+      upsolve_reminders: boolean
+    }>
+  ) => {
     const newNotifs = {
       contest_reminders: updated.contest_reminders ?? contestReminders,
       contest_lead_time_minutes: updated.contest_lead_time_minutes ?? contestLeadTime,
@@ -450,14 +466,14 @@ export function SettingsForm({ userId }: { userId: string }) {
 
   if (isLoading) {
     return (
-      <div className="rounded-xl border border-border bg-card p-6 space-y-6 animate-pulse">
+      <div className="animate-pulse space-y-6 rounded-xl border border-border bg-card p-6">
         <Skeleton className="h-10 w-full max-w-md rounded-lg" />
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-          <div className="md:col-span-7 space-y-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-12">
+          <div className="space-y-6 md:col-span-7">
             <Skeleton className="h-64 w-full rounded-2xl" />
             <Skeleton className="h-48 w-full rounded-2xl" />
           </div>
-          <div className="md:col-span-5 space-y-6">
+          <div className="space-y-6 md:col-span-5">
             <Skeleton className="h-56 w-full rounded-2xl" />
             <Skeleton className="h-40 w-full rounded-2xl" />
           </div>
@@ -546,58 +562,65 @@ export function SettingsForm({ userId }: { userId: string }) {
   return (
     <Tabs defaultValue="profile" className="w-full space-y-6">
       {/* Sleek Segmented Navigation Control */}
-      <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-11 p-1 bg-surface-1/80 border border-border/80 backdrop-blur-md rounded-xl">
+      <TabsList className="grid h-11 w-full grid-cols-2 rounded-xl border border-border/80 bg-surface-1/80 p-1 backdrop-blur-md md:grid-cols-4">
         <TabsTrigger
           value="profile"
-          className="rounded-lg py-2 flex items-center justify-center gap-2 text-xs font-medium data-[state=active]:bg-surface-2 data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+          className="flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-medium data-[state=active]:bg-surface-2 data-[state=active]:text-foreground data-[state=active]:shadow-sm"
         >
-          <User className="w-3.5 h-3.5" /> Profile & CP Hub
+          <User className="h-3.5 w-3.5" /> Profile & CP Hub
         </TabsTrigger>
         <TabsTrigger
           value="integrations"
-          className="rounded-lg py-2 flex items-center justify-center gap-2 text-xs font-medium data-[state=active]:bg-surface-2 data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+          className="flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-medium data-[state=active]:bg-surface-2 data-[state=active]:text-foreground data-[state=active]:shadow-sm"
         >
-          <LinkIcon className="w-3.5 h-3.5" /> Integrations
+          <LinkIcon className="h-3.5 w-3.5" /> Integrations
         </TabsTrigger>
         <TabsTrigger
           value="preferences"
-          className="rounded-lg py-2 flex items-center justify-center gap-2 text-xs font-medium data-[state=active]:bg-surface-2 data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+          className="flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-medium data-[state=active]:bg-surface-2 data-[state=active]:text-foreground data-[state=active]:shadow-sm"
         >
-          <Settings className="w-3.5 h-3.5" /> Preferences
+          <Settings className="h-3.5 w-3.5" /> Preferences
         </TabsTrigger>
         <TabsTrigger
           value="notifications"
-          className="rounded-lg py-2 flex items-center justify-center gap-2 text-xs font-medium data-[state=active]:bg-surface-2 data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+          className="flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-medium data-[state=active]:bg-surface-2 data-[state=active]:text-foreground data-[state=active]:shadow-sm"
         >
-          <Bell className="w-3.5 h-3.5" /> Alerts & System
+          <Bell className="h-3.5 w-3.5" /> Alerts & System
         </TabsTrigger>
       </TabsList>
 
       {/* =======================================================
           --- 1. PROFILE & CONTROL CENTER (2-COLUMN REDESIGN) ---
       ======================================================= */}
-      <TabsContent value="profile" className="space-y-6 animate-in fade-in duration-200">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+      <TabsContent value="profile" className="space-y-6 duration-200 animate-in fade-in">
+        <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-12">
           {/* ===================================================
               LEFT COLUMN (7 Cols): Profile, Avatar, Bio, Links
           =================================================== */}
-          <div className="md:col-span-7 space-y-6">
+          <div className="space-y-6 md:col-span-7">
             {/* Identity & Account Card */}
-            <div className="rounded-2xl border border-border/70 bg-card/60 backdrop-blur-sm overflow-hidden shadow-sm">
-              <div className="h-20 bg-gradient-to-r from-purple-950/40 via-surface-2/60 to-slate-900/60 border-b border-border/40 relative">
-                <div className="absolute top-3 right-4 flex items-center gap-2">
-                  <Badge variant="outline" className="bg-background/80 backdrop-blur-md border-border/60 text-[11px] font-mono">
-                    Member since {new Date(user.created_at).toLocaleDateString(undefined, { month: "short", year: "numeric" })}
+            <div className="overflow-hidden rounded-2xl border border-border/70 bg-card/60 shadow-sm backdrop-blur-sm">
+              <div className="relative h-20 border-b border-border/40 bg-gradient-to-r from-purple-950/40 via-surface-2/60 to-slate-900/60">
+                <div className="absolute right-4 top-3 flex items-center gap-2">
+                  <Badge
+                    variant="outline"
+                    className="border-border/60 bg-background/80 font-mono text-[11px] backdrop-blur-md"
+                  >
+                    Member since{" "}
+                    {new Date(user.created_at).toLocaleDateString(undefined, {
+                      month: "short",
+                      year: "numeric",
+                    })}
                   </Badge>
                 </div>
               </div>
 
-              <div className="p-6 pt-0 relative space-y-6">
+              <div className="relative space-y-6 p-6 pt-0">
                 {/* Avatar with Upload Hover Button */}
-                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-10">
+                <div className="-mt-10 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
                   <div className="flex items-end gap-4">
-                    <div className="relative group">
-                      <div className="h-20 w-20 rounded-2xl border-4 border-card bg-surface-2 overflow-hidden flex items-center justify-center shadow-lg ring-1 ring-border/50">
+                    <div className="group relative">
+                      <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border-4 border-card bg-surface-2 shadow-lg ring-1 ring-border/50">
                         {!imgLoadError && avatarUrl ? (
                           <img
                             src={avatarUrl}
@@ -607,7 +630,7 @@ export function SettingsForm({ userId }: { userId: string }) {
                             className="h-full w-full object-cover"
                           />
                         ) : (
-                          <div className="h-full w-full bg-gradient-to-br from-purple-500/20 via-primary/20 to-emerald-500/20 flex items-center justify-center font-bold text-xl text-primary font-mono">
+                          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-purple-500/20 via-primary/20 to-emerald-500/20 font-mono text-xl font-bold text-primary">
                             {initials}
                           </div>
                         )}
@@ -619,14 +642,16 @@ export function SettingsForm({ userId }: { userId: string }) {
                         onClick={() => fileInputRef.current?.click()}
                         disabled={isUploadingAvatar}
                         title="Upload profile picture"
-                        className="absolute inset-0 rounded-2xl bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white transition-opacity cursor-pointer border-4 border-transparent"
+                        className="absolute inset-0 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-4 border-transparent bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100"
                       >
                         {isUploadingAvatar ? (
                           <RefreshCw className="h-5 w-5 animate-spin" />
                         ) : (
                           <>
-                            <Camera className="h-4 w-4 mb-0.5" />
-                            <span className="text-[9px] font-medium uppercase tracking-wider">Change</span>
+                            <Camera className="mb-0.5 h-4 w-4" />
+                            <span className="text-[9px] font-medium uppercase tracking-wider">
+                              Change
+                            </span>
                           </>
                         )}
                       </button>
@@ -641,8 +666,13 @@ export function SettingsForm({ userId }: { userId: string }) {
 
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <h3 className="text-xl font-bold text-foreground tracking-tight">{user.name || "Anonymous Coder"}</h3>
-                        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-[10px] uppercase font-semibold tracking-wider">
+                        <h3 className="text-xl font-bold tracking-tight text-foreground">
+                          {user.name || "Anonymous Coder"}
+                        </h3>
+                        <Badge
+                          variant="outline"
+                          className="border-primary/20 bg-primary/10 text-[10px] font-semibold uppercase tracking-wider text-primary"
+                        >
                           Active
                         </Badge>
                       </div>
@@ -651,15 +681,24 @@ export function SettingsForm({ userId }: { userId: string }) {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="capitalize text-xs bg-surface-1 text-muted-foreground border-border">
+                    <Badge
+                      variant="outline"
+                      className="border-border bg-surface-1 text-xs capitalize text-muted-foreground"
+                    >
                       {user.provider} OAuth
                     </Badge>
                     {hasHandle ? (
-                      <Badge variant="outline" className={`capitalize text-xs font-medium border ${getRankBadgeStyle(cf?.rank)}`}>
+                      <Badge
+                        variant="outline"
+                        className={`border text-xs font-medium capitalize ${getRankBadgeStyle(cf?.rank)}`}
+                      >
                         {cf?.rank || "CF Member"}
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="text-xs text-amber-400 bg-amber-500/10 border-amber-500/20">
+                      <Badge
+                        variant="outline"
+                        className="border-amber-500/20 bg-amber-500/10 text-xs text-amber-400"
+                      >
                         Handle Not Linked
                       </Badge>
                     )}
@@ -669,19 +708,26 @@ export function SettingsForm({ userId }: { userId: string }) {
             </div>
 
             {/* Edit Account & Profile Information */}
-            <div className="rounded-2xl border border-border/70 bg-card/60 backdrop-blur-sm p-6 space-y-5 shadow-sm">
-              <div className="border-b border-border/40 pb-3 flex items-center justify-between">
+            <div className="space-y-5 rounded-2xl border border-border/70 bg-card/60 p-6 shadow-sm backdrop-blur-sm">
+              <div className="flex items-center justify-between border-b border-border/40 pb-3">
                 <div>
-                  <h3 className="text-sm font-semibold text-foreground">Account & Personalization</h3>
-                  <p className="text-xs text-muted-foreground">Manage your display name, developer links, and primary language.</p>
+                  <h3 className="text-sm font-semibold text-foreground">
+                    Account & Personalization
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Manage your display name, developer links, and primary language.
+                  </p>
                 </div>
               </div>
 
               <form onSubmit={handleSaveProfile} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {/* Display Name */}
                   <div className="space-y-1.5">
-                    <label htmlFor="display-name" className="block text-xs font-medium text-muted-foreground">
+                    <label
+                      htmlFor="display-name"
+                      className="block text-xs font-medium text-muted-foreground"
+                    >
                       Display Name
                     </label>
                     <input
@@ -696,18 +742,21 @@ export function SettingsForm({ userId }: { userId: string }) {
 
                   {/* GitHub Profile */}
                   <div className="space-y-1.5">
-                    <label htmlFor="github-handle" className="block text-xs font-medium text-muted-foreground flex items-center justify-between">
+                    <label
+                      htmlFor="github-handle"
+                      className="block flex items-center justify-between text-xs font-medium text-muted-foreground"
+                    >
                       <span className="flex items-center gap-1.5">
-                        <Github className="w-3.5 h-3.5" /> GitHub Profile
+                        <Github className="h-3.5 w-3.5" /> GitHub Profile
                       </span>
                       {githubInput && (
                         <a
                           href={`https://github.com/${githubInput.replace(/^https?:\/\/github\.com\//, "")}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-[10px] text-primary hover:underline inline-flex items-center gap-0.5"
+                          className="inline-flex items-center gap-0.5 text-[10px] text-primary hover:underline"
                         >
-                          View <ArrowUpRight className="w-2.5 h-2.5" />
+                          View <ArrowUpRight className="h-2.5 w-2.5" />
                         </a>
                       )}
                     </label>
@@ -724,7 +773,10 @@ export function SettingsForm({ userId }: { userId: string }) {
 
                 {/* Short Bio */}
                 <div className="space-y-1.5">
-                  <label htmlFor="bio-input" className="block text-xs font-medium text-muted-foreground">
+                  <label
+                    htmlFor="bio-input"
+                    className="block text-xs font-medium text-muted-foreground"
+                  >
                     Short Bio & Competitive Background
                   </label>
                   <textarea
@@ -733,18 +785,20 @@ export function SettingsForm({ userId }: { userId: string }) {
                     value={bioInput}
                     onChange={(e) => setBioInput(e.target.value)}
                     placeholder="e.g. Candidate Master @ Codeforces | ICPC Enthusiast • Focused on DP & Segment Trees"
-                    className="flex w-full rounded-lg border border-input bg-background px-3 py-2 text-xs text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary resize-none"
+                    className="flex w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-xs text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
                   />
                 </div>
 
                 {/* Codeforces Handle Quick Status */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-medium text-muted-foreground flex items-center justify-between">
+                  <label className="block flex items-center justify-between text-xs font-medium text-muted-foreground">
                     <span>Linked Codeforces Handle</span>
                     <button
                       type="button"
                       onClick={() => {
-                        const integrationsTab = document.querySelector('[value="integrations"]') as HTMLButtonElement
+                        const integrationsTab = document.querySelector(
+                          '[value="integrations"]'
+                        ) as HTMLButtonElement
                         integrationsTab?.click()
                       }}
                       className="text-[10px] text-primary hover:underline"
@@ -752,9 +806,9 @@ export function SettingsForm({ userId }: { userId: string }) {
                       Manage in Integrations →
                     </button>
                   </label>
-                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-surface-1/70 border border-border/60">
+                  <div className="flex items-center justify-between rounded-lg border border-border/60 bg-surface-1/70 p-2.5">
                     <div className="flex items-center gap-2">
-                      <div className="h-6 w-6 rounded bg-primary/10 text-primary font-mono font-bold text-xs flex items-center justify-center">
+                      <div className="flex h-6 w-6 items-center justify-center rounded bg-primary/10 font-mono text-xs font-bold text-primary">
                         CF
                       </div>
                       <span className="font-mono text-xs font-semibold text-foreground">
@@ -762,11 +816,14 @@ export function SettingsForm({ userId }: { userId: string }) {
                       </span>
                     </div>
                     {hasHandle ? (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                        <CheckCircle2 className="w-3 h-3" /> Verified
+                      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-400">
+                        <CheckCircle2 className="h-3 w-3" /> Verified
                       </span>
                     ) : (
-                      <Badge variant="outline" className="text-[10px] text-amber-400 border-amber-500/30 bg-amber-500/10">
+                      <Badge
+                        variant="outline"
+                        className="border-amber-500/30 bg-amber-500/10 text-[10px] text-amber-400"
+                      >
                         Link in Integrations
                       </Badge>
                     )}
@@ -775,8 +832,8 @@ export function SettingsForm({ userId }: { userId: string }) {
 
                 {/* Preferred Programming Language */}
                 <div className="space-y-2 pt-1">
-                  <label className="block text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                    <Code2 className="w-3.5 h-3.5 text-cyan-400" /> Preferred Programming Language
+                  <label className="block flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                    <Code2 className="h-3.5 w-3.5 text-cyan-400" /> Preferred Programming Language
                   </label>
                   <div className="flex flex-wrap gap-2">
                     {[
@@ -793,10 +850,10 @@ export function SettingsForm({ userId }: { userId: string }) {
                           setLanguage(lang.id)
                           handleUpdatePreferences({ primary_language: lang.id })
                         }}
-                        className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
+                        className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
                           language === lang.id
-                            ? "bg-cyan-500/10 border-cyan-500 text-cyan-400 ring-1 ring-cyan-500 shadow-sm"
-                            : "border-border/60 bg-surface-1/60 hover:bg-surface-2 text-muted-foreground"
+                            ? "border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-sm ring-1 ring-cyan-500"
+                            : "border-border/60 bg-surface-1/60 text-muted-foreground hover:bg-surface-2"
                         }`}
                       >
                         {lang.label}
@@ -806,17 +863,21 @@ export function SettingsForm({ userId }: { userId: string }) {
                 </div>
 
                 {/* Action Button */}
-                <div className="pt-2 flex items-center justify-end">
+                <div className="flex items-center justify-end pt-2">
                   <Button
                     type="submit"
                     size="sm"
                     disabled={updateSettingsMutation.isPending}
-                    className="gap-2 text-xs h-8 px-4"
+                    className="h-8 gap-2 px-4 text-xs"
                   >
                     {updateSettingsMutation.isPending ? (
-                      <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Saving...</>
+                      <>
+                        <RefreshCw className="h-3.5 w-3.5 animate-spin" /> Saving...
+                      </>
                     ) : (
-                      <><Save className="w-3.5 h-3.5" /> Save Profile Details</>
+                      <>
+                        <Save className="h-3.5 w-3.5" /> Save Profile Details
+                      </>
                     )}
                   </Button>
                 </div>
@@ -827,9 +888,9 @@ export function SettingsForm({ userId }: { userId: string }) {
           {/* ===================================================
               RIGHT COLUMN (5 Cols): Live CP Profile, Goal & Activity
           =================================================== */}
-          <div className="md:col-span-5 space-y-6">
+          <div className="space-y-6 md:col-span-5">
             {/* 1. "Your CP Profile" Live Identity Card */}
-            <div className="rounded-2xl border border-border/70 bg-card/60 backdrop-blur-sm p-5 space-y-4 shadow-sm">
+            <div className="space-y-4 rounded-2xl border border-border/70 bg-card/60 p-5 shadow-sm backdrop-blur-sm">
               <div className="flex items-center justify-between border-b border-border/40 pb-3">
                 <div className="flex items-center gap-2">
                   <Trophy className="h-4 w-4 text-primary" />
@@ -841,10 +902,12 @@ export function SettingsForm({ userId }: { userId: string }) {
                     size="sm"
                     onClick={handleManualSync}
                     disabled={linkMutation.isPending || cf?.sync_status === "syncing"}
-                    className="h-7 text-[11px] px-2 text-muted-foreground hover:text-foreground gap-1"
+                    className="h-7 gap-1 px-2 text-[11px] text-muted-foreground hover:text-foreground"
                     title="Sync Codeforces submissions"
                   >
-                    <RefreshCw className={`h-3 w-3 ${linkMutation.isPending || cf?.sync_status === "syncing" ? "animate-spin text-primary" : ""}`} />
+                    <RefreshCw
+                      className={`h-3 w-3 ${linkMutation.isPending || cf?.sync_status === "syncing" ? "animate-spin text-primary" : ""}`}
+                    />
                     <span>Sync</span>
                   </Button>
                 )}
@@ -853,43 +916,55 @@ export function SettingsForm({ userId }: { userId: string }) {
               {hasHandle && cf ? (
                 <div className="space-y-4">
                   {/* Rating & Rank Hero */}
-                  <div className="flex items-center justify-between p-3.5 rounded-xl bg-surface-1/80 border border-border/60">
+                  <div className="flex items-center justify-between rounded-xl border border-border/60 bg-surface-1/80 p-3.5">
                     <div className="space-y-1">
-                      <p className="text-[11px] text-muted-foreground font-medium">Current Codeforces Rating</p>
+                      <p className="text-[11px] font-medium text-muted-foreground">
+                        Current Codeforces Rating
+                      </p>
                       <div className="flex items-baseline gap-2">
-                        <span className="text-2xl font-bold font-mono text-foreground">{cf.rating ?? "—"}</span>
-                        <Badge variant="outline" className={`capitalize text-[11px] py-0.5 border ${getRankBadgeStyle(cf.rank)}`}>
+                        <span className="font-mono text-2xl font-bold text-foreground">
+                          {cf.rating ?? "—"}
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className={`border py-0.5 text-[11px] capitalize ${getRankBadgeStyle(cf.rank)}`}
+                        >
                           {cf.rank || "Unranked"}
                         </Badge>
                       </div>
                     </div>
 
-                    <div className="text-right space-y-0.5">
+                    <div className="space-y-0.5 text-right">
                       <p className="text-[10px] text-muted-foreground">Peak Rating</p>
-                      <p className="text-xs font-mono font-semibold text-foreground/90">{cf.max_rating ?? "—"}</p>
-                      <p className="text-[10px] text-muted-foreground/80 capitalize">{cf.max_rank ?? "—"}</p>
+                      <p className="font-mono text-xs font-semibold text-foreground/90">
+                        {cf.max_rating ?? "—"}
+                      </p>
+                      <p className="text-[10px] capitalize text-muted-foreground/80">
+                        {cf.max_rank ?? "—"}
+                      </p>
                     </div>
                   </div>
 
                   {/* Rating Progress to Next Rank Milestone */}
-                  <div className="space-y-1.5 p-3 rounded-xl bg-surface-1/40 border border-border/40">
+                  <div className="space-y-1.5 rounded-xl border border-border/40 bg-surface-1/40 p-3">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground text-[11px] flex items-center gap-1">
-                        <TrendingUp className="w-3 h-3 text-primary" />
-                        Next Rank: <strong className="text-foreground">{nextRankInfo.nextRank}</strong>
+                      <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                        <TrendingUp className="h-3 w-3 text-primary" />
+                        Next Rank:{" "}
+                        <strong className="text-foreground">{nextRankInfo.nextRank}</strong>
                       </span>
                       <span className="font-mono text-[11px] font-semibold text-primary">
                         {nextRankInfo.remaining > 0 ? `+${nextRankInfo.remaining} pts` : "Max Rank"}
                       </span>
                     </div>
 
-                    <div className="h-2 w-full rounded-full bg-surface-2 overflow-hidden">
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-surface-2">
                       <div
                         style={{ width: `${nextRankInfo.progressPercentage}%` }}
-                        className="h-full bg-gradient-to-r from-purple-500 to-emerald-400 rounded-full transition-all duration-500"
+                        className="h-full rounded-full bg-gradient-to-r from-purple-500 to-emerald-400 transition-all duration-500"
                       />
                     </div>
-                    <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono">
+                    <div className="flex items-center justify-between font-mono text-[10px] text-muted-foreground">
                       <span>{cf.rating || 0}</span>
                       <span>Target: {nextRankInfo.targetRating}</span>
                     </div>
@@ -898,36 +973,41 @@ export function SettingsForm({ userId }: { userId: string }) {
                   {/* 3 Key Stats: Streak, Solved, Contests */}
                   <div className="grid grid-cols-3 gap-2.5">
                     {/* Streak */}
-                    <div className="p-3 rounded-xl bg-surface-1/60 border border-border/50 flex flex-col justify-between text-center">
+                    <div className="flex flex-col justify-between rounded-xl border border-border/50 bg-surface-1/60 p-3 text-center">
                       <div className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground">
-                        <Flame className="w-3 h-3 text-amber-500" />
+                        <Flame className="h-3 w-3 text-amber-500" />
                         <span>Streak</span>
                       </div>
-                      <p className="mt-1 text-lg font-bold font-mono text-amber-400">
-                        {dashboardData?.current_streak_days ?? 0}<span className="text-[10px] font-normal text-muted-foreground ml-0.5">d</span>
+                      <p className="mt-1 font-mono text-lg font-bold text-amber-400">
+                        {dashboardData?.current_streak_days ?? 0}
+                        <span className="ml-0.5 text-[10px] font-normal text-muted-foreground">
+                          d
+                        </span>
                       </p>
-                      <p className="text-[9px] text-muted-foreground">Max {dashboardData?.max_streak_days ?? 0}d</p>
+                      <p className="text-[9px] text-muted-foreground">
+                        Max {dashboardData?.max_streak_days ?? 0}d
+                      </p>
                     </div>
 
                     {/* Solved */}
-                    <div className="p-3 rounded-xl bg-surface-1/60 border border-border/50 flex flex-col justify-between text-center">
+                    <div className="flex flex-col justify-between rounded-xl border border-border/50 bg-surface-1/60 p-3 text-center">
                       <div className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground">
-                        <CheckCheck className="w-3 h-3 text-emerald-400" />
+                        <CheckCheck className="h-3 w-3 text-emerald-400" />
                         <span>Solved</span>
                       </div>
-                      <p className="mt-1 text-lg font-bold font-mono text-emerald-400">
+                      <p className="mt-1 font-mono text-lg font-bold text-emerald-400">
                         {dashboardData?.total_solved ?? 0}
                       </p>
                       <p className="text-[9px] text-muted-foreground">All-time</p>
                     </div>
 
                     {/* Contests */}
-                    <div className="p-3 rounded-xl bg-surface-1/60 border border-border/50 flex flex-col justify-between text-center">
+                    <div className="flex flex-col justify-between rounded-xl border border-border/50 bg-surface-1/60 p-3 text-center">
                       <div className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground">
-                        <Layers className="w-3 h-3 text-violet-400" />
+                        <Layers className="h-3 w-3 text-violet-400" />
                         <span>Contests</span>
                       </div>
-                      <p className="mt-1 text-lg font-bold font-mono text-foreground">
+                      <p className="mt-1 font-mono text-lg font-bold text-foreground">
                         {dashboardData?.contest_count ?? 0}
                       </p>
                       <p className="text-[9px] text-muted-foreground">Rated</p>
@@ -935,23 +1015,27 @@ export function SettingsForm({ userId }: { userId: string }) {
                   </div>
                 </div>
               ) : (
-                <div className="p-4 rounded-xl border border-dashed border-border/80 bg-surface-1/30 text-center space-y-2">
-                  <ShieldCheck className="h-7 w-7 text-muted-foreground/50 mx-auto" />
+                <div className="space-y-2 rounded-xl border border-dashed border-border/80 bg-surface-1/30 p-4 text-center">
+                  <ShieldCheck className="mx-auto h-7 w-7 text-muted-foreground/50" />
                   <p className="text-xs text-muted-foreground">
-                    Connect your Codeforces handle in the <strong>Integrations</strong> tab to view live rating progress, problem stats, and contest history.
+                    Connect your Codeforces handle in the <strong>Integrations</strong> tab to view
+                    live rating progress, problem stats, and contest history.
                   </p>
                 </div>
               )}
             </div>
 
             {/* 2. "Current Goal" Card */}
-            <div className="rounded-2xl border border-border/70 bg-card/60 backdrop-blur-sm p-5 space-y-4 shadow-sm">
+            <div className="space-y-4 rounded-2xl border border-border/70 bg-card/60 p-5 shadow-sm backdrop-blur-sm">
               <div className="flex items-center justify-between border-b border-border/40 pb-3">
                 <div className="flex items-center gap-2">
                   <Target className="h-4 w-4 text-emerald-400" />
                   <h3 className="text-sm font-semibold text-foreground">Current Practice Goal</h3>
                 </div>
-                <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+                <Badge
+                  variant="outline"
+                  className="border-emerald-500/20 bg-emerald-500/10 text-[10px] text-emerald-400"
+                >
                   Active Goal
                 </Badge>
               </div>
@@ -972,10 +1056,10 @@ export function SettingsForm({ userId }: { userId: string }) {
                           setTargetRatingInput(trgt)
                           handleUpdatePreferences({ target_rating: trgt })
                         }}
-                        className={`flex-1 py-1 rounded text-xs font-mono font-medium border transition-colors ${
+                        className={`flex-1 rounded border py-1 font-mono text-xs font-medium transition-colors ${
                           targetRatingInput === trgt
-                            ? "bg-primary/10 border-primary text-primary shadow-sm"
-                            : "border-border/60 bg-surface-1/60 hover:bg-surface-2 text-muted-foreground"
+                            ? "border-primary bg-primary/10 text-primary shadow-sm"
+                            : "border-border/60 bg-surface-1/60 text-muted-foreground hover:bg-surface-2"
                         }`}
                       >
                         {trgt}
@@ -988,7 +1072,9 @@ export function SettingsForm({ userId }: { userId: string }) {
                 <div className="space-y-1.5 pt-1">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">Daily Practice Commitment</span>
-                    <span className="font-mono font-semibold text-amber-400">{dailyTarget} problems / day</span>
+                    <span className="font-mono font-semibold text-amber-400">
+                      {dailyTarget} problems / day
+                    </span>
                   </div>
                   <div className="flex gap-2">
                     {[1, 2, 3, 5].map((t) => (
@@ -999,10 +1085,10 @@ export function SettingsForm({ userId }: { userId: string }) {
                           setDailyTarget(t)
                           handleUpdatePreferences({ daily_target_problems: t })
                         }}
-                        className={`flex-1 py-1 rounded text-xs font-medium border transition-colors ${
+                        className={`flex-1 rounded border py-1 text-xs font-medium transition-colors ${
                           dailyTarget === t
-                            ? "bg-amber-500/10 border-amber-500 text-amber-400 ring-1 ring-amber-500"
-                            : "border-border/60 bg-surface-1/60 hover:bg-surface-2 text-muted-foreground"
+                            ? "border-amber-500 bg-amber-500/10 text-amber-400 ring-1 ring-amber-500"
+                            : "border-border/60 bg-surface-1/60 text-muted-foreground hover:bg-surface-2"
                         }`}
                       >
                         {t} / day
@@ -1014,13 +1100,13 @@ export function SettingsForm({ userId }: { userId: string }) {
             </div>
 
             {/* 3. "Recent Activity & Shortcuts" Card */}
-            <div className="rounded-2xl border border-border/70 bg-card/60 backdrop-blur-sm p-5 space-y-3.5 shadow-sm">
+            <div className="space-y-3.5 rounded-2xl border border-border/70 bg-card/60 p-5 shadow-sm backdrop-blur-sm">
               <div className="flex items-center justify-between border-b border-border/40 pb-3">
                 <div className="flex items-center gap-2">
                   <Activity className="h-4 w-4 text-cyan-400" />
                   <h3 className="text-sm font-semibold text-foreground">Quick Practice Hub</h3>
                 </div>
-                <span className="text-[10px] text-muted-foreground font-mono">
+                <span className="font-mono text-[10px] text-muted-foreground">
                   {formatRelativeTime(cf?.last_synced_at)}
                 </span>
               </div>
@@ -1028,38 +1114,42 @@ export function SettingsForm({ userId }: { userId: string }) {
               <div className="space-y-2">
                 <Link
                   href="/solve"
-                  className="w-full flex items-center justify-between p-2.5 rounded-xl bg-surface-1/70 hover:bg-surface-2 border border-border/60 transition-colors group"
+                  className="group flex w-full items-center justify-between rounded-xl border border-border/60 bg-surface-1/70 p-2.5 transition-colors hover:bg-surface-2"
                 >
                   <div className="flex items-center gap-2.5">
-                    <div className="h-7 w-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
                       <Terminal className="h-3.5 w-3.5" />
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
+                      <p className="text-xs font-semibold text-foreground transition-colors group-hover:text-primary">
                         Solve Workspace IDE
                       </p>
-                      <p className="text-[10px] text-muted-foreground">Practice in VS Code style environment</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        Practice in VS Code style environment
+                      </p>
                     </div>
                   </div>
-                  <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+                  <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground transition-colors group-hover:text-primary" />
                 </Link>
 
                 <Link
                   href="/upsolve"
-                  className="w-full flex items-center justify-between p-2.5 rounded-xl bg-surface-1/70 hover:bg-surface-2 border border-border/60 transition-colors group"
+                  className="group flex w-full items-center justify-between rounded-xl border border-border/60 bg-surface-1/70 p-2.5 transition-colors hover:bg-surface-2"
                 >
                   <div className="flex items-center gap-2.5">
-                    <div className="h-7 w-7 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/10 text-amber-400">
                       <ListTodo className="h-3.5 w-3.5" />
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-foreground group-hover:text-amber-400 transition-colors">
+                      <p className="text-xs font-semibold text-foreground transition-colors group-hover:text-amber-400">
                         Upsolve Contest Queue
                       </p>
-                      <p className="text-[10px] text-muted-foreground">Review and master failed problems</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        Review and master failed problems
+                      </p>
                     </div>
                   </div>
-                  <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-amber-400 transition-colors" />
+                  <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground transition-colors group-hover:text-amber-400" />
                 </Link>
               </div>
             </div>
@@ -1070,60 +1160,74 @@ export function SettingsForm({ userId }: { userId: string }) {
       {/* =======================================================
           --- 2. INTEGRATIONS TAB ---
       ======================================================= */}
-      <TabsContent value="integrations" className="space-y-6 animate-in fade-in duration-200">
-        <div className="rounded-2xl border border-border/70 bg-card/60 backdrop-blur-sm p-6 space-y-6 shadow-sm">
-          <div className="border-b border-border/40 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      <TabsContent value="integrations" className="space-y-6 duration-200 animate-in fade-in">
+        <div className="space-y-6 rounded-2xl border border-border/70 bg-card/60 p-6 shadow-sm backdrop-blur-sm">
+          <div className="flex flex-col justify-between gap-2 border-b border-border/40 pb-3 sm:flex-row sm:items-center">
             <div>
               <h3 className="text-sm font-semibold text-foreground">Connected Platforms</h3>
-              <p className="text-xs text-muted-foreground">Manage your competitive programming identities and automated sync engine.</p>
+              <p className="text-xs text-muted-foreground">
+                Manage your competitive programming identities and automated sync engine.
+              </p>
             </div>
           </div>
 
           {/* Codeforces Platform Panel */}
-          <div className="rounded-xl border border-border/60 bg-surface-1/70 p-5 space-y-5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-5 rounded-xl border border-border/60 bg-surface-1/70 p-5">
+            <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
               <div className="flex items-center gap-3.5">
-                <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-mono font-bold text-sm shrink-0">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 font-mono text-sm font-bold text-primary">
                   CF
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
                     <h4 className="text-sm font-semibold text-foreground">Codeforces</h4>
                     {hasHandle ? (
-                      <span className="flex items-center gap-1 text-[11px] font-medium text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Connected
+                      <span className="flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-400">
+                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400"></span>{" "}
+                        Connected
                       </span>
                     ) : (
-                      <span className="text-[11px] font-medium text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-full border border-border">
+                      <span className="rounded-full border border-border bg-muted/30 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
                         Not Linked
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {hasHandle ? `Handle: @${currentHandle}` : "Connect your handle to synchronize solved problems"}
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {hasHandle
+                      ? `Handle: @${currentHandle}`
+                      : "Connect your handle to synchronize solved problems"}
                   </p>
                 </div>
               </div>
 
               {hasHandle && (
                 <div className="flex items-center gap-2">
-                  <div className="text-right hidden sm:block text-xs">
+                  <div className="hidden text-right text-xs sm:block">
                     <p className="text-[11px] text-muted-foreground">
-                      Last sync: <span className="text-foreground font-medium">{formatRelativeTime(cf?.last_synced_at)}</span>
+                      Last sync:{" "}
+                      <span className="font-medium text-foreground">
+                        {formatRelativeTime(cf?.last_synced_at)}
+                      </span>
                     </p>
-                    <p className="text-[10px] text-muted-foreground/80 capitalize">Status: {cf?.sync_status}</p>
+                    <p className="text-[10px] capitalize text-muted-foreground/80">
+                      Status: {cf?.sync_status}
+                    </p>
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="gap-1.5 text-xs h-8"
+                    className="h-8 gap-1.5 text-xs"
                     disabled={linkMutation.isPending || cf?.sync_status === "syncing"}
                     onClick={handleManualSync}
                   >
                     {cf?.sync_status === "syncing" || linkMutation.isPending ? (
-                      <><RefreshCw className="h-3.5 w-3.5 animate-spin" /> Syncing</>
+                      <>
+                        <RefreshCw className="h-3.5 w-3.5 animate-spin" /> Syncing
+                      </>
                     ) : (
-                      <><RefreshCw className="h-3.5 w-3.5" /> Sync Now</>
+                      <>
+                        <RefreshCw className="h-3.5 w-3.5" /> Sync Now
+                      </>
                     )}
                   </Button>
                 </div>
@@ -1132,24 +1236,31 @@ export function SettingsForm({ userId }: { userId: string }) {
 
             {/* Post-verification confirmation banner */}
             {justVerified && hasHandle && (
-              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 animate-in fade-in duration-300">
-                <div className="flex items-center gap-2 text-emerald-400 font-semibold text-xs mb-0.5">
+              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 duration-300 animate-in fade-in">
+                <div className="mb-0.5 flex items-center gap-2 text-xs font-semibold text-emerald-400">
                   <CheckCircle2 className="h-4 w-4 shrink-0" />
                   Codeforces account verified successfully
                 </div>
                 <p className="text-[11px] text-muted-foreground">
-                  Your handle <strong>{currentHandle}</strong> is active. You can now restore your original First Name in your Codeforces social profile.
+                  Your handle <strong>{currentHandle}</strong> is active. You can now restore your
+                  original First Name in your Codeforces social profile.
                 </p>
               </div>
             )}
 
             {/* Verification Form */}
             {!isVerifying ? (
-              <form onSubmit={handleStartVerification} className="pt-2 border-t border-border/40 space-y-3">
-                <label htmlFor="cf-handle-input" className="block text-xs font-medium text-muted-foreground">
+              <form
+                onSubmit={handleStartVerification}
+                className="space-y-3 border-t border-border/40 pt-2"
+              >
+                <label
+                  htmlFor="cf-handle-input"
+                  className="block text-xs font-medium text-muted-foreground"
+                >
                   {hasHandle ? "Switch or Re-verify Handle" : "Link Codeforces Account"}
                 </label>
-                <div className="flex flex-col sm:flex-row gap-2.5 max-w-md">
+                <div className="flex max-w-md flex-col gap-2.5 sm:flex-row">
                   <input
                     id="cf-handle-input"
                     type="text"
@@ -1163,12 +1274,16 @@ export function SettingsForm({ userId }: { userId: string }) {
                     type="submit"
                     size="sm"
                     disabled={!handleInput.trim() || generateTokenMutation.isPending}
-                    className="text-xs h-9 shrink-0"
+                    className="h-9 shrink-0 text-xs"
                   >
                     {generateTokenMutation.isPending ? (
-                      <><RefreshCw className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Verifying...</>
+                      <>
+                        <RefreshCw className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Verifying...
+                      </>
+                    ) : hasHandle ? (
+                      "Update Handle"
                     ) : (
-                      hasHandle ? "Update Handle" : "Link Handle"
+                      "Link Handle"
                     )}
                   </Button>
                 </div>
@@ -1177,10 +1292,12 @@ export function SettingsForm({ userId }: { userId: string }) {
                 </p>
 
                 {generateTokenMutation.isError && (
-                  <div className="flex items-center gap-2 text-xs text-destructive bg-destructive/10 p-2.5 rounded-lg border border-destructive/20 max-w-md">
+                  <div className="flex max-w-md items-center gap-2 rounded-lg border border-destructive/20 bg-destructive/10 p-2.5 text-xs text-destructive">
                     <AlertCircle className="h-4 w-4 shrink-0" />
                     <span>
-                      {(generateTokenMutation.error as { response?: { data?: { detail?: string } } })?.response?.data?.detail ||
+                      {(
+                        generateTokenMutation.error as { response?: { data?: { detail?: string } } }
+                      )?.response?.data?.detail ||
                         generateTokenMutation.error.message ||
                         "Failed to generate verification token."}
                     </span>
@@ -1189,65 +1306,96 @@ export function SettingsForm({ userId }: { userId: string }) {
               </form>
             ) : (
               /* Step-by-Step Verification Box */
-              <div className="pt-2 border-t border-border/40 space-y-4 animate-in fade-in duration-300">
-                <div className="rounded-xl border border-primary/30 bg-primary/5 p-5 space-y-4">
+              <div className="space-y-4 border-t border-border/40 pt-2 duration-300 animate-in fade-in">
+                <div className="space-y-4 rounded-xl border border-primary/30 bg-primary/5 p-5">
                   <div className="flex items-center justify-between gap-3 border-b border-primary/20 pb-3">
                     <div className="flex items-center gap-2">
-                      <ShieldCheck className="h-5 w-5 text-primary shrink-0" />
+                      <ShieldCheck className="h-5 w-5 shrink-0 text-primary" />
                       <div>
-                        <h5 className="text-xs font-semibold text-foreground">Verify Account Ownership</h5>
-                        <p className="text-[11px] text-muted-foreground">Linking handle: <strong className="text-primary font-mono">@{handleInput}</strong></p>
+                        <h5 className="text-xs font-semibold text-foreground">
+                          Verify Account Ownership
+                        </h5>
+                        <p className="text-[11px] text-muted-foreground">
+                          Linking handle:{" "}
+                          <strong className="font-mono text-primary">@{handleInput}</strong>
+                        </p>
                       </div>
                     </div>
 
                     {secondsLeft > 0 ? (
-                      <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 py-0.5 px-2.5 flex items-center gap-1 font-mono text-[11px]">
-                        <Clock className="w-3 h-3 animate-pulse" />
+                      <Badge
+                        variant="outline"
+                        className="flex items-center gap-1 border-primary/30 bg-primary/10 px-2.5 py-0.5 font-mono text-[11px] text-primary"
+                      >
+                        <Clock className="h-3 w-3 animate-pulse" />
                         <span>{formatTime(secondsLeft)}</span>
                       </Badge>
                     ) : (
-                      <Badge variant="destructive" className="text-[11px] py-0.5 px-2">Expired</Badge>
+                      <Badge variant="destructive" className="px-2 py-0.5 text-[11px]">
+                        Expired
+                      </Badge>
                     )}
                   </div>
 
                   <div className="space-y-2.5 text-xs">
-                    <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-background/60 border border-border/50">
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold text-primary">1</span>
+                    <div className="flex items-start gap-2.5 rounded-lg border border-border/50 bg-background/60 p-2.5">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold text-primary">
+                        1
+                      </span>
                       <div className="flex-1 space-y-1.5">
-                        <p className="text-[11px] font-medium text-foreground">Copy your temporary verification token:</p>
+                        <p className="text-[11px] font-medium text-foreground">
+                          Copy your temporary verification token:
+                        </p>
                         <div className="flex items-center gap-2">
-                          <code className="px-2.5 py-1 rounded bg-muted font-mono text-xs font-semibold text-primary border border-border select-all">
+                          <code className="select-all rounded border border-border bg-muted px-2.5 py-1 font-mono text-xs font-semibold text-primary">
                             {verificationToken}
                           </code>
-                          <Button type="button" variant="outline" size="sm" onClick={handleCopyToken} className="h-7 text-xs gap-1 px-2">
-                            {copied ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleCopyToken}
+                            className="h-7 gap-1 px-2 text-xs"
+                          >
+                            {copied ? (
+                              <Check className="h-3 w-3 text-emerald-400" />
+                            ) : (
+                              <Copy className="h-3 w-3" />
+                            )}
                             {copied ? "Copied" : "Copy"}
                           </Button>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-background/60 border border-border/50">
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold text-primary">2</span>
+                    <div className="flex items-start gap-2.5 rounded-lg border border-border/50 bg-background/60 p-2.5">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold text-primary">
+                        2
+                      </span>
                       <div className="flex-1">
                         <p className="text-[11px] font-medium text-foreground">
-                          Set the token as your <strong>First Name</strong> in Codeforces Social Settings:
+                          Set the token as your <strong>First Name</strong> in Codeforces Social
+                          Settings:
                         </p>
                         <a
                           href="https://codeforces.com/settings/social"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline font-medium mt-0.5"
+                          className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline"
                         >
                           Open Codeforces Settings <ExternalLink className="h-2.5 w-2.5" />
                         </a>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-background/60 border border-border/50">
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold text-primary">3</span>
+                    <div className="flex items-start gap-2.5 rounded-lg border border-border/50 bg-background/60 p-2.5">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold text-primary">
+                        3
+                      </span>
                       <div className="flex-1">
-                        <p className="text-[11px] font-medium text-foreground">Save changes on Codeforces, then confirm below.</p>
+                        <p className="text-[11px] font-medium text-foreground">
+                          Save changes on Codeforces, then confirm below.
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -1259,12 +1407,16 @@ export function SettingsForm({ userId }: { userId: string }) {
                         size="sm"
                         onClick={handleConfirmVerification}
                         disabled={linkMutation.isPending}
-                        className="text-xs h-8 gap-1.5"
+                        className="h-8 gap-1.5 text-xs"
                       >
                         {linkMutation.isPending ? (
-                          <><RefreshCw className="h-3.5 w-3.5 animate-spin" /> Verifying Profile...</>
+                          <>
+                            <RefreshCw className="h-3.5 w-3.5 animate-spin" /> Verifying Profile...
+                          </>
                         ) : (
-                          <><CheckCircle2 className="h-3.5 w-3.5" /> Confirm Verification</>
+                          <>
+                            <CheckCircle2 className="h-3.5 w-3.5" /> Confirm Verification
+                          </>
                         )}
                       </Button>
                     ) : (
@@ -1273,7 +1425,7 @@ export function SettingsForm({ userId }: { userId: string }) {
                         size="sm"
                         onClick={handleStartVerification}
                         disabled={generateTokenMutation.isPending}
-                        className="text-xs h-8 gap-1.5"
+                        className="h-8 gap-1.5 text-xs"
                       >
                         <RefreshCw className="h-3.5 w-3.5" /> Generate New Token
                       </Button>
@@ -1283,17 +1435,18 @@ export function SettingsForm({ userId }: { userId: string }) {
                       size="sm"
                       onClick={handleCancelVerification}
                       disabled={linkMutation.isPending}
-                      className="text-xs h-8"
+                      className="h-8 text-xs"
                     >
                       Cancel
                     </Button>
                   </div>
 
                   {linkMutation.isError && (
-                    <div className="flex items-center gap-2 text-xs text-destructive bg-destructive/10 p-2.5 rounded-lg border border-destructive/20">
+                    <div className="flex items-center gap-2 rounded-lg border border-destructive/20 bg-destructive/10 p-2.5 text-xs text-destructive">
                       <AlertCircle className="h-4 w-4 shrink-0" />
                       <span>
-                        {(linkMutation.error as { response?: { data?: { detail?: string } } })?.response?.data?.detail ||
+                        {(linkMutation.error as { response?: { data?: { detail?: string } } })
+                          ?.response?.data?.detail ||
                           linkMutation.error.message ||
                           "Could not verify. Please ensure your First Name is saved and public on Codeforces."}
                       </span>
@@ -1306,29 +1459,42 @@ export function SettingsForm({ userId }: { userId: string }) {
 
           {/* Upcoming Platforms Grid */}
           <div>
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+            <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Upcoming Platforms
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               {[
                 { name: "AtCoder", desc: "Japanese CP platform sync & analytics", code: "AC" },
                 { name: "CodeChef", desc: "Star ratings & monthly challenges", code: "CC" },
                 { name: "LeetCode", desc: "Interview prep & weekly contests", code: "LC" },
               ].map((p) => (
-                <div key={p.name} className="rounded-xl border border-border/40 bg-surface-1/40 p-4 flex flex-col justify-between opacity-70">
+                <div
+                  key={p.name}
+                  className="flex flex-col justify-between rounded-xl border border-border/40 bg-surface-1/40 p-4 opacity-70"
+                >
                   <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="font-semibold text-xs text-foreground flex items-center gap-2">
-                        <span className="h-6 w-6 rounded-md bg-muted/60 text-[10px] font-mono font-bold flex items-center justify-center text-muted-foreground">{p.code}</span>
+                    <div className="mb-1.5 flex items-center justify-between">
+                      <span className="flex items-center gap-2 text-xs font-semibold text-foreground">
+                        <span className="flex h-6 w-6 items-center justify-center rounded-md bg-muted/60 font-mono text-[10px] font-bold text-muted-foreground">
+                          {p.code}
+                        </span>
                         {p.name}
                       </span>
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-muted-foreground border-border/60">
+                      <Badge
+                        variant="outline"
+                        className="border-border/60 px-1.5 py-0 text-[10px] text-muted-foreground"
+                      >
                         v2
                       </Badge>
                     </div>
                     <p className="text-[11px] text-muted-foreground">{p.desc}</p>
                   </div>
-                  <Button variant="ghost" size="sm" disabled className="mt-3 w-full text-[11px] h-7">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled
+                    className="mt-3 h-7 w-full text-[11px]"
+                  >
                     Available in v2
                   </Button>
                 </div>
@@ -1341,26 +1507,47 @@ export function SettingsForm({ userId }: { userId: string }) {
       {/* =======================================================
           --- 3. PREFERENCES TAB ---
       ======================================================= */}
-      <TabsContent value="preferences" className="space-y-6 animate-in fade-in duration-200">
-        <div className="rounded-2xl border border-border/70 bg-card/60 backdrop-blur-sm p-6 space-y-6 shadow-sm">
+      <TabsContent value="preferences" className="space-y-6 duration-200 animate-in fade-in">
+        <div className="space-y-6 rounded-2xl border border-border/70 bg-card/60 p-6 shadow-sm backdrop-blur-sm">
           <div className="border-b border-border/40 pb-3">
-            <h3 className="text-sm font-semibold text-foreground">Practice & AI Coach Preferences</h3>
-            <p className="text-xs text-muted-foreground">Tailor your problem recommendation difficulty, focus topics, and practice goals.</p>
+            <h3 className="text-sm font-semibold text-foreground">
+              Practice & AI Coach Preferences
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Tailor your problem recommendation difficulty, focus topics, and practice goals.
+            </p>
           </div>
 
           {/* Recommendation Engine Aggressiveness */}
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <Target className="w-4 h-4 text-emerald-400" />
+              <Target className="h-4 w-4 text-emerald-400" />
               <h4 className="text-xs font-semibold text-foreground">Recommendation Engine Mode</h4>
             </div>
-            <p className="text-[11px] text-muted-foreground">Control how aggressively the AI pushes your problem rating boundary.</p>
+            <p className="text-[11px] text-muted-foreground">
+              Control how aggressively the AI pushes your problem rating boundary.
+            </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl">
+            <div className="grid max-w-3xl grid-cols-1 gap-3 sm:grid-cols-3">
               {[
-                { id: "comfort", title: "Comfort Zone", delta: "-100 to 0", desc: "Reinforce fundamentals and speed on familiar ratings" },
-                { id: "challenge", title: "Challenge Mode", delta: "+100 to +300", desc: "Optimal growth zone for consistent rating improvements" },
-                { id: "hardcore", title: "Hardcore", delta: "+300 to +500", desc: "Push your analytical boundaries with high-difficulty stretch tasks" },
+                {
+                  id: "comfort",
+                  title: "Comfort Zone",
+                  delta: "-100 to 0",
+                  desc: "Reinforce fundamentals and speed on familiar ratings",
+                },
+                {
+                  id: "challenge",
+                  title: "Challenge Mode",
+                  delta: "+100 to +300",
+                  desc: "Optimal growth zone for consistent rating improvements",
+                },
+                {
+                  id: "hardcore",
+                  title: "Hardcore",
+                  delta: "+300 to +500",
+                  desc: "Push your analytical boundaries with high-difficulty stretch tasks",
+                },
               ].map((diff) => (
                 <div
                   key={diff.id}
@@ -1368,35 +1555,42 @@ export function SettingsForm({ userId }: { userId: string }) {
                     setDifficulty(diff.id)
                     handleUpdatePreferences({ recommendation_mode: diff.id as any })
                   }}
-                  className={`rounded-xl border p-3.5 cursor-pointer transition-all duration-200 flex flex-col justify-between gap-2 ${
+                  className={`flex cursor-pointer flex-col justify-between gap-2 rounded-xl border p-3.5 transition-all duration-200 ${
                     difficulty === diff.id
-                      ? "border-emerald-500 bg-emerald-500/10 text-foreground ring-1 ring-emerald-500 shadow-sm"
-                      : "border-border/60 bg-surface-1/60 hover:bg-surface-2 text-muted-foreground"
+                      ? "border-emerald-500 bg-emerald-500/10 text-foreground shadow-sm ring-1 ring-emerald-500"
+                      : "border-border/60 bg-surface-1/60 text-muted-foreground hover:bg-surface-2"
                   }`}
                 >
                   <div>
                     <div className="flex items-center justify-between">
-                      <span className="font-semibold text-xs text-foreground">{diff.title}</span>
-                      <span className="font-mono text-[10px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">{diff.delta}</span>
+                      <span className="text-xs font-semibold text-foreground">{diff.title}</span>
+                      <span className="rounded border border-emerald-500/20 bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[10px] text-emerald-400">
+                        {diff.delta}
+                      </span>
                     </div>
-                    <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">{diff.desc}</p>
+                    <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+                      {diff.desc}
+                    </p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="h-px bg-border/40 w-full"></div>
+          <div className="h-px w-full bg-border/40"></div>
 
           {/* Focus Topic Tags */}
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-primary" />
+              <BookOpen className="h-4 w-4 text-primary" />
               <h4 className="text-xs font-semibold text-foreground">Preferred Practice Topics</h4>
             </div>
-            <p className="text-[11px] text-muted-foreground">Select topics you want prioritized in your Daily Missions and Skill Builder recommendations.</p>
+            <p className="text-[11px] text-muted-foreground">
+              Select topics you want prioritized in your Daily Missions and Skill Builder
+              recommendations.
+            </p>
 
-            <div className="flex flex-wrap gap-2 max-w-3xl">
+            <div className="flex max-w-3xl flex-wrap gap-2">
               {CP_TOPICS.map((topic) => {
                 const isSelected = preferredTopics.includes(topic)
                 return (
@@ -1404,13 +1598,13 @@ export function SettingsForm({ userId }: { userId: string }) {
                     key={topic}
                     type="button"
                     onClick={() => handleToggleTopic(topic)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors flex items-center gap-1.5 ${
+                    className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
                       isSelected
-                        ? "bg-primary/10 border-primary text-primary shadow-sm"
+                        ? "border-primary bg-primary/10 text-primary shadow-sm"
                         : "border-border/60 bg-surface-1/60 text-muted-foreground hover:bg-surface-2 hover:text-foreground"
                     }`}
                   >
-                    {isSelected && <Check className="w-3 h-3 text-primary" />}
+                    {isSelected && <Check className="h-3 w-3 text-primary" />}
                     {topic}
                   </button>
                 )
@@ -1418,17 +1612,19 @@ export function SettingsForm({ userId }: { userId: string }) {
             </div>
           </div>
 
-          <div className="h-px bg-border/40 w-full"></div>
+          <div className="h-px w-full bg-border/40"></div>
 
           {/* Daily Goal & Language */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl">
+          <div className="grid max-w-3xl grid-cols-1 gap-6 md:grid-cols-2">
             {/* Daily Goal */}
             <div className="space-y-2.5">
               <div className="flex items-center gap-2">
-                <Flame className="w-4 h-4 text-amber-500" />
+                <Flame className="h-4 w-4 text-amber-500" />
                 <h4 className="text-xs font-semibold text-foreground">Daily Practice Goal</h4>
               </div>
-              <p className="text-[11px] text-muted-foreground">Target solved problems required to preserve your daily practice streak.</p>
+              <p className="text-[11px] text-muted-foreground">
+                Target solved problems required to preserve your daily practice streak.
+              </p>
               <div className="flex gap-2">
                 {[1, 2, 3, 5].map((target) => (
                   <button
@@ -1438,10 +1634,10 @@ export function SettingsForm({ userId }: { userId: string }) {
                       setDailyTarget(target)
                       handleUpdatePreferences({ daily_target_problems: target })
                     }}
-                    className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
+                    className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
                       dailyTarget === target
-                        ? "bg-amber-500/10 border-amber-500 text-amber-400 ring-1 ring-amber-500"
-                        : "border-border/60 bg-surface-1/60 hover:bg-surface-2 text-muted-foreground"
+                        ? "border-amber-500 bg-amber-500/10 text-amber-400 ring-1 ring-amber-500"
+                        : "border-border/60 bg-surface-1/60 text-muted-foreground hover:bg-surface-2"
                     }`}
                   >
                     {target} / day
@@ -1453,10 +1649,12 @@ export function SettingsForm({ userId }: { userId: string }) {
             {/* Primary Language */}
             <div className="space-y-2.5">
               <div className="flex items-center gap-2">
-                <Code2 className="w-4 h-4 text-cyan-400" />
+                <Code2 className="h-4 w-4 text-cyan-400" />
                 <h4 className="text-xs font-semibold text-foreground">Primary Language</h4>
               </div>
-              <p className="text-[11px] text-muted-foreground">Default code templates and AI Coach syntax language.</p>
+              <p className="text-[11px] text-muted-foreground">
+                Default code templates and AI Coach syntax language.
+              </p>
               <div className="flex flex-wrap gap-2">
                 {["cpp", "python", "java", "rust", "go"].map((lang) => (
                   <button
@@ -1466,10 +1664,10 @@ export function SettingsForm({ userId }: { userId: string }) {
                       setLanguage(lang)
                       handleUpdatePreferences({ primary_language: lang })
                     }}
-                    className={`px-3 py-1.5 rounded-lg border text-xs font-medium uppercase transition-colors ${
+                    className={`rounded-lg border px-3 py-1.5 text-xs font-medium uppercase transition-colors ${
                       language === lang
-                        ? "bg-cyan-500/10 border-cyan-500 text-cyan-400 ring-1 ring-cyan-500"
-                        : "border-border/60 bg-surface-1/60 hover:bg-surface-2 text-muted-foreground"
+                        ? "border-cyan-500 bg-cyan-500/10 text-cyan-400 ring-1 ring-cyan-500"
+                        : "border-border/60 bg-surface-1/60 text-muted-foreground hover:bg-surface-2"
                     }`}
                   >
                     {lang === "cpp" ? "C++" : lang}
@@ -1479,17 +1677,19 @@ export function SettingsForm({ userId }: { userId: string }) {
             </div>
           </div>
 
-          <div className="h-px bg-border/40 w-full"></div>
+          <div className="h-px w-full bg-border/40"></div>
 
           {/* Timezone & Audio */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl">
+          <div className="grid max-w-3xl grid-cols-1 gap-6 md:grid-cols-2">
             {/* Timezone */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Globe className="w-4 h-4 text-blue-400" />
+                <Globe className="h-4 w-4 text-blue-400" />
                 <h4 className="text-xs font-semibold text-foreground">Timezone</h4>
               </div>
-              <p className="text-[11px] text-muted-foreground">Used for daily streak transitions and contest countdown schedules.</p>
+              <p className="text-[11px] text-muted-foreground">
+                Used for daily streak transitions and contest countdown schedules.
+              </p>
               <div className="flex items-center gap-2">
                 <select
                   value={timezone}
@@ -1498,10 +1698,12 @@ export function SettingsForm({ userId }: { userId: string }) {
                     setTimezone(tz)
                     handleUpdatePreferences({ timezone: tz })
                   }}
-                  className="h-8 rounded-lg border border-input bg-background px-2.5 text-xs w-full max-w-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+                  className="h-8 w-full max-w-xs rounded-lg border border-input bg-background px-2.5 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
                 >
                   {Intl.supportedValuesOf("timeZone").map((tz) => (
-                    <option key={tz} value={tz}>{tz}</option>
+                    <option key={tz} value={tz}>
+                      {tz}
+                    </option>
                   ))}
                 </select>
                 <Button
@@ -1509,20 +1711,22 @@ export function SettingsForm({ userId }: { userId: string }) {
                   variant="outline"
                   size="sm"
                   onClick={handleDetectTimezone}
-                  className="h-8 text-xs gap-1 px-2 shrink-0"
+                  className="h-8 shrink-0 gap-1 px-2 text-xs"
                 >
-                  <Sparkles className="w-3 h-3 text-amber-400" /> Auto-Detect
+                  <Sparkles className="h-3 w-3 text-amber-400" /> Auto-Detect
                 </Button>
               </div>
             </div>
 
             {/* Audio Effects */}
-            <div className="flex items-center justify-between p-3.5 border border-border/60 rounded-xl bg-surface-1/50">
+            <div className="flex items-center justify-between rounded-xl border border-border/60 bg-surface-1/50 p-3.5">
               <div>
-                <h5 className="text-xs font-semibold text-foreground flex items-center gap-2">
-                  <Volume2 className="w-3.5 h-3.5 text-emerald-400" /> Solve Celebrations
+                <h5 className="flex items-center gap-2 text-xs font-semibold text-foreground">
+                  <Volume2 className="h-3.5 w-3.5 text-emerald-400" /> Solve Celebrations
                 </h5>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Sound feedback when passing test cases.</p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  Sound feedback when passing test cases.
+                </p>
               </div>
               <Switch
                 checked={soundEffects}
@@ -1539,35 +1743,43 @@ export function SettingsForm({ userId }: { userId: string }) {
       {/* =======================================================
           --- 4. ALERTS & SYSTEM TAB ---
       ======================================================= */}
-      <TabsContent value="notifications" className="space-y-6 animate-in fade-in duration-200">
-        <div className="rounded-2xl border border-border/70 bg-card/60 backdrop-blur-sm p-6 space-y-6 shadow-sm">
-          <div className="border-b border-border/40 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <TabsContent value="notifications" className="space-y-6 duration-200 animate-in fade-in">
+        <div className="space-y-6 rounded-2xl border border-border/70 bg-card/60 p-6 shadow-sm backdrop-blur-sm">
+          <div className="flex flex-col justify-between gap-3 border-b border-border/40 pb-3 sm:flex-row sm:items-center">
             <div>
               <h3 className="text-sm font-semibold text-foreground">In-App Alert Channels</h3>
-              <p className="text-xs text-muted-foreground">Configure real-time notifications dispatched to your top navigation bell.</p>
+              <p className="text-xs text-muted-foreground">
+                Configure real-time notifications dispatched to your top navigation bell.
+              </p>
             </div>
             <Button
               variant="outline"
               size="sm"
               onClick={handleTestAlert}
               disabled={triggerTestNotifMutation.isPending}
-              className="gap-2 text-xs h-8"
+              className="h-8 gap-2 text-xs"
             >
               {triggerTestNotifMutation.isPending ? (
-                <><RefreshCw className="w-3 h-3 animate-spin" /> Dispatching...</>
+                <>
+                  <RefreshCw className="h-3 w-3 animate-spin" /> Dispatching...
+                </>
               ) : (
-                <><Bell className="w-3.5 h-3.5 text-primary" /> Test Alert Bell</>
+                <>
+                  <Bell className="h-3.5 w-3.5 text-primary" /> Test Alert Bell
+                </>
               )}
             </Button>
           </div>
 
           <div className="space-y-3">
             {/* Contest Reminders */}
-            <div className="p-4 border border-border/60 rounded-xl bg-surface-1/60 space-y-3">
+            <div className="space-y-3 rounded-xl border border-border/60 bg-surface-1/60 p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="text-xs font-semibold text-foreground">Contest Start Reminders</h4>
-                  <p className="text-[11px] text-muted-foreground">Receive an alert before upcoming live competitive programming rounds begin.</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    Receive an alert before upcoming live competitive programming rounds begin.
+                  </p>
                 </div>
                 <Switch
                   checked={contestReminders}
@@ -1579,9 +1791,9 @@ export function SettingsForm({ userId }: { userId: string }) {
               </div>
 
               {contestReminders && (
-                <div className="pt-2 border-t border-border/40 flex flex-wrap items-center gap-4 text-xs">
+                <div className="flex flex-wrap items-center gap-4 border-t border-border/40 pt-2 text-xs">
                   <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground text-[11px]">Notify before:</span>
+                    <span className="text-[11px] text-muted-foreground">Notify before:</span>
                     <select
                       value={contestLeadTime}
                       onChange={(e) => {
@@ -1602,13 +1814,15 @@ export function SettingsForm({ userId }: { userId: string }) {
             </div>
 
             {/* Streak Saver Alert */}
-            <div className="p-4 border border-border/60 rounded-xl bg-surface-1/60 space-y-3">
+            <div className="space-y-3 rounded-xl border border-border/60 bg-surface-1/60 p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                    <Flame className="w-3.5 h-3.5 text-amber-500" /> Daily Streak Saver Alert
+                  <h4 className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                    <Flame className="h-3.5 w-3.5 text-amber-500" /> Daily Streak Saver Alert
                   </h4>
-                  <p className="text-[11px] text-muted-foreground">Evening reminder if you haven't completed your daily target problems yet.</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    Evening reminder if you haven't completed your daily target problems yet.
+                  </p>
                 </div>
                 <Switch
                   checked={streakSaver}
@@ -1620,8 +1834,8 @@ export function SettingsForm({ userId }: { userId: string }) {
               </div>
 
               {streakSaver && (
-                <div className="pt-2 border-t border-border/40 flex items-center gap-2 text-xs">
-                  <span className="text-muted-foreground text-[11px]">Reminder time:</span>
+                <div className="flex items-center gap-2 border-t border-border/40 pt-2 text-xs">
+                  <span className="text-[11px] text-muted-foreground">Reminder time:</span>
                   <input
                     type="time"
                     value={streakSaverTime}
@@ -1629,17 +1843,19 @@ export function SettingsForm({ userId }: { userId: string }) {
                       setStreakSaverTime(e.target.value)
                       handleUpdateNotifications({ streak_saver_time: e.target.value })
                     }}
-                    className="h-7 rounded border border-input bg-background px-2 text-xs font-mono"
+                    className="h-7 rounded border border-input bg-background px-2 font-mono text-xs"
                   />
                 </div>
               )}
             </div>
 
             {/* Daily Mission Available */}
-            <div className="p-4 border border-border/60 rounded-xl bg-surface-1/60 flex items-center justify-between">
+            <div className="flex items-center justify-between rounded-xl border border-border/60 bg-surface-1/60 p-4">
               <div>
                 <h4 className="text-xs font-semibold text-foreground">Daily Mission Dispatched</h4>
-                <p className="text-[11px] text-muted-foreground">Alert when your 24-hour targeted training challenge is generated.</p>
+                <p className="text-[11px] text-muted-foreground">
+                  Alert when your 24-hour targeted training challenge is generated.
+                </p>
               </div>
               <Switch
                 checked={dailyMissionAlert}
@@ -1651,10 +1867,12 @@ export function SettingsForm({ userId }: { userId: string }) {
             </div>
 
             {/* Synchronized Submissions */}
-            <div className="p-4 border border-border/60 rounded-xl bg-surface-1/60 flex items-center justify-between">
+            <div className="flex items-center justify-between rounded-xl border border-border/60 bg-surface-1/60 p-4">
               <div>
                 <h4 className="text-xs font-semibold text-foreground">Background Sync Updates</h4>
-                <p className="text-[11px] text-muted-foreground">Notifications when recent contest or problem submissions finish indexing.</p>
+                <p className="text-[11px] text-muted-foreground">
+                  Notifications when recent contest or problem submissions finish indexing.
+                </p>
               </div>
               <Switch
                 checked={syncUpdates}
@@ -1666,34 +1884,48 @@ export function SettingsForm({ userId }: { userId: string }) {
             </div>
           </div>
 
-          <div className="h-px bg-border/40 w-full"></div>
+          <div className="h-px w-full bg-border/40"></div>
 
           {/* Data & Storage Management */}
           <div className="space-y-3">
             <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Data & Storage Management
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="p-4 border border-border/60 rounded-xl bg-surface-1/40 flex flex-col justify-between gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="flex flex-col justify-between gap-3 rounded-xl border border-border/60 bg-surface-1/40 p-4">
                 <div>
-                  <h5 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                    <Download className="w-3.5 h-3.5 text-primary" /> Export Solved Archive
+                  <h5 className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                    <Download className="h-3.5 w-3.5 text-primary" /> Export Solved Archive
                   </h5>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Download your indexed Codeforces history and submission notes as CSV.</p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">
+                    Download your indexed Codeforces history and submission notes as CSV.
+                  </p>
                 </div>
-                <Button variant="outline" size="sm" onClick={handleExportData} className="w-full text-xs h-8">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExportData}
+                  className="h-8 w-full text-xs"
+                >
                   Export CSV
                 </Button>
               </div>
 
-              <div className="p-4 border border-border/60 rounded-xl bg-surface-1/40 flex flex-col justify-between gap-3">
+              <div className="flex flex-col justify-between gap-3 rounded-xl border border-border/60 bg-surface-1/40 p-4">
                 <div>
-                  <h5 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                    <Database className="w-3.5 h-3.5 text-amber-400" /> Clear Local Cache
+                  <h5 className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                    <Database className="h-3.5 w-3.5 text-amber-400" /> Clear Local Cache
                   </h5>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Purge cached problems, hints, and sync queues from your browser storage.</p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">
+                    Purge cached problems, hints, and sync queues from your browser storage.
+                  </p>
                 </div>
-                <Button variant="outline" size="sm" onClick={handleClearCache} className="w-full text-xs h-8 text-destructive hover:bg-destructive/10 hover:text-destructive">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleClearCache}
+                  className="h-8 w-full text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+                >
                   Purge Cache
                 </Button>
               </div>

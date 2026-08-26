@@ -266,7 +266,10 @@ export function Sidebar({ className, userId }: SidebarProps) {
                             </span>
                             {item.badge && (
                               <span className="flex items-center gap-1">
-                                <Lock className="h-2.5 w-2.5 text-muted-foreground" aria-hidden="true" />
+                                <Lock
+                                  className="h-2.5 w-2.5 text-muted-foreground"
+                                  aria-hidden="true"
+                                />
                                 <Badge
                                   variant="outline"
                                   className="border-border/50 px-1.5 py-0 text-[9px] text-muted-foreground/60"
@@ -306,14 +309,14 @@ export function Sidebar({ className, userId }: SidebarProps) {
                       <Icon
                         className={cn(
                           "h-4 w-4 shrink-0 transition-colors",
-                          active ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                          active
+                            ? "text-primary"
+                            : "text-muted-foreground group-hover:text-foreground"
                         )}
                         aria-hidden="true"
                       />
 
-                      {!collapsed && (
-                        <span className="flex-1 truncate">{item.label}</span>
-                      )}
+                      {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
                     </Link>
                   </li>
                 )
@@ -324,7 +327,7 @@ export function Sidebar({ className, userId }: SidebarProps) {
       </nav>
 
       {/* ---- Footer: Bug Report & Settings ---- */}
-      <div className="border-t border-border p-2 space-y-0.5">
+      <div className="space-y-0.5 border-t border-border p-2">
         <button
           type="button"
           onClick={() => setBugReportOpen(true)}
@@ -352,11 +355,7 @@ export function Sidebar({ className, userId }: SidebarProps) {
       </div>
 
       {userId && (
-        <BugReportDialog
-          userId={userId}
-          open={bugReportOpen}
-          onOpenChange={setBugReportOpen}
-        />
+        <BugReportDialog userId={userId} open={bugReportOpen} onOpenChange={setBugReportOpen} />
       )}
     </aside>
   )

@@ -31,9 +31,7 @@ export interface ContestFilters {
 // -------------------------------------------------------
 // Fetch all contests (with optional platform filter)
 // -------------------------------------------------------
-export async function fetchContests(
-  filters: ContestFilters = {}
-): Promise<ContestListResponse> {
+export async function fetchContests(filters: ContestFilters = {}): Promise<ContestListResponse> {
   const { platform, status, limit = 200, offset = 0 } = filters
 
   const params: Record<string, string | number> = { limit, offset }
@@ -42,10 +40,7 @@ export async function fetchContests(
   }
 
   if (platform && platform !== "all") {
-    return apiClient.get<ContestListResponse>(
-      `/api/v1/contests/platform/${platform}`,
-      { params }
-    )
+    return apiClient.get<ContestListResponse>(`/api/v1/contests/platform/${platform}`, { params })
   }
 
   return apiClient.get<ContestListResponse>("/api/v1/contests", {
@@ -64,10 +59,7 @@ export async function syncContests(): Promise<SyncResponse> {
 // Client-side helpers
 // -------------------------------------------------------
 
-export function filterContests(
-  contests: Contest[],
-  filters: ContestFilters
-): Contest[] {
+export function filterContests(contests: Contest[], filters: ContestFilters): Contest[] {
   let result = [...contests]
 
   if (filters.status && filters.status !== "all") {
@@ -109,23 +101,21 @@ export const PLATFORM_META: Record<
   },
 }
 
-export const STATUS_META: Record<
-  ContestStatus,
-  { label: string; color: string; bgColor: string }
-> = {
-  upcoming: {
-    label: "Upcoming",
-    color: "text-violet-400",
-    bgColor: "bg-violet-400/10",
-  },
-  running: {
-    label: "Live",
-    color: "text-emerald-400",
-    bgColor: "bg-emerald-400/10",
-  },
-  finished: {
-    label: "Finished",
-    color: "text-muted-foreground",
-    bgColor: "bg-muted",
-  },
-}
+export const STATUS_META: Record<ContestStatus, { label: string; color: string; bgColor: string }> =
+  {
+    upcoming: {
+      label: "Upcoming",
+      color: "text-violet-400",
+      bgColor: "bg-violet-400/10",
+    },
+    running: {
+      label: "Live",
+      color: "text-emerald-400",
+      bgColor: "bg-emerald-400/10",
+    },
+    finished: {
+      label: "Finished",
+      color: "text-muted-foreground",
+      bgColor: "bg-muted",
+    },
+  }

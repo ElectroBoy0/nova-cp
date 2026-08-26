@@ -86,11 +86,7 @@ export const viewport: Viewport = {
 }
 
 // ---- Root Layout ----
-export default async function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
 
   return (

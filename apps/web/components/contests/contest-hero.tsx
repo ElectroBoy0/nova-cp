@@ -49,11 +49,8 @@ export function ContestHero({
 
         <div className="relative flex flex-col gap-4">
           <div className="flex items-center gap-2">
-            <Trophy
-              className="h-4 w-4 text-primary"
-              aria-hidden="true"
-            />
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <Trophy className="h-4 w-4 text-primary" aria-hidden="true" />
+            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
               {liveCount > 0 ? "Live Now" : "Next Contest"}
             </span>
           </div>
@@ -69,7 +66,7 @@ export function ContestHero({
                     </span>
                   )}
                 </div>
-                <h2 className="text-base font-semibold text-foreground sm:text-lg leading-snug">
+                <h2 className="text-base font-semibold leading-snug text-foreground sm:text-lg">
                   {nextContest.contest_name}
                 </h2>
               </div>
@@ -132,12 +129,8 @@ export function ContestHero({
             key={stat.label}
             className="flex flex-col justify-center rounded-xl border border-border bg-card p-4"
           >
-            <span className="mb-1 text-xs text-muted-foreground">
-              {stat.label}
-            </span>
-            <span
-              className={`font-mono text-2xl font-semibold tabular-nums ${stat.color}`}
-            >
+            <span className="mb-1 text-xs text-muted-foreground">{stat.label}</span>
+            <span className={`font-mono text-2xl font-semibold tabular-nums ${stat.color}`}>
               {stat.value}
             </span>
           </div>

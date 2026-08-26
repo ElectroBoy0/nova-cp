@@ -10,7 +10,7 @@ export interface Contest {
   platform_contest_id: string
   contest_name: string
   url: string
-  start_time: string  // ISO 8601 UTC
+  start_time: string // ISO 8601 UTC
   duration_seconds: number | null
   status: ContestStatus
   registration_open: boolean | null

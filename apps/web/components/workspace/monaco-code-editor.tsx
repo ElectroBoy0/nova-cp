@@ -88,7 +88,7 @@ export function MonacoCodeEditor({
           bracketPairColorization: { enabled: true },
         }}
         loading={
-          <div className="flex h-full w-full items-center justify-center bg-card text-muted-foreground gap-2 text-xs">
+          <div className="flex h-full w-full items-center justify-center gap-2 bg-card text-xs text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin text-primary" />
             <span>Loading Monaco Editor...</span>
           </div>

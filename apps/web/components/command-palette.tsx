@@ -13,7 +13,7 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "@/components/ui/command"
-import { 
+import {
   Settings,
   LayoutDashboard,
   Trophy,
@@ -43,16 +43,77 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, keywords: ["dashboard", "home", "stats", "overview"] },
-  { label: "Solve Workspace", href: "/solve", icon: Terminal, keywords: ["solve", "workspace", "terminal", "editor", "ide", "code", "run", "monaco", "practice"] },
-  { label: "Problems", href: "/problems", icon: BookOpen, keywords: ["problems", "explorer", "practice", "archive"] },
-  { label: "Recommendations", href: "/recommendations", icon: Lightbulb, keywords: ["recommendations", "ai", "coach", "suggested"] },
-  { label: "Upsolve Queue", href: "/upsolve", icon: ListTodo, keywords: ["upsolve", "queue", "failed", "contests", "review"] },
-  { label: "Bookmarks", href: "/bookmarks", icon: Bookmark, keywords: ["bookmarks", "saved", "favorite"] },
-  { label: "Snippets", href: "/snippets", icon: Code2, keywords: ["snippets", "templates", "algorithms", "boilerplate"] },
-  { label: "Contest Center", href: "/contests", icon: Trophy, keywords: ["contests", "live", "upcoming", "rounds"] },
-  { label: "Analytics", href: "/analytics", icon: BarChart3, keywords: ["analytics", "stats", "rating", "graph", "performance"] },
-  { label: "Settings", href: "/settings", icon: Settings, shortcut: "⌘S", keywords: ["settings", "profile", "preferences", "account", "control center"] },
+  {
+    label: "Dashboard",
+    href: "/dashboard",
+    icon: LayoutDashboard,
+    keywords: ["dashboard", "home", "stats", "overview"],
+  },
+  {
+    label: "Solve Workspace",
+    href: "/solve",
+    icon: Terminal,
+    keywords: [
+      "solve",
+      "workspace",
+      "terminal",
+      "editor",
+      "ide",
+      "code",
+      "run",
+      "monaco",
+      "practice",
+    ],
+  },
+  {
+    label: "Problems",
+    href: "/problems",
+    icon: BookOpen,
+    keywords: ["problems", "explorer", "practice", "archive"],
+  },
+  {
+    label: "Recommendations",
+    href: "/recommendations",
+    icon: Lightbulb,
+    keywords: ["recommendations", "ai", "coach", "suggested"],
+  },
+  {
+    label: "Upsolve Queue",
+    href: "/upsolve",
+    icon: ListTodo,
+    keywords: ["upsolve", "queue", "failed", "contests", "review"],
+  },
+  {
+    label: "Bookmarks",
+    href: "/bookmarks",
+    icon: Bookmark,
+    keywords: ["bookmarks", "saved", "favorite"],
+  },
+  {
+    label: "Snippets",
+    href: "/snippets",
+    icon: Code2,
+    keywords: ["snippets", "templates", "algorithms", "boilerplate"],
+  },
+  {
+    label: "Contest Center",
+    href: "/contests",
+    icon: Trophy,
+    keywords: ["contests", "live", "upcoming", "rounds"],
+  },
+  {
+    label: "Analytics",
+    href: "/analytics",
+    icon: BarChart3,
+    keywords: ["analytics", "stats", "rating", "graph", "performance"],
+  },
+  {
+    label: "Settings",
+    href: "/settings",
+    icon: Settings,
+    shortcut: "⌘S",
+    keywords: ["settings", "profile", "preferences", "account", "control center"],
+  },
 ]
 
 import type { Session } from "next-auth"
@@ -66,24 +127,24 @@ export function CommandPalette({ session }: { session: ExtendedSession | null })
   const [open, setOpen] = React.useState(false)
   const [search, setSearch] = React.useState("")
   const [debouncedSearch] = useDebounce(search, 300)
-  
+
   const router = useRouter()
   const linkMutation = useLinkHandle()
-  
+
   const userId = session?.user?.id
   const hasLinkedHandle = !!session?.user?.cf_handle
 
   // Problem Search query
   const { data: problemsData, isLoading: isLoadingProblems } = useProblems({
     search: debouncedSearch,
-    limit: 3
+    limit: 3,
   })
   const problems = problemsData?.items || []
 
   // Snippet Search query
   const { data: snippetsData, isLoading: isLoadingSnippets } = useSnippets(userId, {
     search: debouncedSearch,
-    limit: 3
+    limit: 3,
   })
   const snippets = snippetsData?.items || []
 
@@ -91,13 +152,13 @@ export function CommandPalette({ session }: { session: ExtendedSession | null })
   const { data: contestsData } = useContests({
     status: debouncedSearch ? undefined : "upcoming",
   })
-  
+
   // Client-side filtering for contests since the API doesn't support full text search on contests yet
   const contests = React.useMemo(() => {
     const list = contestsData?.contests || []
     if (!debouncedSearch) return list.slice(0, 3)
     const lower = debouncedSearch.toLowerCase()
-    return list.filter(c => c.contest_name.toLowerCase().includes(lower)).slice(0, 3)
+    return list.filter((c) => c.contest_name.toLowerCase().includes(lower)).slice(0, 3)
   }, [contestsData, debouncedSearch])
 
   // Filter static navigation items based on search input
@@ -166,33 +227,32 @@ export function CommandPalette({ session }: { session: ExtendedSession | null })
   }, [])
 
   return (
-    <CommandDialog 
-      open={open} 
+    <CommandDialog
+      open={open}
       onOpenChange={setOpen}
       commandProps={{ shouldFilter: false }} // We handle filtering manually so async results aren't hidden
     >
-      <CommandInput 
-        placeholder="Search for problems, snippets, or jump to a section..." 
+      <CommandInput
+        placeholder="Search for problems, snippets, or jump to a section..."
         value={search}
         onValueChange={setSearch}
       />
       <CommandList>
-        {!isLoadingProblems && !isLoadingSnippets && 
-         filteredNavItems.length === 0 && 
-         problems.length === 0 && 
-         snippets.length === 0 && 
-         contests.length === 0 && (
-          <CommandEmpty>No results found for "{search}".</CommandEmpty>
-        )}
-        
+        {!isLoadingProblems &&
+          !isLoadingSnippets &&
+          filteredNavItems.length === 0 &&
+          problems.length === 0 &&
+          snippets.length === 0 &&
+          contests.length === 0 && <CommandEmpty>No results found for "{search}".</CommandEmpty>}
+
         {/* Navigation Group */}
         {filteredNavItems.length > 0 && (
           <CommandGroup heading="Navigation">
             {filteredNavItems.map((item) => {
               const Icon = item.icon
               return (
-                <CommandItem 
-                  key={item.href} 
+                <CommandItem
+                  key={item.href}
                   value={item.label}
                   onSelect={() => runCommand(() => router.push(item.href))}
                 >
@@ -204,7 +264,7 @@ export function CommandPalette({ session }: { session: ExtendedSession | null })
             })}
           </CommandGroup>
         )}
-        
+
         {filteredNavItems.length > 0 && <CommandSeparator />}
 
         {/* Snippets Group */}
@@ -212,12 +272,12 @@ export function CommandPalette({ session }: { session: ExtendedSession | null })
           <CommandGroup heading="Snippets">
             {isLoadingSnippets ? (
               <div className="py-4 text-center text-sm text-muted-foreground">
-                <RefreshCw className="mx-auto h-4 w-4 animate-spin mb-2" />
+                <RefreshCw className="mx-auto mb-2 h-4 w-4 animate-spin" />
                 Searching snippets...
               </div>
             ) : snippets.length > 0 ? (
               snippets.map((snippet: Snippet, idx: number) => (
-                <CommandItem 
+                <CommandItem
                   key={`snippet-${snippet.id || idx}-${idx}`}
                   value={snippet.title}
                   onSelect={() => runCommand(() => router.push("/snippets"))}
@@ -225,8 +285,8 @@ export function CommandPalette({ session }: { session: ExtendedSession | null })
                   <Code2 className="mr-2 h-4 w-4 text-primary" />
                   <div className="flex flex-col">
                     <span className="font-medium text-foreground">{snippet.title}</span>
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">
-                      {snippet.language} • {snippet.category.replace('_', ' ')}
+                    <span className="mt-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+                      {snippet.language} • {snippet.category.replace("_", " ")}
                     </span>
                   </div>
                 </CommandItem>
@@ -238,23 +298,31 @@ export function CommandPalette({ session }: { session: ExtendedSession | null })
         {/* Contests Group */}
         {(debouncedSearch.length > 0 || contests.length > 0) && (
           <CommandGroup heading="Contests">
-            {contests.length > 0 ? (
-              contests.map((contest: Contest, idx: number) => (
-                <CommandItem 
-                  key={`contest-${contest.platform || 'c'}-${contest.id || idx}-${idx}`}
-                  value={contest.contest_name}
-                  onSelect={() => runCommand(() => window.open(contest.url || `https://codeforces.com/contests/${contest.platform_contest_id}`, "_blank"))}
-                >
-                  <Trophy className="mr-2 h-4 w-4 text-primary" />
-                  <div className="flex flex-col">
-                    <span className="font-medium text-foreground">{contest.contest_name}</span>
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">
-                      {contest.platform}
-                    </span>
-                  </div>
-                </CommandItem>
-              ))
-            ) : null}
+            {contests.length > 0
+              ? contests.map((contest: Contest, idx: number) => (
+                  <CommandItem
+                    key={`contest-${contest.platform || "c"}-${contest.id || idx}-${idx}`}
+                    value={contest.contest_name}
+                    onSelect={() =>
+                      runCommand(() =>
+                        window.open(
+                          contest.url ||
+                            `https://codeforces.com/contests/${contest.platform_contest_id}`,
+                          "_blank"
+                        )
+                      )
+                    }
+                  >
+                    <Trophy className="mr-2 h-4 w-4 text-primary" />
+                    <div className="flex flex-col">
+                      <span className="font-medium text-foreground">{contest.contest_name}</span>
+                      <span className="mt-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+                        {contest.platform}
+                      </span>
+                    </div>
+                  </CommandItem>
+                ))
+              : null}
           </CommandGroup>
         )}
 
@@ -263,21 +331,22 @@ export function CommandPalette({ session }: { session: ExtendedSession | null })
           <CommandGroup heading="Problems">
             {isLoadingProblems ? (
               <div className="py-4 text-center text-sm text-muted-foreground">
-                <RefreshCw className="mx-auto h-4 w-4 animate-spin mb-2" />
+                <RefreshCw className="mx-auto mb-2 h-4 w-4 animate-spin" />
                 Searching Codeforces...
               </div>
             ) : problems.length > 0 ? (
               problems.map((problem: Problem, idx: number) => (
-                <CommandItem 
-                  key={`problem-${problem.platform || 'p'}-${problem.id || idx}-${idx}`}
+                <CommandItem
+                  key={`problem-${problem.platform || "p"}-${problem.id || idx}-${idx}`}
                   value={problem.name}
                   onSelect={() => runCommand(() => window.open(problem.url, "_blank"))}
                 >
                   <BrainCircuit className="mr-2 h-4 w-4 text-primary" />
                   <div className="flex flex-col">
                     <span className="font-medium text-foreground">{problem.name}</span>
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">
-                      {problem.platform} • {problem.rating || "Unrated"} • {problem.tags?.slice(0, 2).join(", ")}
+                    <span className="mt-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+                      {problem.platform} • {problem.rating || "Unrated"} •{" "}
+                      {problem.tags?.slice(0, 2).join(", ")}
                     </span>
                   </div>
                 </CommandItem>

@@ -11,8 +11,10 @@ export async function getUpsolveQueue(
   if (params?.offset) searchParams.append("offset", params.offset.toString())
 
   const queryString = searchParams.toString()
-  const url = queryString ? `/api/v1/users/${userId}/upsolve?${queryString}` : `/api/v1/users/${userId}/upsolve`
-  
+  const url = queryString
+    ? `/api/v1/users/${userId}/upsolve?${queryString}`
+    : `/api/v1/users/${userId}/upsolve`
+
   return apiClient.get<UpsolveQueueResponse>(url)
 }
 
@@ -20,10 +22,19 @@ export async function getUpsolveStats(userId: string): Promise<UpsolveStats> {
   return apiClient.get<UpsolveStats>(`/api/v1/users/${userId}/upsolve/stats`)
 }
 
-export async function generateUpsolveQueue(userId: string): Promise<{ status: string; added: number }> {
-  return apiClient.post<{ status: string; added: number }>(`/api/v1/users/${userId}/upsolve/generate`, {})
+export async function generateUpsolveQueue(
+  userId: string
+): Promise<{ status: string; added: number }> {
+  return apiClient.post<{ status: string; added: number }>(
+    `/api/v1/users/${userId}/upsolve/generate`,
+    {}
+  )
 }
 
-export async function updateUpsolveStatus(userId: string, itemId: string, status: string): Promise<void> {
+export async function updateUpsolveStatus(
+  userId: string,
+  itemId: string,
+  status: string
+): Promise<void> {
   return apiClient.patch(`/api/v1/users/${userId}/upsolve/${itemId}`, { status })
 }

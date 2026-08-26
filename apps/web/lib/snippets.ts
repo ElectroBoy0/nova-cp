@@ -16,7 +16,7 @@ export async function getSnippets(
 ): Promise<SnippetListResponse> {
   const searchParams = new URLSearchParams()
   searchParams.append("user_id", userId)
-  
+
   if (params?.search) searchParams.append("search", params.search)
   if (params?.language) searchParams.append("language", params.language)
   if (params?.category) searchParams.append("category", params.category)
@@ -37,7 +37,11 @@ export async function createSnippet(userId: string, data: SnippetCreate): Promis
   return apiClient.post<Snippet>(`/api/v1/snippets?user_id=${userId}`, data)
 }
 
-export async function updateSnippet(userId: string, snippetId: string, data: SnippetUpdate): Promise<Snippet> {
+export async function updateSnippet(
+  userId: string,
+  snippetId: string,
+  data: SnippetUpdate
+): Promise<Snippet> {
   return apiClient.put<Snippet>(`/api/v1/snippets/${snippetId}?user_id=${userId}`, data)
 }
 
@@ -45,8 +49,14 @@ export async function deleteSnippet(userId: string, snippetId: string): Promise<
   return apiClient.delete(`/api/v1/snippets/${snippetId}?user_id=${userId}`)
 }
 
-export async function toggleFavorite(userId: string, snippetId: string): Promise<{ status: string; is_favorited: boolean }> {
-  return apiClient.post<{ status: string; is_favorited: boolean }>(`/api/v1/snippets/${snippetId}/favorite?user_id=${userId}`, {})
+export async function toggleFavorite(
+  userId: string,
+  snippetId: string
+): Promise<{ status: string; is_favorited: boolean }> {
+  return apiClient.post<{ status: string; is_favorited: boolean }>(
+    `/api/v1/snippets/${snippetId}/favorite?user_id=${userId}`,
+    {}
+  )
 }
 
 export async function seedSnippets(): Promise<{ status: string; seeded: number }> {

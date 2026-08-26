@@ -18,17 +18,9 @@ const FILTERS: { value: FilterValue; label: string }[] = [
   { value: "atcoder", label: "AtCoder" },
 ]
 
-export function PlatformFilter({
-  value,
-  onChange,
-  counts,
-}: PlatformFilterProps) {
+export function PlatformFilter({ value, onChange, counts }: PlatformFilterProps) {
   return (
-    <div
-      className="flex flex-wrap gap-1.5"
-      role="group"
-      aria-label="Filter by platform"
-    >
+    <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter by platform">
       {FILTERS.map((f) => {
         const active = value === f.value
         const count = counts?.[f.value]
@@ -52,9 +44,7 @@ export function PlatformFilter({
               <span
                 className={cn(
                   "rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums",
-                  active
-                    ? "bg-primary/20 text-primary"
-                    : "bg-muted text-muted-foreground"
+                  active ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
                 )}
               >
                 {count}

@@ -24,10 +24,7 @@ export async function fetchUserProfile(userId: string): Promise<UserProfile> {
   return apiClient.get<UserProfile>(`/api/v1/users/${userId}`)
 }
 
-export async function linkCodeforcesHandle(
-  userId: string,
-  handle: string
-): Promise<UserProfile> {
+export async function linkCodeforcesHandle(userId: string, handle: string): Promise<UserProfile> {
   return apiClient.post<UserProfile>(`/api/v1/users/${userId}/cf-handle`, { handle })
 }
 
@@ -69,16 +66,32 @@ export async function fetchUserNotifications(
   )
 }
 
-export async function markNotificationAsRead(userId: string, notificationId: string): Promise<{ status: string }> {
-  return apiClient.patch<{ status: string }>(`/api/v1/users/${userId}/notifications/${notificationId}/read`, {})
+export async function markNotificationAsRead(
+  userId: string,
+  notificationId: string
+): Promise<{ status: string }> {
+  return apiClient.patch<{ status: string }>(
+    `/api/v1/users/${userId}/notifications/${notificationId}/read`,
+    {}
+  )
 }
 
-export async function markAllNotificationsAsRead(userId: string): Promise<{ status: string; marked_count: number }> {
-  return apiClient.post<{ status: string; marked_count: number }>(`/api/v1/users/${userId}/notifications/read-all`, {})
+export async function markAllNotificationsAsRead(
+  userId: string
+): Promise<{ status: string; marked_count: number }> {
+  return apiClient.post<{ status: string; marked_count: number }>(
+    `/api/v1/users/${userId}/notifications/read-all`,
+    {}
+  )
 }
 
-export async function triggerTestNotification(userId: string): Promise<{ status: string; notification: any }> {
-  return apiClient.post<{ status: string; notification: any }>(`/api/v1/users/${userId}/notifications/test`, {})
+export async function triggerTestNotification(
+  userId: string
+): Promise<{ status: string; notification: any }> {
+  return apiClient.post<{ status: string; notification: any }>(
+    `/api/v1/users/${userId}/notifications/test`,
+    {}
+  )
 }
 
 // -------------------------------------------------------
@@ -141,7 +154,10 @@ export function useUpdateSettings() {
   })
 }
 
-export function useUserNotifications(userId: string | undefined, params?: { unread_only?: boolean }) {
+export function useUserNotifications(
+  userId: string | undefined,
+  params?: { unread_only?: boolean }
+) {
   return useQuery({
     queryKey: [...userKeys.notifications(userId ?? ""), params],
     queryFn: () => fetchUserNotifications(userId!, params),
@@ -166,8 +182,7 @@ export function useMarkAllNotificationsRead() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ userId }: { userId: string }) =>
-      markAllNotificationsAsRead(userId),
+    mutationFn: ({ userId }: { userId: string }) => markAllNotificationsAsRead(userId),
     onSuccess: (_, { userId }) => {
       queryClient.invalidateQueries({ queryKey: userKeys.notifications(userId) })
     },
@@ -178,8 +193,7 @@ export function useTriggerTestNotification() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ userId }: { userId: string }) =>
-      triggerTestNotification(userId),
+    mutationFn: ({ userId }: { userId: string }) => triggerTestNotification(userId),
     onSuccess: (_, { userId }) => {
       queryClient.invalidateQueries({ queryKey: userKeys.notifications(userId) })
     },

@@ -34,8 +34,16 @@ export function HeadToHead({ userStats, rivalStats }: HeadToHeadProps) {
       icon: <TrendingUp className="h-4 w-4" />,
       userValue: userStats.current_rating || 0,
       rivalValue: rivalStats.current_rating || 0,
-      userClass: getWinnerClass(userStats.current_rating || 0, rivalStats.current_rating || 0, true),
-      rivalClass: getWinnerClass(userStats.current_rating || 0, rivalStats.current_rating || 0, false),
+      userClass: getWinnerClass(
+        userStats.current_rating || 0,
+        rivalStats.current_rating || 0,
+        true
+      ),
+      rivalClass: getWinnerClass(
+        userStats.current_rating || 0,
+        rivalStats.current_rating || 0,
+        false
+      ),
     },
     {
       label: "Peak Rating",
@@ -58,8 +66,16 @@ export function HeadToHead({ userStats, rivalStats }: HeadToHeadProps) {
       icon: <Calendar className="h-4 w-4" />,
       userValue: userStats.contests_participated,
       rivalValue: rivalStats.contests_participated,
-      userClass: getWinnerClass(userStats.contests_participated, rivalStats.contests_participated, true),
-      rivalClass: getWinnerClass(userStats.contests_participated, rivalStats.contests_participated, false),
+      userClass: getWinnerClass(
+        userStats.contests_participated,
+        rivalStats.contests_participated,
+        true
+      ),
+      rivalClass: getWinnerClass(
+        userStats.contests_participated,
+        rivalStats.contests_participated,
+        false
+      ),
     },
     {
       label: "Best Rank",
@@ -68,20 +84,20 @@ export function HeadToHead({ userStats, rivalStats }: HeadToHeadProps) {
       rivalValue: rivalStats.best_rank,
       userClass: getWinnerClassLow(userStats.best_rank, rivalStats.best_rank, true),
       rivalClass: getWinnerClassLow(userStats.best_rank, rivalStats.best_rank, false),
-      format: (v: number | null) => v ? `#${v}` : "N/A"
+      format: (v: number | null) => (v ? `#${v}` : "N/A"),
     },
   ]
 
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
-      <div className="grid grid-cols-3 border-b border-border bg-muted/50 p-4 font-semibold text-sm">
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <div className="grid grid-cols-3 border-b border-border bg-muted/50 p-4 text-sm font-semibold">
         <div className="text-left text-muted-foreground">Metric</div>
-        <div className="text-center truncate px-2">{userStats.handle} (You)</div>
-        <div className="text-center truncate px-2">{rivalStats.handle}</div>
+        <div className="truncate px-2 text-center">{userStats.handle} (You)</div>
+        <div className="truncate px-2 text-center">{rivalStats.handle}</div>
       </div>
       <div className="divide-y divide-border">
         {metrics.map((m, i) => (
-          <div key={i} className="grid grid-cols-3 p-4 items-center">
+          <div key={i} className="grid grid-cols-3 items-center p-4">
             <div className="flex items-center gap-2 text-sm font-medium text-foreground">
               <div className="text-muted-foreground">{m.icon}</div>
               {m.label}

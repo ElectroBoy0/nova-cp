@@ -10,7 +10,7 @@ import {
   PolarRadiusAxis,
   ResponsiveContainer,
   Legend,
-  Tooltip
+  Tooltip,
 } from "recharts"
 
 interface TopicRadarProps {
@@ -43,7 +43,7 @@ export function TopicRadar({ data, userHandle, rivalHandle }: TopicRadarProps) {
       const data = payload[0].payload
       return (
         <div className="rounded-lg border border-border bg-popover p-3 shadow-md">
-          <p className="mb-2 font-medium text-foreground capitalize">{data.topic}</p>
+          <p className="mb-2 font-medium capitalize text-foreground">{data.topic}</p>
           <div className="space-y-1 text-sm">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-1.5">
@@ -51,7 +51,8 @@ export function TopicRadar({ data, userHandle, rivalHandle }: TopicRadarProps) {
                 <span className="text-muted-foreground">{userHandle}:</span>
               </div>
               <span className="font-semibold text-foreground">
-                {data.userWinRate.toFixed(0)}% <span className="text-muted-foreground text-xs font-normal">({data.userRaw})</span>
+                {data.userWinRate.toFixed(0)}%{" "}
+                <span className="text-xs font-normal text-muted-foreground">({data.userRaw})</span>
               </span>
             </div>
             <div className="flex items-center justify-between gap-4">
@@ -60,7 +61,8 @@ export function TopicRadar({ data, userHandle, rivalHandle }: TopicRadarProps) {
                 <span className="text-muted-foreground">{rivalHandle}:</span>
               </div>
               <span className="font-semibold text-foreground">
-                {data.rivalWinRate.toFixed(0)}% <span className="text-muted-foreground text-xs font-normal">({data.rivalRaw})</span>
+                {data.rivalWinRate.toFixed(0)}%{" "}
+                <span className="text-xs font-normal text-muted-foreground">({data.rivalRaw})</span>
               </span>
             </div>
           </div>
@@ -79,10 +81,12 @@ export function TopicRadar({ data, userHandle, rivalHandle }: TopicRadarProps) {
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
             <PolarGrid stroke="#334155" />
-            <PolarAngleAxis 
-              dataKey="topic" 
-              tick={{ fill: '#94a3b8', fontSize: 11 }}
-              tickFormatter={(val: string) => val.length > 10 ? val.substring(0, 10) + '...' : val}
+            <PolarAngleAxis
+              dataKey="topic"
+              tick={{ fill: "#94a3b8", fontSize: 11 }}
+              tickFormatter={(val: string) =>
+                val.length > 10 ? val.substring(0, 10) + "..." : val
+              }
             />
             <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
             <Tooltip content={<CustomTooltip />} />

@@ -21,11 +21,7 @@ export function TopbarBugButton({ userId }: { userId: string }) {
         <Bug className="h-4 w-4" aria-hidden="true" />
       </Button>
 
-      <BugReportDialog
-        userId={userId}
-        open={open}
-        onOpenChange={setOpen}
-      />
+      <BugReportDialog userId={userId} open={open} onOpenChange={setOpen} />
     </>
   )
 }
