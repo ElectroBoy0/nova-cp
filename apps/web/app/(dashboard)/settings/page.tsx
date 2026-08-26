@@ -1,6 +1,8 @@
+import { Suspense } from "react"
 import { auth } from "@/lib/auth"
 import { Topbar } from "@/components/layout/topbar"
 import { SettingsForm } from "./settings-form"
+import { Skeleton } from "@/components/ui/skeleton"
 import { redirect } from "next/navigation"
 
 export const metadata = {
@@ -29,7 +31,9 @@ export default async function SettingsPage() {
         </div>
 
         <div>
-          <SettingsForm userId={session.user.id} />
+          <Suspense fallback={<Skeleton className="h-96 w-full rounded-2xl" />}>
+            <SettingsForm userId={session.user.id} />
+          </Suspense>
         </div>
       </div>
     </div>

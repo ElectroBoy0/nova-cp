@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo, useRef } from "react"
+import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import {
   useUserProfile,
   useUserDashboard,
@@ -17,7 +18,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
-import { compressScreenshot } from "@/lib/bug-reports"
 import Link from "next/link"
 import {
   CheckCircle2,
@@ -145,8 +145,49 @@ function getNextRankProgress(rating: number | null | undefined) {
   }
 }
 
+// Compresses any uploaded avatar into a durable, self-contained 200x200 WebP Data URL
+async function compressAvatarToDataUrl(
+  file: File,
+  dimension = 200,
+  quality = 0.85
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onload = (event) => {
+      const img = new Image()
+      img.src = event.target?.result as string
+      img.onload = () => {
+        const width = img.width
+        const height = img.height
+        const minDim = Math.min(width, height)
+        const sx = (width - minDim) / 2
+        const sy = (height - minDim) / 2
+
+        const canvas = document.createElement("canvas")
+        canvas.width = dimension
+        canvas.height = dimension
+        const ctx = canvas.getContext("2d")
+        if (!ctx) {
+          return resolve(event.target?.result as string)
+        }
+
+        ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, dimension, dimension)
+        const dataUrl = canvas.toDataURL("image/webp", quality)
+        resolve(dataUrl)
+      }
+      img.onerror = () => resolve(event.target?.result as string)
+    }
+    reader.onerror = (err) => reject(err)
+  })
+}
+
 export function SettingsForm({ userId }: { userId: string }) {
   const queryClient = useQueryClient()
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+
   const { data: user, isLoading, error } = useUserProfile(userId)
   const { data: dashboardData } = useUserDashboard(userId)
 
@@ -156,6 +197,40 @@ export function SettingsForm({ userId }: { userId: string }) {
   const triggerTestNotifMutation = useTriggerTestNotification()
 
   const fileInputRef = useRef<HTMLInputElement | null>(null)
+
+  // Active Tab synchronized with URL query params (?tab=notifications, etc.)
+  const tabParam = searchParams.get("tab")
+  const initialTab =
+    tabParam === "notifications" || tabParam === "alerts"
+      ? "notifications"
+      : tabParam === "integrations"
+        ? "integrations"
+        : tabParam === "preferences"
+          ? "preferences"
+          : "profile"
+
+  const [activeTab, setActiveTab] = useState<string>(initialTab)
+
+  useEffect(() => {
+    if (tabParam) {
+      const mapped =
+        tabParam === "notifications" || tabParam === "alerts"
+          ? "notifications"
+          : tabParam === "integrations"
+            ? "integrations"
+            : tabParam === "preferences"
+              ? "preferences"
+              : "profile"
+      setActiveTab(mapped)
+    }
+  }, [tabParam])
+
+  const handleTabChange = (val: string) => {
+    setActiveTab(val)
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("tab", val)
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false })
+  }
 
   // Profile Form State
   const [nameInput, setNameInput] = useState("")
@@ -263,39 +338,17 @@ export function SettingsForm({ userId }: { userId: string }) {
       setIsUploadingAvatar(true)
       setImgLoadError(false)
 
-      // 1. Generate local preview immediately so user sees their photo with 0 lag
-      const reader = new FileReader()
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          setAvatarUrl(event.target.result as string)
-        }
-      }
-      reader.readAsDataURL(file)
+      // 1. Compress & center-crop to a durable 200x200 WebP Data URL
+      const dataUrl = await compressAvatarToDataUrl(file, 200, 0.85)
+      setAvatarUrl(dataUrl)
 
-      // 2. Compress client-side
-      const compressed = await compressScreenshot(file, 400, 0.9)
-      const formData = new FormData()
-      formData.append("file", compressed)
-
-      // 3. Upload to backend
-      const res = await fetch("/api/v1/uploads/screenshot", {
-        method: "POST",
-        body: formData,
-      })
-
-      if (!res.ok) throw new Error("Upload failed")
-      const data = await res.json()
-      const newImageUrl = data.url
-
-      setAvatarUrl(newImageUrl)
-
-      // 4. Persist to user profile settings
+      // 2. Persist directly to user profile settings
       await updateSettingsMutation.mutateAsync({
         userId,
-        settings: { image: newImageUrl },
+        settings: { image: dataUrl },
       })
 
-      // 5. Invalidate user profile query so topbar and other components re-render immediately
+      // 3. Invalidate user profile query so topbar and all components re-render immediately
       queryClient.invalidateQueries({ queryKey: userKeys.profile(userId) })
       toast.success("Profile photo updated successfully!")
     } catch (err) {
@@ -560,7 +613,7 @@ export function SettingsForm({ userId }: { userId: string }) {
     : "CP"
 
   return (
-    <Tabs defaultValue="profile" className="w-full space-y-6">
+    <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full space-y-6">
       {/* Sleek Segmented Navigation Control */}
       <TabsList className="grid h-11 w-full grid-cols-2 rounded-xl border border-border/80 bg-surface-1/80 p-1 backdrop-blur-md md:grid-cols-4">
         <TabsTrigger

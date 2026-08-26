@@ -191,7 +191,7 @@ export function NotificationCenter({ userId }: { userId: string }) {
         <DropdownMenuSeparator className="m-0" />
         <div className="bg-surface-1/40 p-2 text-center">
           <Link
-            href="/settings"
+            href="/settings?tab=notifications"
             onClick={() => setIsOpen(false)}
             className="text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
           >

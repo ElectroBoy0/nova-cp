@@ -86,8 +86,13 @@ class UserService:
             self.db.add(user)
         else:
             # Returning user — update profile fields that may have changed
-            user.name = payload.name
-            user.image = payload.image
+            if payload.name:
+                user.name = payload.name
+            # Preserve custom avatar image if set
+            if payload.image and not user.image:
+                user.image = payload.image
+            elif payload.image and not (user.image and user.image.startswith("data:")):
+                user.image = payload.image
             if payload.timezone:
                 user.timezone = payload.timezone
 

@@ -1,11 +1,11 @@
 import { auth, signOut } from "@/lib/auth"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { LogOut, Bell } from "lucide-react"
+import { LogOut } from "lucide-react"
 import { TopbarSearch } from "./topbar-search"
 import { TopbarStreak } from "./topbar-streak"
 import { NotificationCenter } from "./notification-center"
 import { TopbarBugButton } from "./topbar-bug-button"
+import { TopbarUser } from "./topbar-user"
 
 interface TopbarProps {
   title: string
@@ -48,20 +48,14 @@ export async function Topbar({ title, description }: TopbarProps) {
         {session?.user?.id && <TopbarBugButton userId={session.user.id} />}
 
         {/* User Avatar + Sign Out */}
-        {session?.user && (
+        {session?.user?.id && (
           <div className="flex items-center gap-3 border-l border-border pl-3">
-            <div className="hidden flex-col items-end sm:flex">
-              <span className="text-xs font-medium text-foreground">{session.user.name}</span>
-              <span className="text-[10px] text-muted-foreground">{session.user.email}</span>
-            </div>
-            <Avatar className="h-8 w-8 ring-1 ring-border">
-              <AvatarImage
-                src={session.user.image ?? undefined}
-                alt={session.user.name ?? "User avatar"}
-                referrerPolicy="no-referrer"
-              />
-              <AvatarFallback className="text-xs">{initials}</AvatarFallback>
-            </Avatar>
+            <TopbarUser
+              userId={session.user.id}
+              initialName={session.user.name}
+              initialEmail={session.user.email}
+              initialImage={session.user.image}
+            />
             <form
               action={async () => {
                 "use server"
