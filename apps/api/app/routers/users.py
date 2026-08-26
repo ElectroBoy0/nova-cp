@@ -219,6 +219,18 @@ async def get_user_dashboard(
             if cf_handle.sync_status != "syncing":
                 background_tasks.add_task(_run_sync_task, user_id, cf_handle.handle)
 
+    # If analytics exists but rating_distribution is empty, backfill it on-the-fly from existing submissions
+    if analytics and (not analytics.rating_distribution or len(analytics.rating_distribution) == 0):
+        try:
+            from app.services.analytics_service import AnalyticsService
+            analytics_service = AnalyticsService(db)
+            await analytics_service.generate_analytics(user_id)
+            stmt = select(UserAnalytics).where(UserAnalytics.user_id == user_id)
+            result = await db.execute(stmt)
+            analytics = result.scalar_one_or_none()
+        except Exception as gen_err:
+            logger.warning("Could not auto-generate rating distribution for %s: %s", user_id, gen_err)
+
     if not analytics:
         return UserAnalyticsRead(
             user_id=user_id,
