@@ -87,6 +87,31 @@ async def get_user(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"User {user_id!r} not found.",
         )
+
+    # If user has a linked handle but rating_history hasn't been populated yet, fetch on the fly
+    if user.cf_handle and not user.cf_handle.rating_history:
+        try:
+            from app.services.codeforces_service import CodeforcesService
+            async with CodeforcesService() as cf:
+                hist = await cf.fetch_rating_history(user.cf_handle.handle)
+                if hist:
+                    extracted = [
+                        {
+                            "contest_id": r.get("contestId"),
+                            "contest_name": r.get("contestName"),
+                            "old_rating": r.get("oldRating"),
+                            "new_rating": r.get("newRating"),
+                            "rank": r.get("rank"),
+                            "time": r.get("ratingUpdateTimeSeconds"),
+                        }
+                        for r in hist if "newRating" in r
+                    ]
+                    user.cf_handle.rating_history = extracted
+                    await db.commit()
+                    await db.refresh(user)
+        except Exception:
+            pass
+
     return UserRead.model_validate(user)
 
 

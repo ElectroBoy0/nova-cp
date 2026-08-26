@@ -238,6 +238,25 @@ class UserService:
             if max_rank == "tourist":
                 max_rank = "legendary_grandmaster"
 
+        # Fetch rating history synchronously for immediate graph display
+        extracted_rating_history = []
+        try:
+            async with CodeforcesService() as cf_hist:
+                hist_data = await cf_hist.fetch_rating_history(clean_handle)
+                extracted_rating_history = [
+                    {
+                        "contest_id": r.get("contestId"),
+                        "contest_name": r.get("contestName"),
+                        "old_rating": r.get("oldRating"),
+                        "new_rating": r.get("newRating"),
+                        "rank": r.get("rank"),
+                        "time": r.get("ratingUpdateTimeSeconds"),
+                    }
+                    for r in hist_data if "newRating" in r
+                ]
+        except Exception:
+            pass
+
         if user.cf_handle is None:
             # Create new handle record
             cf_handle = CFHandle(
@@ -247,6 +266,7 @@ class UserService:
                 max_rating=max_rating,
                 rank=rank,
                 max_rank=max_rank,
+                rating_history=extracted_rating_history if extracted_rating_history else None,
                 sync_status="pending",
                 last_synced_at=now,
             )
@@ -278,6 +298,8 @@ class UserService:
             user.cf_handle.max_rating = max_rating
             user.cf_handle.rank = rank
             user.cf_handle.max_rank = max_rank
+            if extracted_rating_history:
+                user.cf_handle.rating_history = extracted_rating_history
             user.cf_handle.sync_status = "pending"
             user.cf_handle.last_synced_at = now
             user.cf_handle.sync_error = None
