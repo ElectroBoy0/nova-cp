@@ -69,6 +69,12 @@ class SyncService:
             await self._update_sync_status(user_id, "completed", rating_history=extracted_rating_history if extracted_rating_history else None)
             logger.info("Successfully completed full sync for user %s", user_id)
 
+            from app.redis import CacheKey, redis_client
+            await redis_client.delete(
+                CacheKey.user_profile(user_id),
+                CacheKey.user_activity(user_id),
+            )
+
             from app.services.notification_service import NotificationService
             notif_service = NotificationService(self.db)
             await notif_service.create_notification(

@@ -1,9 +1,17 @@
 "use client"
 
+import { useEffect, useRef } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
-import { Lock } from "lucide-react"
-import { useUserProfile, useUserDashboard } from "@/lib/users"
+import { Lock, RefreshCw } from "lucide-react"
+import {
+  useUserProfile,
+  useUserDashboard,
+  useLinkHandle,
+  analyticsKeys,
+  userKeys,
+} from "@/lib/users"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
@@ -13,9 +21,29 @@ import { ActivityHeatmap } from "@/components/analytics/activity-heatmap"
 export function AnalyticsClient({ userId }: { userId: string }) {
   const { data: user, isLoading: isUserLoading } = useUserProfile(userId)
   const { data: analytics, isLoading: isAnalyticsLoading } = useUserDashboard(userId)
+  const linkMutation = useLinkHandle()
+  const queryClient = useQueryClient()
+
+  const syncStatus = user?.cf_handle?.sync_status
+  const prevSyncStatus = useRef(syncStatus)
+
+  useEffect(() => {
+    if (prevSyncStatus.current === "syncing" && syncStatus === "completed") {
+      queryClient.invalidateQueries({ queryKey: analyticsKeys.dashboard(userId) })
+      queryClient.invalidateQueries({ queryKey: userKeys.profile(userId) })
+    }
+    prevSyncStatus.current = syncStatus
+  }, [syncStatus, queryClient, userId])
 
   const isLoading = isUserLoading || isAnalyticsLoading
   const hasLinkedHandle = !!user?.cf_handle
+  const isSyncing = syncStatus === "syncing" || linkMutation.isPending
+
+  const handleManualSync = () => {
+    if (user?.cf_handle?.handle && !isSyncing) {
+      linkMutation.mutate({ userId, handle: user.cf_handle.handle })
+    }
+  }
 
   if (isLoading) {
     return (
@@ -53,12 +81,28 @@ export function AnalyticsClient({ userId }: { userId: string }) {
             Your Codeforces rating history and topic mastery.
           </p>
         </div>
-        <Badge
-          variant="default"
-          className="border-emerald-500/20 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
-        >
-          Synced
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleManualSync}
+            disabled={isSyncing}
+            className="h-8 gap-1.5 text-xs"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? "animate-spin" : ""}`} />
+            {isSyncing ? "Syncing..." : "Sync Data"}
+          </Button>
+          <Badge
+            variant="default"
+            className={
+              isSyncing
+                ? "border-amber-500/20 bg-amber-500/10 text-amber-500"
+                : "border-emerald-500/20 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
+            }
+          >
+            {isSyncing ? "Syncing..." : "Synced"}
+          </Badge>
+        </div>
       </div>
 
       <div className="stagger-1 grid animate-fade-up grid-cols-1 gap-6">
