@@ -1,6 +1,6 @@
 /**
- * Web Audio API synthesizer for clean, crisp in-app sound effects.
- * Requires zero external audio files and works with zero network lag.
+ * Premium Web Audio API synthesizer for modern, tactile in-app audio feedback.
+ * Features organic acoustic resonance, dynamic lowpass filtering, and harmonic overtones.
  */
 
 let audioCtx: AudioContext | null = null
@@ -22,7 +22,57 @@ function getAudioContext(): AudioContext | null {
 }
 
 /**
- * Plays a pleasant, subtle notification chime (dual harmonic tone)
+ * Plays a single rich acoustic bell/marimba note with fundamental + chime overtone + lowpass filter
+ */
+function playAcousticNote(
+  ctx: AudioContext,
+  freq: number,
+  startTime: number,
+  duration = 0.45,
+  volume = 0.15
+) {
+  // Master gain for this note
+  const noteGain = ctx.createGain()
+  noteGain.gain.setValueAtTime(0, startTime)
+  noteGain.gain.linearRampToValueAtTime(volume, startTime + 0.006) // snappy 6ms attack
+  noteGain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration) // smooth exponential decay
+
+  // Dynamic lowpass filter (simulates acoustic physical material damping)
+  const filter = ctx.createBiquadFilter()
+  filter.type = "lowpass"
+  filter.frequency.setValueAtTime(3200, startTime)
+  filter.frequency.exponentialRampToValueAtTime(700, startTime + duration)
+
+  // 1. Warm Fundamental (Sine body)
+  const oscBody = ctx.createOscillator()
+  oscBody.type = "sine"
+  oscBody.frequency.setValueAtTime(freq, startTime)
+
+  // 2. Harmonic Bell Overtone (2.76x bell mode ratio for acoustic crystal shimmer)
+  const oscShimmer = ctx.createOscillator()
+  const shimmerGain = ctx.createGain()
+  oscShimmer.type = "sine"
+  oscShimmer.frequency.setValueAtTime(freq * 2.76, startTime)
+  shimmerGain.gain.setValueAtTime(volume * 0.28, startTime)
+  shimmerGain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration * 0.4)
+
+  // Routing
+  oscBody.connect(filter)
+  oscShimmer.connect(shimmerGain)
+  shimmerGain.connect(filter)
+  filter.connect(noteGain)
+  noteGain.connect(ctx.destination)
+
+  // Trigger
+  oscBody.start(startTime)
+  oscShimmer.start(startTime)
+  oscBody.stop(startTime + duration)
+  oscShimmer.stop(startTime + duration)
+}
+
+/**
+ * Premium glass droplet notification chime (Warm G5 -> D6 harmonic leap)
+ * Similar to high-end UI sounds (Linear, Apple, Slack)
  */
 export function playNotificationSound() {
   try {
@@ -31,42 +81,19 @@ export function playNotificationSound() {
 
     const now = ctx.currentTime
 
-    // Tone 1: 587.33 Hz (D5)
-    const osc1 = ctx.createOscillator()
-    const gain1 = ctx.createGain()
-    osc1.type = "sine"
-    osc1.frequency.setValueAtTime(587.33, now)
+    // Note 1: G5 (783.99 Hz)
+    playAcousticNote(ctx, 783.99, now, 0.4, 0.14)
 
-    gain1.gain.setValueAtTime(0, now)
-    gain1.gain.linearRampToValueAtTime(0.12, now + 0.02)
-    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.35)
-
-    osc1.connect(gain1)
-    gain1.connect(ctx.destination)
-    osc1.start(now)
-    osc1.stop(now + 0.35)
-
-    // Tone 2: 880 Hz (A5) slightly delayed
-    const osc2 = ctx.createOscillator()
-    const gain2 = ctx.createGain()
-    osc2.type = "sine"
-    osc2.frequency.setValueAtTime(880, now + 0.08)
-
-    gain2.gain.setValueAtTime(0, now + 0.08)
-    gain2.gain.linearRampToValueAtTime(0.15, now + 0.1)
-    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.5)
-
-    osc2.connect(gain2)
-    gain2.connect(ctx.destination)
-    osc2.start(now + 0.08)
-    osc2.stop(now + 0.5)
+    // Note 2: D6 (1174.66 Hz) - Crisp, bright resolution
+    playAcousticNote(ctx, 1174.66, now + 0.085, 0.55, 0.16)
   } catch {
     // Gracefully ignore audio autoplay restrictions
   }
 }
 
 /**
- * Plays an upbeat success chime (C5 -> E5 -> G5) for solving problems or passing test cases
+ * Inspiring, satisfying problem solve chime (Ascending D Major 9th / Pentatonic sparkle)
+ * Plays when all test cases pass / problem solved
  */
 export function playSuccessSound() {
   try {
@@ -74,24 +101,16 @@ export function playSuccessSound() {
     if (!ctx) return
 
     const now = ctx.currentTime
-    const notes = [523.25, 659.25, 783.99] // C5, E5, G5
+    // D5 -> F#5 -> A5 -> D6 (D Major chord with warm resonant resolution)
+    const chord = [
+      { freq: 587.33, delay: 0.0, dur: 0.35, vol: 0.13 }, // D5
+      { freq: 739.99, delay: 0.07, dur: 0.38, vol: 0.14 }, // F#5
+      { freq: 880.0, delay: 0.14, dur: 0.42, vol: 0.15 }, // A5
+      { freq: 1174.66, delay: 0.22, dur: 0.65, vol: 0.18 }, // D6 (Sparkle finish)
+    ]
 
-    notes.forEach((freq, idx) => {
-      const startTime = now + idx * 0.07
-      const osc = ctx.createOscillator()
-      const gain = ctx.createGain()
-
-      osc.type = "triangle"
-      osc.frequency.setValueAtTime(freq, startTime)
-
-      gain.gain.setValueAtTime(0, startTime)
-      gain.gain.linearRampToValueAtTime(0.12, startTime + 0.02)
-      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.3)
-
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      osc.start(startTime)
-      osc.stop(startTime + 0.3)
+    chord.forEach((note) => {
+      playAcousticNote(ctx, note.freq, now + note.delay, note.dur, note.vol)
     })
   } catch {
     // Gracefully ignore audio restrictions
