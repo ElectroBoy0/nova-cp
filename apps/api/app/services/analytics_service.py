@@ -47,18 +47,23 @@ class AnalyticsService:
             return
 
         solved_problems = set()
+        solved_problem_ratings: dict[str, int | None] = {}
         contests_participated = set()
         topic_stats = defaultdict(lambda: {"solved": 0, "attempts": 0})
+        verdict_stats: dict[str, int] = defaultdict(int)
 
         # For streak calculation
         active_days = set()
 
         for sub in submissions:
             is_ac = sub.verdict == "OK"
+            verdict_stats[sub.verdict] += 1
 
             if is_ac:
                 problem_key = f"{sub.contest_id}_{sub.problem_index}" if sub.contest_id else sub.problem_name
                 solved_problems.add(problem_key)
+                if problem_key not in solved_problem_ratings or (solved_problem_ratings[problem_key] is None and sub.problem_rating is not None):
+                    solved_problem_ratings[problem_key] = sub.problem_rating
 
                 # Active days are only when a problem is solved
                 local_time = sub.creation_time.astimezone(user_tz)
@@ -71,6 +76,14 @@ class AnalyticsService:
                 topic_stats[tag]["attempts"] += 1
                 if is_ac:
                     topic_stats[tag]["solved"] += 1
+
+        # Calculate rating distribution for distinct solved problems
+        rating_distribution: dict[str, int] = defaultdict(int)
+        for _, rating in solved_problem_ratings.items():
+            if rating is not None and rating > 0:
+                rating_distribution[str(rating)] += 1
+            else:
+                rating_distribution["Unrated"] += 1
 
         # 3. Calculate streak
         current_streak = 0
@@ -159,6 +172,8 @@ class AnalyticsService:
                 current_streak_days=current_streak,
                 max_streak_days=max_streak,
                 topic_mastery=dict(topic_stats),
+                rating_distribution=dict(rating_distribution),
+                verdict_distribution=dict(verdict_stats),
                 recommended_problem=recommended_problem
             )
             self.db.add(analytics)
@@ -168,6 +183,8 @@ class AnalyticsService:
             analytics.current_streak_days = current_streak
             analytics.max_streak_days = max_streak
             analytics.topic_mastery = dict(topic_stats)
+            analytics.rating_distribution = dict(rating_distribution)
+            analytics.verdict_distribution = dict(verdict_stats)
             analytics.recommended_problem = recommended_problem
 
         await self.db.commit()

@@ -173,8 +173,10 @@ class UserAnalyticsRead(NovaCPBaseModel):
     contest_count: int
     current_streak_days: int
     max_streak_days: int
-    topic_mastery: dict
-    recommended_problem: dict | None
+    topic_mastery: dict = {}
+    rating_distribution: dict = {}
+    verdict_distribution: dict = {}
+    recommended_problem: dict | None = None
 
 
 # Update forward references

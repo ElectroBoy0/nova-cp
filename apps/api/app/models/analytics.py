@@ -37,6 +37,12 @@ class UserAnalytics(Base, UUIDMixin, TimestampMixin):
     # e.g., {"math": {"solved": 15, "total": 20}, "dp": {"solved": 5, "total": 10}}
     topic_mastery: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
 
+    # Rating difficulty spectrum: e.g. {"800": 24, "900": 12, "1000": 15, "1100": 4, "1200": 2}
+    rating_distribution: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+
+    # Submissions verdict breakdown: e.g. {"OK": 57, "WRONG_ANSWER": 38, "TIME_LIMIT_EXCEEDED": 2}
+    verdict_distribution: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+
     # Selected recommended problem for the user
     # e.g., {"name": "Problem Name", "contestId": 123, "index": "A", "rating": 1200}
     recommended_problem: Mapped[dict | None] = mapped_column(JSON, nullable=True)

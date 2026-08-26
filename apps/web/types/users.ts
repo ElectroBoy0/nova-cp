@@ -84,6 +84,8 @@ export interface UserAnalytics {
   current_streak_days: number
   max_streak_days: number
   topic_mastery: Record<string, { solved: number; attempts: number }>
+  rating_distribution?: Record<string, number>
+  verdict_distribution?: Record<string, number>
   recommended_problem: {
     name: string
     contestId: number

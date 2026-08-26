@@ -222,6 +222,8 @@ async def get_user_dashboard(
             current_streak_days=0,
             max_streak_days=0,
             topic_mastery={},
+            rating_distribution={},
+            verdict_distribution={},
             recommended_problem=None,
         )
 

@@ -16,6 +16,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
 import { RatingChart } from "@/components/analytics/rating-chart"
+import { RatingDistributionChart } from "@/components/analytics/rating-distribution-chart"
 import { ActivityHeatmap } from "@/components/analytics/activity-heatmap"
 
 export function AnalyticsClient({ userId }: { userId: string }) {
@@ -111,6 +112,12 @@ export function AnalyticsClient({ userId }: { userId: string }) {
           history={user?.cf_handle?.rating_history || []}
           currentRating={user?.cf_handle?.rating}
           maxRating={user?.cf_handle?.max_rating}
+        />
+
+        {/* Difficulty Rating Spectrum */}
+        <RatingDistributionChart
+          distribution={analytics?.rating_distribution}
+          totalSolved={analytics?.total_solved}
         />
 
         {/* Topic Mastery */}
