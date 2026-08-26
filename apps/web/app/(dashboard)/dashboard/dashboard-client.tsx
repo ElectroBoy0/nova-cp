@@ -12,6 +12,7 @@ import { PlatformBadge } from "@/components/contests/platform-badge"
 import { useEffect, useRef } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { OnboardingDialog } from "@/components/onboarding/onboarding-dialog"
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
 import type { Contest } from "@/types/contests"
 
 export function DashboardClient({ userId, firstName }: { userId: string; firstName: string }) {
@@ -182,68 +183,95 @@ export function DashboardClient({ userId, firstName }: { userId: string; firstNa
       )}
 
       {/* ---- Stat Pills ---- */}
-      <div className="stagger-2 mb-8 grid animate-fade-up grid-cols-2 gap-3 lg:grid-cols-4">
-        {[
-          {
-            label: "Current Rating",
-            value: rating,
-            icon: BarChart3,
-            color: "text-violet-400",
-            isRating: true,
-          },
-          { label: "Problems Solved", value: totalSolved, icon: Star, color: "text-sky-400" },
-          { label: "Contests", value: totalContests, icon: Trophy, color: "text-emerald-400" },
-          { label: "Day Streak", value: streak, icon: Flame, color: "text-amber-400" },
-        ].map((stat) => {
-          const Icon = stat.icon
+      <TooltipProvider delayDuration={150}>
+        <div className="stagger-2 mb-8 grid animate-fade-up grid-cols-2 gap-3 lg:grid-cols-4">
+          {[
+            {
+              label: "Current Rating",
+              value: rating,
+              icon: BarChart3,
+              color: "text-violet-400",
+              isRating: true,
+              description: "Official Codeforces rating from rated contests.",
+            },
+            {
+              label: "Problems Solved",
+              value: totalSolved,
+              icon: Star,
+              color: "text-sky-400",
+              description:
+                "Unique problems solved with an OK verdict on Codeforces (deduplicated across multiple attempts & practice re-solves).",
+            },
+            {
+              label: "Contests",
+              value: totalContests,
+              icon: Trophy,
+              color: "text-emerald-400",
+              description: "Total official rated Codeforces contests participated.",
+            },
+            {
+              label: "Day Streak",
+              value: streak,
+              icon: Flame,
+              color: "text-amber-400",
+              description: "Consecutive days with at least one accepted problem solve.",
+            },
+          ].map((stat) => {
+            const Icon = stat.icon
 
-          let sparklinePoints = ""
-          if (stat.isRating && ratingHistory.length >= 2) {
-            const min = Math.min(...ratingHistory)
-            const max = Math.max(...ratingHistory)
-            const range = max - min || 1
-            sparklinePoints = ratingHistory
-              .map((val: number, i: number) => {
-                const x = (i / (ratingHistory.length - 1)) * 100
-                const y = 100 - ((val - min) / range) * 100
-                return `${x},${y}`
-              })
-              .join(" ")
-          }
+            let sparklinePoints = ""
+            if (stat.isRating && ratingHistory.length >= 2) {
+              const min = Math.min(...ratingHistory)
+              const max = Math.max(...ratingHistory)
+              const range = max - min || 1
+              sparklinePoints = ratingHistory
+                .map((val: number, i: number) => {
+                  const x = (i / (ratingHistory.length - 1)) * 100
+                  const y = 100 - ((val - min) / range) * 100
+                  return `${x},${y}`
+                })
+                .join(" ")
+            }
 
-          return (
-            <div
-              key={stat.label}
-              className="relative overflow-hidden rounded-xl border border-border/40 bg-surface-1/50 p-4 transition-colors hover:border-border/80"
-            >
-              {stat.isRating && sparklinePoints && (
-                <svg
-                  className="absolute bottom-0 left-0 h-1/2 w-full text-violet-400 opacity-10"
-                  preserveAspectRatio="none"
-                  viewBox="0 0 100 100"
-                >
-                  <polyline
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    vectorEffect="non-scaling-stroke"
-                    points={sparklinePoints}
-                  />
-                </svg>
-              )}
-              <div className="relative mb-2 flex items-center justify-between">
-                <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                  {stat.label}
-                </span>
-                <Icon className={`h-4 w-4 ${stat.color}`} aria-hidden="true" />
-              </div>
-              <div className="relative font-mono text-2xl font-semibold text-foreground">
-                {isInitialLoading ? <Skeleton className="h-8 w-16" /> : stat.value}
-              </div>
-            </div>
-          )
-        })}
-      </div>
+            return (
+              <Tooltip key={stat.label}>
+                <TooltipTrigger asChild>
+                  <div className="relative cursor-help overflow-hidden rounded-xl border border-border/40 bg-surface-1/50 p-4 transition-all hover:border-border/80 hover:bg-surface-1">
+                    {stat.isRating && sparklinePoints && (
+                      <svg
+                        className="absolute bottom-0 left-0 h-1/2 w-full text-violet-400 opacity-10"
+                        preserveAspectRatio="none"
+                        viewBox="0 0 100 100"
+                      >
+                        <polyline
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          vectorEffect="non-scaling-stroke"
+                          points={sparklinePoints}
+                        />
+                      </svg>
+                    )}
+                    <div className="relative mb-2 flex items-center justify-between">
+                      <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                        {stat.label}
+                      </span>
+                      <Icon className={`h-4 w-4 ${stat.color}`} aria-hidden="true" />
+                    </div>
+                    <div className="relative font-mono text-2xl font-semibold text-foreground">
+                      {isInitialLoading ? <Skeleton className="h-8 w-16" /> : stat.value}
+                    </div>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-xs text-xs">
+                  <p className="font-medium text-foreground">{stat.label}</p>
+                  <p className="mt-0.5 text-muted-foreground">{stat.description}</p>
+                </TooltipContent>
+              </Tooltip>
+            )
+          })}
+        </div>
+      </TooltipProvider>
 
       {/* ---- Main Grid ---- */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
