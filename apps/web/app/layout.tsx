@@ -4,6 +4,8 @@ import "./globals.css"
 import { QueryProvider } from "@/components/providers/query-provider"
 import { CommandPalette } from "@/components/command-palette"
 import { auth } from "@/lib/auth"
+import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 // ---- Fonts ----
 const inter = Inter({
@@ -100,6 +102,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           {children}
           <CommandPalette session={session} />
         </QueryProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )
