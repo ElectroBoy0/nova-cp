@@ -18,6 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
+import { playNotificationSound } from "@/lib/sound"
 import Link from "next/link"
 import {
   CheckCircle2,
@@ -490,6 +491,9 @@ export function SettingsForm({ userId }: { userId: string }) {
   }
 
   const handleTestAlert = () => {
+    if (soundEffects) {
+      playNotificationSound()
+    }
     triggerTestNotifMutation.mutate(
       { userId },
       {

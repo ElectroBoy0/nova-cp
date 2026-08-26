@@ -20,6 +20,7 @@ import { DEFAULT_TEMPLATES, LANGUAGE_OPTIONS } from "@/lib/code-templates"
 import { getProblemStatementDetails } from "@/lib/problem-statement-helper"
 import { useRunCode } from "@/lib/code-execution"
 import { useProblems } from "@/hooks/use-problems"
+import { playSuccessSound } from "@/lib/sound"
 import type { SupportedLanguage, TestCase, CodeRunResponse } from "@/types/code-execution"
 import type { Problem } from "@/types/problems"
 
@@ -159,6 +160,10 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
         memory_limit_mb: 256,
       })
       setLastRunResult(result)
+
+      if (result.status === "ACCEPTED") {
+        playSuccessSound()
+      }
 
       if (result.test_cases && result.test_cases.length > 0) {
         const updated: TestCase[] = testCases.map((tc) => {
