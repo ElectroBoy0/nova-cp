@@ -41,14 +41,35 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
     # ---- Startup ----
     logger.info("Starting NovaCP API v%s", settings.APP_VERSION)
 
-    # Verify database connection
+    # Verify database connection & run lightweight auto-migrations
     from sqlalchemy import text
 
     from app.database import get_engine
     engine = get_engine()
     try:
-        async with engine.connect() as conn:
+        async with engine.begin() as conn:
             await conn.execute(text("SELECT 1"))
+
+            # Create any missing tables
+            from app.database import Base
+            import app.models  # noqa: F401
+            await conn.run_sync(Base.metadata.create_all)
+
+            # Auto-migrate schema updates for existing tables if on postgresql
+            if "postgresql" in str(engine.url) or "postgres" in str(engine.url):
+                try:
+                    await conn.execute(text("""
+                        ALTER TABLE user_analytics 
+                        ADD COLUMN IF NOT EXISTS rating_distribution JSON DEFAULT '{}'::json NOT NULL;
+                    """))
+                    await conn.execute(text("""
+                        ALTER TABLE user_analytics 
+                        ADD COLUMN IF NOT EXISTS verdict_distribution JSON DEFAULT '{}'::json NOT NULL;
+                    """))
+                    logger.info("Schema auto-migration for user_analytics: OK")
+                except Exception as mig_err:
+                    logger.warning("Schema auto-migration notice: %s", mig_err)
+
         logger.info("Database connection: OK")
     except Exception as e:
         logger.error("Database connection failed: %s", e)

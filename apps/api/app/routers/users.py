@@ -192,9 +192,13 @@ async def get_user_dashboard(
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ) -> UserAnalyticsRead:
-    stmt = select(UserAnalytics).where(UserAnalytics.user_id == user_id)
-    result = await db.execute(stmt)
-    analytics = result.scalar_one_or_none()
+    analytics = None
+    try:
+        stmt = select(UserAnalytics).where(UserAnalytics.user_id == user_id)
+        result = await db.execute(stmt)
+        analytics = result.scalar_one_or_none()
+    except Exception as e:
+        logger.warning("Could not query UserAnalytics for user %s: %s", user_id, e)
 
     service = UserService(db)
     user = await service.get_by_id(user_id)
@@ -204,7 +208,7 @@ async def get_user_dashboard(
             detail=f"User {user_id!r} not found.",
         )
 
-    if not analytics:
+    if not analytics or analytics.total_solved == 0:
         # Check if the user has a linked handle
         cf_handle_stmt = select(CFHandle).where(CFHandle.user_id == user_id)
         cf_handle_result = await db.execute(cf_handle_stmt)
@@ -215,6 +219,7 @@ async def get_user_dashboard(
             if cf_handle.sync_status != "syncing":
                 background_tasks.add_task(_run_sync_task, user_id, cf_handle.handle)
 
+    if not analytics:
         return UserAnalyticsRead(
             user_id=user_id,
             total_solved=0,
