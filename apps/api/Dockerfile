@@ -10,9 +10,11 @@ FROM python:3.12-slim AS base
 RUN groupadd --gid 1001 novacp \
     && useradd --uid 1001 --gid novacp --shell /bin/bash --create-home novacp
 
-# Install system deps required by asyncpg and other C extensions
+# Install system deps required by asyncpg, C++ compiler (g++ for sandboxed C++ execution), and Java
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
+    g++ \
+    default-jdk-headless \
     && rm -rf /var/lib/apt/lists/*
 
 # Install uv — the fast Python package manager

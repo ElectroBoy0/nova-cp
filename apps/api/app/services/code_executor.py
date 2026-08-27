@@ -34,20 +34,34 @@ class CodeExecutorService:
     @classmethod
     def _find_compiler(cls, lang: Language) -> Optional[str]:
         if lang == "cpp":
-            # Prefer g++ if available, else clang++
-            return shutil.which("g++") or shutil.which("clang++")
+            for bin_name in ["g++", "clang++", "g++-12", "g++-13", "g++-11", "gcc"]:
+                found = shutil.which(bin_name)
+                if found:
+                    return found
+            # Fallback absolute paths in Linux/Debian/macOS environments
+            for path_str in ["/usr/bin/g++", "/usr/local/bin/g++", "/usr/bin/clang++", "/opt/homebrew/bin/g++"]:
+                if Path(path_str).is_file() and os.access(path_str, os.X_OK):
+                    return path_str
+            return None
         elif lang == "python":
-            return shutil.which("python3") or shutil.which("python")
+            return shutil.which("python3") or shutil.which("python") or "/usr/bin/python3"
         elif lang == "java":
-            return shutil.which("javac")
+            for bin_name in ["javac"]:
+                found = shutil.which(bin_name)
+                if found:
+                    return found
+            for path_str in ["/usr/bin/javac", "/usr/lib/jvm/default-java/bin/javac"]:
+                if Path(path_str).is_file() and os.access(path_str, os.X_OK):
+                    return path_str
+            return None
         return None
 
     @classmethod
     def _find_runner(cls, lang: Language) -> Optional[str]:
         if lang == "python":
-            return shutil.which("python3") or shutil.which("python")
+            return shutil.which("python3") or shutil.which("python") or "/usr/bin/python3"
         elif lang == "java":
-            return shutil.which("java")
+            return shutil.which("java") or "/usr/bin/java"
         return None
 
     @classmethod
