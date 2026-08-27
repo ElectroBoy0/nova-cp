@@ -2,22 +2,7 @@
 
 import React, { useState, useMemo } from "react"
 import Link from "next/link"
-import {
-  Layers,
-  Search,
-  ArrowUpDown,
-  Sparkles,
-  Trophy,
-  Target,
-  ArrowRight,
-  TrendingUp,
-  Flame,
-  BookOpen,
-  CheckCircle2,
-  AlertCircle,
-  LayoutGrid,
-  List,
-} from "lucide-react"
+import { Layers, Search, ArrowRight, BookOpen, LayoutGrid, List, Tag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -69,66 +54,6 @@ const TOPIC_CATEGORIES: Record<string, CategoryOption> = {
   matrices: "math_spec",
 }
 
-function getTopicTheme(topic: string): {
-  barGradient: string
-  glowColor: string
-  badgeClass: string
-  iconEmoji: string
-} {
-  const t = topic.toLowerCase()
-  if (t.includes("dp") || t.includes("dynamic")) {
-    return {
-      barGradient: "from-purple-500 via-indigo-500 to-violet-400",
-      glowColor: "rgba(168, 85, 247, 0.4)",
-      badgeClass: "bg-purple-500/10 text-purple-400 border-purple-500/20",
-      iconEmoji: "⚡",
-    }
-  }
-  if (t.includes("graph") || t.includes("tree") || t.includes("dfs") || t.includes("path")) {
-    return {
-      barGradient: "from-cyan-500 via-sky-500 to-blue-400",
-      glowColor: "rgba(6, 182, 212, 0.4)",
-      badgeClass: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
-      iconEmoji: "🌳",
-    }
-  }
-  if (
-    t.includes("math") ||
-    t.includes("number") ||
-    t.includes("combinatorics") ||
-    t.includes("prob")
-  ) {
-    return {
-      barGradient: "from-amber-500 via-yellow-500 to-emerald-400",
-      glowColor: "rgba(245, 158, 11, 0.4)",
-      badgeClass: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-      iconEmoji: "🔢",
-    }
-  }
-  if (t.includes("greedy") || t.includes("sort")) {
-    return {
-      barGradient: "from-emerald-500 via-teal-500 to-emerald-400",
-      glowColor: "rgba(16, 185, 129, 0.4)",
-      badgeClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-      iconEmoji: "🎯",
-    }
-  }
-  if (t.includes("string") || t.includes("implement") || t.includes("constructive")) {
-    return {
-      barGradient: "from-blue-500 via-indigo-500 to-sky-400",
-      glowColor: "rgba(59, 130, 246, 0.4)",
-      badgeClass: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-      iconEmoji: "🧩",
-    }
-  }
-  return {
-    barGradient: "from-violet-500 via-primary to-fuchsia-400",
-    glowColor: "rgba(139, 92, 246, 0.4)",
-    badgeClass: "bg-primary/10 text-primary border-primary/20",
-    iconEmoji: "✨",
-  }
-}
-
 function getMasteryLevel(
   solved: number,
   accuracy: number
@@ -137,15 +62,27 @@ function getMasteryLevel(
   color: string
 } {
   if (solved >= 15 || (solved >= 8 && accuracy >= 75)) {
-    return { label: "Mastered", color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/30" }
+    return {
+      label: "Mastered",
+      color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+    }
   }
   if (solved >= 6 || (solved >= 3 && accuracy >= 60)) {
-    return { label: "Proficient", color: "text-cyan-400 bg-cyan-500/10 border-cyan-500/30" }
+    return {
+      label: "Proficient",
+      color: "text-sky-400 bg-sky-500/10 border-sky-500/20",
+    }
   }
   if (solved >= 2 || accuracy >= 40) {
-    return { label: "Practicing", color: "text-amber-400 bg-amber-500/10 border-amber-500/30" }
+    return {
+      label: "Practicing",
+      color: "text-amber-400 bg-amber-500/10 border-amber-500/20",
+    }
   }
-  return { label: "Developing", color: "text-rose-400 bg-rose-500/10 border-rose-500/30" }
+  return {
+    label: "Developing",
+    color: "text-muted-foreground bg-surface-2 border-border/60",
+  }
 }
 
 export function TopicMasteryChart({ topicMastery, isLoading }: TopicMasteryChartProps) {
@@ -169,7 +106,7 @@ export function TopicMasteryChart({ topicMastery, isLoading }: TopicMasteryChart
     })
   }, [topicMastery])
 
-  // Summary Metrics
+  // Summary Metrics with unified, cohesive typography
   const summary = useMemo(() => {
     if (rawEntries.length === 0) return null
 
@@ -231,9 +168,9 @@ export function TopicMasteryChart({ topicMastery, isLoading }: TopicMasteryChart
   }, [rawEntries, searchQuery, selectedCategory, sortOption])
 
   return (
-    <div className="rounded-xl border border-border/70 bg-gradient-to-b from-card to-surface-1 p-5 shadow-sm sm:p-6">
+    <div className="shadow-xs rounded-xl border border-border bg-card p-5 sm:p-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 border-b border-border/50 pb-5 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-4 border-b border-border/60 pb-5 md:flex-row md:items-center md:justify-between">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -246,7 +183,7 @@ export function TopicMasteryChart({ topicMastery, isLoading }: TopicMasteryChart
           </p>
         </div>
 
-        {/* Search & Layout Toggles */}
+        {/* Search & Layout Controls */}
         <div className="flex flex-wrap items-center gap-2.5">
           <div className="relative min-w-[180px] sm:w-56">
             <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -254,7 +191,7 @@ export function TopicMasteryChart({ topicMastery, isLoading }: TopicMasteryChart
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Filter topics (dp, math)..."
-              className="h-8 border-border/80 bg-surface-2 pl-8 text-xs"
+              className="h-8 border-border bg-surface-2 pl-8 text-xs placeholder:text-muted-foreground/60"
             />
           </div>
 
@@ -262,7 +199,7 @@ export function TopicMasteryChart({ topicMastery, isLoading }: TopicMasteryChart
           <select
             value={sortOption}
             onChange={(e) => setSortOption(e.target.value as SortOption)}
-            className="h-8 rounded-md border border-border/80 bg-surface-2 px-2.5 font-mono text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+            className="h-8 rounded-md border border-border bg-surface-2 px-2.5 font-mono text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
           >
             <option value="solved_desc">Most Solved</option>
             <option value="accuracy_desc">Highest Accuracy</option>
@@ -271,7 +208,7 @@ export function TopicMasteryChart({ topicMastery, isLoading }: TopicMasteryChart
           </select>
 
           {/* View Mode Toggle */}
-          <div className="flex rounded-md border border-border/80 bg-surface-2 p-0.5">
+          <div className="flex rounded-md border border-border bg-surface-2 p-0.5">
             <button
               type="button"
               onClick={() => setViewMode("list")}
@@ -302,44 +239,42 @@ export function TopicMasteryChart({ topicMastery, isLoading }: TopicMasteryChart
         </div>
       </div>
 
-      {/* Summary KPI Ribbon */}
+      {/* Cohesive Summary KPI Ribbon */}
       {summary && (
         <div className="my-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-lg border border-border/40 bg-surface-2/40 p-3">
+          <div className="rounded-lg border border-border/50 bg-surface-1 p-3.5">
             <div className="text-[11px] font-medium text-muted-foreground">Topics Explored</div>
             <div className="mt-1 font-mono text-lg font-bold text-foreground">
               {summary.totalTopics}
             </div>
-            <div className="text-[10px] text-muted-foreground/80">Active Categories</div>
+            <div className="text-[10px] text-muted-foreground">Active Categories</div>
           </div>
 
-          <div className="rounded-lg border border-border/40 bg-surface-2/40 p-3">
+          <div className="rounded-lg border border-border/50 bg-surface-1 p-3.5">
             <div className="text-[11px] font-medium text-muted-foreground">Top Domain</div>
-            <div className="mt-1 truncate font-mono text-lg font-bold capitalize text-primary">
+            <div className="mt-1 truncate font-mono text-lg font-bold capitalize text-foreground">
               {summary.topSolvedTopic}
             </div>
-            <div className="text-[10px] text-muted-foreground/80">
-              {summary.topSolvedCount} solves
-            </div>
+            <div className="text-[10px] text-muted-foreground">{summary.topSolvedCount} solved</div>
           </div>
 
-          <div className="rounded-lg border border-border/40 bg-surface-2/40 p-3">
+          <div className="rounded-lg border border-border/50 bg-surface-1 p-3.5">
             <div className="text-[11px] font-medium text-muted-foreground">Best Accuracy</div>
-            <div className="mt-1 truncate font-mono text-lg font-bold text-emerald-400">
+            <div className="mt-1 truncate font-mono text-lg font-bold text-foreground">
               {summary.topAccuracyPercent}%
             </div>
-            <div className="truncate text-[10px] capitalize text-muted-foreground/80">
+            <div className="truncate text-[10px] capitalize text-muted-foreground">
               {summary.topAccuracyTopic}
             </div>
           </div>
 
-          <div className="rounded-lg border border-border/40 bg-surface-2/40 p-3">
+          <div className="rounded-lg border border-border/50 bg-surface-1 p-3.5">
             <div className="text-[11px] font-medium text-muted-foreground">Overall Solve Rate</div>
-            <div className="mt-1 font-mono text-lg font-bold text-cyan-400">
+            <div className="mt-1 font-mono text-lg font-bold text-foreground">
               {summary.overallAccuracy}%
             </div>
-            <div className="text-[10px] text-muted-foreground/80">
-              {summary.totalSolved} total solves
+            <div className="text-[10px] text-muted-foreground">
+              {summary.totalSolved} total solved
             </div>
           </div>
         </div>
@@ -375,7 +310,7 @@ export function TopicMasteryChart({ topicMastery, isLoading }: TopicMasteryChart
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div key={i} className="flex items-center gap-4">
               <Skeleton className="h-5 w-36" />
-              <Skeleton className="h-3 flex-1 rounded-full" />
+              <Skeleton className="h-2 flex-1 rounded-full" />
               <Skeleton className="h-5 w-16" />
             </div>
           ))}
@@ -394,7 +329,6 @@ export function TopicMasteryChart({ topicMastery, isLoading }: TopicMasteryChart
         /* Detailed List View */
         <div className="divide-y divide-border/40">
           {filteredEntries.map((item) => {
-            const theme = getTopicTheme(item.topic)
             const mastery = getMasteryLevel(item.solved, item.accuracy)
 
             return (
@@ -402,9 +336,9 @@ export function TopicMasteryChart({ topicMastery, isLoading }: TopicMasteryChart
                 key={item.topic}
                 className="group flex flex-col gap-2 rounded-lg py-3 transition-colors hover:bg-surface-1/60 sm:flex-row sm:items-center sm:gap-4 sm:px-2"
               >
-                {/* Topic Name & Emoji */}
-                <div className="flex min-w-[180px] items-center gap-2 sm:w-48">
-                  <span className="text-sm">{theme.iconEmoji}</span>
+                {/* Topic Name & Badge */}
+                <div className="flex min-w-[200px] items-center gap-2 sm:w-52">
+                  <Tag className="h-3.5 w-3.5 text-muted-foreground/60" />
                   <Link
                     href={`/problems?tags=${encodeURIComponent(item.topic)}`}
                     className="truncate text-xs font-semibold capitalize text-foreground transition-colors hover:text-primary"
@@ -420,8 +354,8 @@ export function TopicMasteryChart({ topicMastery, isLoading }: TopicMasteryChart
                   </Badge>
                 </div>
 
-                {/* Progress Bar */}
-                <div className="flex-1 space-y-1">
+                {/* Consistent NovaCP Indigo/Purple Accuracy Bar */}
+                <div className="flex-1 space-y-1.5">
                   <div className="flex items-center justify-between text-[11px]">
                     <span className="font-mono text-muted-foreground">
                       Accuracy:{" "}
@@ -437,19 +371,15 @@ export function TopicMasteryChart({ topicMastery, isLoading }: TopicMasteryChart
 
                   <div className="relative h-2 w-full overflow-hidden rounded-full bg-surface-2">
                     <div
-                      className={cn(
-                        "h-full rounded-full bg-gradient-to-r transition-all duration-500",
-                        theme.barGradient
-                      )}
+                      className="h-full rounded-full bg-primary transition-all duration-500"
                       style={{
-                        width: `${Math.max(item.accuracy, 4)}%`,
-                        boxShadow: `0 0 10px ${theme.glowColor}`,
+                        width: `${Math.max(item.accuracy, 3)}%`,
                       }}
                     />
                   </div>
                 </div>
 
-                {/* Direct Solve Link */}
+                {/* Direct Practice Link */}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -469,18 +399,17 @@ export function TopicMasteryChart({ topicMastery, isLoading }: TopicMasteryChart
         /* Grid Card View */
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {filteredEntries.map((item) => {
-            const theme = getTopicTheme(item.topic)
             const mastery = getMasteryLevel(item.solved, item.accuracy)
 
             return (
               <div
                 key={item.topic}
-                className="group relative flex flex-col justify-between rounded-xl border border-border/60 bg-surface-2/40 p-4 transition-all hover:border-primary/40 hover:bg-surface-2 hover:shadow-md"
+                className="group relative flex flex-col justify-between rounded-xl border border-border/60 bg-surface-1 p-4 transition-all hover:border-primary/40 hover:bg-surface-2"
               >
                 <div>
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-base">{theme.iconEmoji}</span>
+                      <Tag className="h-3.5 w-3.5 text-muted-foreground/60" />
                       <h4 className="text-sm font-semibold capitalize text-foreground">
                         {item.topic}
                       </h4>
@@ -499,15 +428,11 @@ export function TopicMasteryChart({ topicMastery, isLoading }: TopicMasteryChart
                       <span className="font-bold text-foreground">{item.accuracy}%</span>
                     </div>
 
-                    <div className="bg-surface-3 relative h-2 w-full overflow-hidden rounded-full">
+                    <div className="relative h-2 w-full overflow-hidden rounded-full bg-surface-2">
                       <div
-                        className={cn(
-                          "h-full rounded-full bg-gradient-to-r transition-all duration-500",
-                          theme.barGradient
-                        )}
+                        className="h-full rounded-full bg-primary transition-all duration-500"
                         style={{
-                          width: `${Math.max(item.accuracy, 6)}%`,
-                          boxShadow: `0 0 8px ${theme.glowColor}`,
+                          width: `${Math.max(item.accuracy, 4)}%`,
                         }}
                       />
                     </div>
