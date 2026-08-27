@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button"
 
 import { RatingChart } from "@/components/analytics/rating-chart"
 import { RatingDistributionChart } from "@/components/analytics/rating-distribution-chart"
+import { TopicMasteryChart } from "@/components/analytics/topic-mastery-chart"
 import { ActivityHeatmap } from "@/components/analytics/activity-heatmap"
 
 export function AnalyticsClient({ userId }: { userId: string }) {
@@ -120,53 +121,8 @@ export function AnalyticsClient({ userId }: { userId: string }) {
           totalSolved={analytics?.total_solved}
         />
 
-        {/* Topic Mastery */}
-        <div className="rounded-xl border border-border bg-card p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <div className="text-sm font-semibold text-foreground">Topic Mastery</div>
-          </div>
-
-          <div className="space-y-4">
-            {isAnalyticsLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={i} className="flex items-center gap-4">
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-2 flex-1 rounded-full" />
-                    <Skeleton className="h-4 w-12" />
-                  </div>
-                ))}
-              </div>
-            ) : analytics?.topic_mastery && Object.keys(analytics.topic_mastery).length > 0 ? (
-              Object.entries(analytics.topic_mastery)
-                .sort((a, b) => b[1].solved - a[1].solved)
-                .map(([topic, stats]) => {
-                  const percentage =
-                    stats.attempts > 0 ? Math.round((stats.solved / stats.attempts) * 100) : 0
-                  return (
-                    <div key={topic} className="flex items-center gap-4">
-                      <div className="w-32 truncate text-sm text-muted-foreground" title={topic}>
-                        {topic}
-                      </div>
-                      <div className="h-2 flex-1 overflow-hidden rounded-full bg-surface-2">
-                        <div
-                          className="h-full rounded-full bg-emerald-500"
-                          style={{ width: `${percentage}%` }}
-                        />
-                      </div>
-                      <div className="w-12 text-right text-xs font-medium text-foreground">
-                        {stats.solved}/{stats.attempts}
-                      </div>
-                    </div>
-                  )
-                })
-            ) : (
-              <p className="py-4 text-center text-sm text-muted-foreground">
-                No submission data found.
-              </p>
-            )}
-          </div>
-        </div>
+        {/* Topic Mastery & Skill Map */}
+        <TopicMasteryChart topicMastery={analytics?.topic_mastery} isLoading={isAnalyticsLoading} />
 
         {/* Practice Activity Heatmap */}
         <ActivityHeatmap userId={userId} />
