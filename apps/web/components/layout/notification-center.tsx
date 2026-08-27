@@ -22,7 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ScrollArea } from "@/components/ui/scroll-area"
+
 import {
   useUserNotifications,
   useMarkNotificationRead,
@@ -111,7 +111,7 @@ export function NotificationCenter({ userId }: { userId: string }) {
           )}
         </div>
 
-        <ScrollArea className="max-h-[360px]">
+        <div className="custom-scrollbar max-h-[380px] overflow-y-auto overscroll-contain">
           {isLoading ? (
             <div className="p-6 text-center text-xs text-muted-foreground">
               Loading notifications...
@@ -187,7 +187,7 @@ export function NotificationCenter({ userId }: { userId: string }) {
               ))}
             </div>
           )}
-        </ScrollArea>
+        </div>
         <DropdownMenuSeparator className="m-0" />
         <div className="bg-surface-1/40 p-2 text-center">
           <Link
