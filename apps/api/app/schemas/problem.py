@@ -23,6 +23,29 @@ class ProblemListResponse(BaseModel):
     limit: int
     offset: int
 
+
+class ProblemSearchResult(BaseModel):
+    id: str
+    problem_id: str
+    platform: str
+    platform_problem_id: str
+    contest_id: int | None
+    index: str
+    name: str
+    title: str
+    rating: int | None
+    tags: list[str]
+    url: str
+    solved_count: int | None = None
+    status: str | None = None  # "solved" | "attempted" | "unattempted" | None
+
+
+class ProblemSearchResponse(BaseModel):
+    results: list[ProblemSearchResult]
+    total: int
+    limit: int
+    offset: int
+
 class ProblemRecommendationExplanation(BaseModel):
     recommendation_type: str
     reason_summary: str

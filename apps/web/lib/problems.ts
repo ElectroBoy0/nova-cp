@@ -34,6 +34,24 @@ export async function getProblems(params: {
   return apiClient.get<ProblemListResponse>(url)
 }
 
+export async function searchProblems(params: {
+  q: string
+  limit?: number
+  offset?: number
+  userId?: string
+}): Promise<import("@/types/problems").ProblemSearchResponse> {
+  const searchParams = new URLSearchParams()
+  if (params.q) searchParams.append("q", params.q)
+  if (params.limit !== undefined) searchParams.append("limit", params.limit.toString())
+  if (params.offset !== undefined) searchParams.append("offset", params.offset.toString())
+  if (params.userId) searchParams.append("user_id", params.userId)
+
+  const queryString = searchParams.toString()
+  const url = queryString ? `/api/v1/problems/search?${queryString}` : "/api/v1/problems/search"
+
+  return apiClient.get<import("@/types/problems").ProblemSearchResponse>(url)
+}
+
 export async function getRecommendations(userId: string): Promise<ProblemRecommendation[]> {
   return apiClient.get<ProblemRecommendation[]>(`/api/v1/problems/recommendations/${userId}`)
 }

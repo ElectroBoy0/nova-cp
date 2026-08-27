@@ -13,6 +13,7 @@ from app.schemas.problem import (
     HintResponse,
     ProblemListResponse,
     ProblemRecommendationRead,
+    ProblemSearchResponse,
     RecommendationFeedbackCreate,
 )
 from app.services.hint_service import HintService
@@ -20,6 +21,33 @@ from app.services.problem_service import ProblemService
 from app.services.recommendation.engine import RecommendationEngine
 
 router = APIRouter(prefix="/api/v1/problems", tags=["problems"])
+
+
+@router.get("/search", response_model=ProblemSearchResponse)
+async def search_problems(
+    q: str = Query("", description="Search query by ID (2041G), title, tag, or rating"),
+    limit: int = Query(20, ge=1, le=50),
+    offset: int = Query(0, ge=0),
+    user_id: str | None = Query(None, description="Optional user ID to annotate solved status"),
+    db: AsyncSession = Depends(get_db),
+) -> ProblemSearchResponse:
+    """
+    Search problems across ID (2041G), title (Summmon), tag (dp, trees), or rating (1600).
+    Returns ranked problem metadata with user solved status.
+    """
+    service = ProblemService(db)
+    results, total = await service.search_problems(
+        query=q,
+        limit=limit,
+        offset=offset,
+        user_id=user_id,
+    )
+    return ProblemSearchResponse(
+        results=results,
+        total=total,
+        limit=limit,
+        offset=offset,
+    )
 
 @router.get("", response_model=ProblemListResponse)
 async def get_problems(

@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect, useCallback, useMemo } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Play, RotateCcw, ExternalLink, Layers, Loader2, Keyboard } from "lucide-react"
 import {
@@ -19,10 +19,11 @@ import { TerminalPanel } from "./terminal-panel"
 import { DEFAULT_TEMPLATES, LANGUAGE_OPTIONS } from "@/lib/code-templates"
 import { getProblemStatementDetails } from "@/lib/problem-statement-helper"
 import { useRunCode } from "@/lib/code-execution"
-import { useProblems } from "@/hooks/use-problems"
+import { useProblems, useProblemStatement } from "@/hooks/use-problems"
+import { ProblemSearchCombobox } from "./problem-search-combobox"
 import { playSuccessSound } from "@/lib/sound"
 import type { SupportedLanguage, TestCase, CodeRunResponse } from "@/types/code-execution"
-import type { Problem } from "@/types/problems"
+import type { Problem, ProblemSearchResult } from "@/types/problems"
 
 interface WorkspaceClientProps {
   userId?: string
@@ -35,16 +36,55 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
 
   const problemIdParam = searchParams.get("problemId") || initialProblemId || ""
 
-  // Fetch problem details if problemId is set
-  const { data: problemsData } = useProblems({ limit: 100 })
+  // Fetch initial problem set for default fallback
+  const { data: problemsData } = useProblems({ limit: 50 })
   const problems = problemsData?.items || []
 
-  const currentProblem: Problem | null =
-    problems.find(
-      (p) => p.id === problemIdParam || `${p.contest_id}${p.index}` === problemIdParam
-    ) ??
-    problems[0] ??
-    null
+  // Load problem statement if problemIdParam is specified
+  const { data: stmtData } = useProblemStatement(problemIdParam || undefined)
+
+  const [selectedProblem, setSelectedProblem] = useState<Problem | ProblemSearchResult | null>(null)
+
+  const currentProblem: Problem | null = useMemo(() => {
+    if (selectedProblem) {
+      return {
+        id: selectedProblem.id,
+        platform: selectedProblem.platform,
+        platform_problem_id: selectedProblem.platform_problem_id,
+        contest_id: selectedProblem.contest_id,
+        index: selectedProblem.index,
+        name: selectedProblem.name,
+        rating: selectedProblem.rating,
+        tags: selectedProblem.tags || [],
+        url: selectedProblem.url,
+        solved_count: selectedProblem.solved_count,
+      }
+    }
+    if (problemIdParam) {
+      const found = problems.find(
+        (p) => p.id === problemIdParam || `${p.contest_id}${p.index}` === problemIdParam
+      )
+      if (found) return found
+
+      if (stmtData) {
+        return {
+          id: stmtData.problem_id || problemIdParam,
+          platform: "codeforces",
+          platform_problem_id: `CF_${stmtData.contest_id}_${stmtData.index}`,
+          contest_id: stmtData.contest_id,
+          index: stmtData.index,
+          name: stmtData.name || stmtData.title,
+          rating: stmtData.rating,
+          tags: stmtData.tags || [],
+          url:
+            stmtData.cf_url ||
+            `https://codeforces.com/contest/${stmtData.contest_id}/problem/${stmtData.index}`,
+          solved_count: null,
+        }
+      }
+    }
+    return problems[0] ?? null
+  }, [selectedProblem, problemIdParam, problems, stmtData])
 
   // Language & Code State
   const [language, setLanguage] = useState<SupportedLanguage>("cpp")
@@ -229,8 +269,10 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [handleRunCode, showShortcutsModal])
 
-  const handleSelectProblem = (id: string) => {
-    router.push(`/solve?problemId=${id}`)
+  const handleSelectProblem = (problem: Problem | ProblemSearchResult) => {
+    setSelectedProblem(problem)
+    const probParam = problem.contest_id ? `${problem.contest_id}${problem.index}` : problem.id
+    router.replace(`/solve?problemId=${probParam}`, { scroll: false })
   }
 
   return (
@@ -241,7 +283,7 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
       )}
     >
       <header className="z-10 flex h-12 shrink-0 items-center justify-between border-b border-border bg-surface-1 px-4">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <Button
             variant="ghost"
             size="icon-sm"
@@ -252,18 +294,11 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
             <Layers className="h-4 w-4" />
           </Button>
 
-          <select
-            value={currentProblem?.id || ""}
-            onChange={(e) => handleSelectProblem(e.target.value)}
-            className="max-w-[220px] truncate rounded-md border border-border bg-surface-2 px-2.5 py-1 font-mono text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary sm:max-w-xs"
-          >
-            {problems.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.contest_id}
-                {p.index} · {p.name} {p.rating ? `(${p.rating})` : ""}
-              </option>
-            ))}
-          </select>
+          <ProblemSearchCombobox
+            currentProblem={currentProblem}
+            onSelectProblem={handleSelectProblem}
+            userId={userId}
+          />
         </div>
 
         <div className="flex items-center gap-2">

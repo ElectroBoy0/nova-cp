@@ -18,6 +18,29 @@ export interface ProblemListResponse {
   offset: number
 }
 
+export interface ProblemSearchResult {
+  id: string
+  problem_id: string
+  platform: string
+  platform_problem_id: string
+  contest_id: number | null
+  index: string
+  name: string
+  title: string
+  rating: number | null
+  tags: string[]
+  url: string
+  solved_count: number | null
+  status?: "solved" | "attempted" | "unattempted" | null
+}
+
+export interface ProblemSearchResponse {
+  results: ProblemSearchResult[]
+  total: number
+  limit: number
+  offset: number
+}
+
 export interface ProblemRecommendationExplanation {
   recommendation_type: string
   reason_summary: string

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import {
   getProblems,
+  searchProblems,
   getRecommendations,
   getDailyMission,
   submitRecommendationFeedback,
@@ -13,7 +14,21 @@ import type {
   RecommendationFeedback,
   ProblemRecommendation,
   HintFeedbackCreate,
+  ProblemSearchResult,
 } from "@/types/problems"
+
+export function useProblemSearch(params: {
+  q: string
+  limit?: number
+  offset?: number
+  userId?: string
+}) {
+  return useQuery({
+    queryKey: ["problemSearch", params],
+    queryFn: () => searchProblems(params),
+    staleTime: 1000 * 60 * 5, // 5 minutes cache
+  })
+}
 
 export function useProblemStatement(problemId: string | undefined) {
   return useQuery({
