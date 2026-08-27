@@ -53,6 +53,22 @@ class NotificationService:
             logger.info("Upsolve reminder notification skipped for user %s per preferences", user_id)
             return None
 
+        # Deduplicate sync_status: update existing unread notification instead of creating duplicates
+        if type == "sync_status":
+            existing_stmt = select(Notification).where(
+                Notification.user_id == user_id,
+                Notification.type == type,
+                Notification.is_read.is_(False),
+            ).order_by(Notification.created_at.desc())
+            existing = (await self.db.execute(existing_stmt)).scalars().first()
+            if existing:
+                existing.title = title
+                existing.message = message
+                existing.link = link
+                await self.db.commit()
+                await self.db.refresh(existing)
+                return existing
+
         notification = Notification(
             user_id=user_id,
             type=type,

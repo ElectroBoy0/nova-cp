@@ -66,7 +66,19 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
                         ALTER TABLE user_analytics 
                         ADD COLUMN IF NOT EXISTS verdict_distribution JSON DEFAULT '{}'::json NOT NULL;
                     """))
-                    logger.info("Schema auto-migration for user_analytics: OK")
+                    # Purge historical duplicate unread sync_status notifications, keeping only the newest 1 per user
+                    await conn.execute(text("""
+                        DELETE FROM notifications 
+                        WHERE type = 'sync_status' 
+                        AND id NOT IN (
+                            SELECT id FROM (
+                                SELECT id, ROW_NUMBER() OVER (PARTITION BY user_id, type ORDER BY created_at DESC) as rn 
+                                FROM notifications 
+                                WHERE type = 'sync_status'
+                            ) sub WHERE sub.rn <= 1
+                        );
+                    """))
+                    logger.info("Schema auto-migration & notification deduplication: OK")
                 except Exception as mig_err:
                     logger.warning("Schema auto-migration notice: %s", mig_err)
 

@@ -37,12 +37,12 @@ router = APIRouter(
 )
 
 
-async def _run_sync_task(user_id: str, handle: str) -> None:
+async def _run_sync_task(user_id: str, handle: str, is_manual: bool = False) -> None:
     factory = get_session_factory()
     async with factory() as session:
         try:
             sync_service = SyncService(session)
-            await sync_service.run_full_sync(user_id, handle)
+            await sync_service.run_full_sync(user_id, handle, is_manual=is_manual)
         except Exception:
             # Errors are already logged and handled inside run_full_sync
             pass
@@ -172,8 +172,8 @@ async def link_cf_handle(
 
     try:
         user = await service.link_cf_handle(user_id, request.handle)
-        # Queue the background sync task
-        background_tasks.add_task(_run_sync_task, user_id, request.handle)
+        # Queue the background sync task with is_manual=True
+        background_tasks.add_task(_run_sync_task, user_id, request.handle, is_manual=True)
         return UserRead.model_validate(user)
     except ValueError as e:
         raise HTTPException(

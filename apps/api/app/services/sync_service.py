@@ -19,7 +19,7 @@ class SyncService:
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
 
-    async def run_full_sync(self, user_id: str, handle: str) -> None:
+    async def run_full_sync(self, user_id: str, handle: str, is_manual: bool = False) -> None:
         """
         Runs the full synchronization pipeline for a user:
         1. Fetch raw submissions from Codeforces.
@@ -27,7 +27,7 @@ class SyncService:
         3. Generate analytics.
         4. Update CFHandle sync status.
         """
-        logger.info("Starting full sync for user %s (handle: %s)", user_id, handle)
+        logger.info("Starting full sync for user %s (handle: %s, is_manual: %s)", user_id, handle, is_manual)
 
         # Mark as syncing
         await self._update_sync_status(user_id, "syncing")
@@ -75,15 +75,17 @@ class SyncService:
                 CacheKey.user_activity(user_id),
             )
 
-            from app.services.notification_service import NotificationService
-            notif_service = NotificationService(self.db)
-            await notif_service.create_notification(
-                user_id=user_id,
-                type="sync_status",
-                title="Codeforces Sync Complete",
-                message=f"Submissions and rating history for '{handle}' have been updated.",
-                link="/dashboard",
-            )
+            # Only notify on manual sync requests (e.g. Settings -> Sync Now or initial link)
+            if is_manual:
+                from app.services.notification_service import NotificationService
+                notif_service = NotificationService(self.db)
+                await notif_service.create_notification(
+                    user_id=user_id,
+                    type="sync_status",
+                    title="Codeforces Sync Complete",
+                    message=f"Submissions and rating history for '{handle}' have been updated.",
+                    link="/dashboard",
+                )
 
         except Exception as e:
             logger.exception("Full sync failed for user %s", user_id)
