@@ -59,29 +59,34 @@ function getMasteryLevel(
   accuracy: number
 ): {
   label: string
-  color: string
+  badgeClass: string
+  barClass: string
 } {
   if (solved >= 15 || (solved >= 8 && accuracy >= 75)) {
     return {
       label: "Mastered",
-      color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+      badgeClass: "text-emerald-400/90 bg-emerald-500/10 border-emerald-500/20",
+      barClass: "bg-emerald-500/75 group-hover:bg-emerald-400/90",
     }
   }
   if (solved >= 6 || (solved >= 3 && accuracy >= 60)) {
     return {
       label: "Proficient",
-      color: "text-sky-400 bg-sky-500/10 border-sky-500/20",
+      badgeClass: "text-sky-400/90 bg-sky-500/10 border-sky-500/20",
+      barClass: "bg-sky-500/75 group-hover:bg-sky-400/90",
     }
   }
   if (solved >= 2 || accuracy >= 40) {
     return {
       label: "Practicing",
-      color: "text-amber-400 bg-amber-500/10 border-amber-500/20",
+      badgeClass: "text-amber-400/90 bg-amber-500/10 border-amber-500/20",
+      barClass: "bg-amber-500/70 group-hover:bg-amber-400/85",
     }
   }
   return {
     label: "Developing",
-    color: "text-muted-foreground bg-surface-2 border-border/60",
+    badgeClass: "text-muted-foreground/80 bg-surface-2 border-border/50",
+    barClass: "bg-slate-400/35 group-hover:bg-slate-400/50",
   }
 }
 
@@ -348,30 +353,36 @@ export function TopicMasteryChart({ topicMastery, isLoading }: TopicMasteryChart
                   </Link>
                   <Badge
                     variant="outline"
-                    className={cn("h-4 px-1 py-0 font-mono text-[9px] uppercase", mastery.color)}
+                    className={cn(
+                      "h-4 px-1 py-0 font-mono text-[9px] uppercase",
+                      mastery.badgeClass
+                    )}
                   >
                     {mastery.label}
                   </Badge>
                 </div>
 
-                {/* Consistent NovaCP Indigo/Purple Accuracy Bar */}
+                {/* Soothing Semantic Accuracy Bar */}
                 <div className="flex-1 space-y-1.5">
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="font-mono text-muted-foreground">
+                    <span className="font-mono text-muted-foreground/80">
                       Accuracy:{" "}
                       <span className="font-semibold text-foreground">{item.accuracy}%</span>
                     </span>
                     <span className="font-mono text-xs font-semibold text-foreground">
                       {item.solved}{" "}
-                      <span className="font-normal text-muted-foreground">
+                      <span className="font-normal text-muted-foreground/70">
                         / {item.attempts} solves
                       </span>
                     </span>
                   </div>
 
-                  <div className="relative h-2 w-full overflow-hidden rounded-full bg-surface-2">
+                  <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-surface-2/80">
                     <div
-                      className="h-full rounded-full bg-primary transition-all duration-500"
+                      className={cn(
+                        "h-full rounded-full transition-all duration-300",
+                        mastery.barClass
+                      )}
                       style={{
                         width: `${Math.max(item.accuracy, 3)}%`,
                       }}
@@ -416,7 +427,7 @@ export function TopicMasteryChart({ topicMastery, isLoading }: TopicMasteryChart
                     </div>
                     <Badge
                       variant="outline"
-                      className={cn("px-1.5 py-0.5 font-mono text-[9px]", mastery.color)}
+                      className={cn("px-1.5 py-0.5 font-mono text-[9px]", mastery.badgeClass)}
                     >
                       {mastery.label}
                     </Badge>
@@ -424,13 +435,16 @@ export function TopicMasteryChart({ topicMastery, isLoading }: TopicMasteryChart
 
                   <div className="mt-4 space-y-1.5">
                     <div className="flex items-center justify-between font-mono text-xs">
-                      <span className="text-muted-foreground">Accuracy</span>
+                      <span className="text-muted-foreground/80">Accuracy</span>
                       <span className="font-bold text-foreground">{item.accuracy}%</span>
                     </div>
 
-                    <div className="relative h-2 w-full overflow-hidden rounded-full bg-surface-2">
+                    <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-surface-2/80">
                       <div
-                        className="h-full rounded-full bg-primary transition-all duration-500"
+                        className={cn(
+                          "h-full rounded-full transition-all duration-300",
+                          mastery.barClass
+                        )}
                         style={{
                           width: `${Math.max(item.accuracy, 4)}%`,
                         }}
