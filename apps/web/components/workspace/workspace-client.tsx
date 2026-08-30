@@ -21,6 +21,9 @@ import { getProblemStatementDetails } from "@/lib/problem-statement-helper"
 import { useRunCode } from "@/lib/code-execution"
 import { useProblems, useProblemStatement } from "@/hooks/use-problems"
 import { ProblemSearchCombobox } from "./problem-search-combobox"
+import { SolveTimer } from "./solve-timer"
+import { recordSolveSession } from "@/lib/solve-history"
+import { loadTimerState } from "@/lib/solve-timer"
 import { playSuccessSound } from "@/lib/sound"
 import type { SupportedLanguage, TestCase, CodeRunResponse } from "@/types/code-execution"
 import type { Problem, ProblemSearchResult } from "@/types/problems"
@@ -302,6 +305,16 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
         </div>
 
         <div className="flex items-center gap-2">
+          <SolveTimer
+            problemId={currentProblem?.id || problemIdParam || "default"}
+            problemName={currentProblem?.name || "Problem"}
+            virtualContestEndTime={
+              searchParams.get("virtualContestEndTime")
+                ? Number(searchParams.get("virtualContestEndTime"))
+                : null
+            }
+          />
+
           <select
             value={language}
             onChange={(e) => setLanguage(e.target.value as SupportedLanguage)}
@@ -359,6 +372,19 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
               href={`https://codeforces.com/problemset/problem/${currentProblem.contest_id}/${currentProblem.index}`}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => {
+                const saved = loadTimerState(currentProblem.id)
+                const duration = saved?.elapsedSolvingSeconds || saved?.seconds || 0
+                recordSolveSession({
+                  problemId: currentProblem.id,
+                  problemName: currentProblem.name,
+                  durationSeconds: duration,
+                  startedAt: saved?.sessionStartedAt || new Date().toISOString(),
+                  mode: saved?.mode || "count_up",
+                  status: "submitted",
+                  language,
+                })
+              }}
               className="hidden items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-surface-2 hover:text-foreground sm:flex"
             >
               <span>Submit on CF</span>
