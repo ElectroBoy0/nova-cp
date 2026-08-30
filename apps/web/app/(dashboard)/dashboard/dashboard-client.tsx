@@ -31,9 +31,7 @@ export function DashboardClient({ userId, firstName }: { userId: string; firstNa
     prevSyncStatus.current = syncStatus
   }, [syncStatus, queryClient, userId])
 
-  const { data: recommendations, isPending: isLoadingRecommendations } = useRecommendations(
-    user?.id ?? ""
-  )
+  const { data: recommendations, isPending: isLoadingRecommendations } = useRecommendations(userId)
 
   const isInitialLoading = isDashboardLoading || isUserLoading
   const hasLinkedHandle = !!user?.cf_handle

@@ -5,27 +5,19 @@ import katex from "katex"
 import { cn } from "@/lib/utils"
 
 interface MathTextProps {
-  content: string
+  content?: string
   className?: string
 }
 
 /**
  * Parses and renders LaTeX math notation ($$$...$$$, $$...$$, $...$)
- * alongside HTML tags (p, ul, ol, li, code, strong, em) with KaTeX.
+ * alongside Markdown formatting (**bold**, *italic*, `code`, lists) with KaTeX.
  */
-export function MathText({ content, className }: MathTextProps) {
+export function MathText({ content = "", className }: MathTextProps) {
   const renderedHtml = useMemo(() => {
     if (!content) return ""
 
-    // Regular expression matching math delimiters in order of specificity:
-    // 1. $$$$$$...$$$$$$ (Codeforces display/block math with 6 dollar signs)
-    // 2. $$$...$$$ (Codeforces inline math with 3 dollar signs)
-    // 3. $$...$$ (Standard display/block math with 2 dollar signs)
-    // 4. \[...\] (Standard LaTeX display math)
-    // 5. \(...\) (Standard LaTeX inline math)
-    // 6. $...$ (Standard inline math with 1 dollar sign)
-    const regex =
-      /(\${6}[\s\S]*?\${6}|\${3}[\s\S]*?\${3}|\${2}[\s\S]*?\${2}|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\$[^\$\n]+?\$)/g
+    const mathTokens: string[] = []
 
     const decodeHtmlEntities = (str: string) =>
       str
@@ -35,7 +27,12 @@ export function MathText({ content, className }: MathTextProps) {
         .replace(/&quot;/g, '"')
         .replace(/&#39;/g, "'")
 
-    return content.replace(regex, (match) => {
+    // Regular expression matching math delimiters in order of specificity:
+    const regex =
+      /(\${6}[\s\S]*?\${6}|\${3}[\s\S]*?\${3}|\${2}[\s\S]*?\${2}|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\$[^\$\n]+?\$)/g
+
+    // Step 1: Replace math delimiters with placeholders and render KaTeX
+    const tokenized = content.replace(regex, (match) => {
       try {
         let math = ""
         let displayMode = false
@@ -63,15 +60,49 @@ export function MathText({ content, className }: MathTextProps) {
         if (!math) return match
 
         const cleanedMath = decodeHtmlEntities(math)
-        return katex.renderToString(cleanedMath, {
+        const rendered = katex.renderToString(cleanedMath, {
           displayMode,
           throwOnError: false,
         })
+        const token = `__KATEX_TOKEN_${mathTokens.length}__`
+        mathTokens.push(rendered)
+        return token
       } catch (err) {
         console.error("KaTeX rendering error:", err)
         return match
       }
     })
+
+    // Step 2: Parse Markdown formatting (only if not already containing raw HTML tags)
+    let formatted = tokenized
+    // Inline code: `code`
+    formatted = formatted.replace(/`([^`]+)`/g, "<code>$1</code>")
+    // Bold: **text** or __text__
+    formatted = formatted.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    formatted = formatted.replace(/__([^_]+)__/g, "<strong>$1</strong>")
+    // Italic: *text* or _text_
+    formatted = formatted.replace(/\*([^*]+)\*/g, "<em>$1</em>")
+
+    // Numbered lists at start of line: "1. ", "2. "
+    formatted = formatted.replace(
+      /(^|\n)(\d+)\.\s+/g,
+      "$1<strong class='text-amber-500 font-semibold'>$2. </strong>"
+    )
+
+    // Paragraph breaks: convert double newline to paragraph space, single newline to br if no tags
+    if (!formatted.includes("<p>") && !formatted.includes("<div>")) {
+      formatted = formatted
+        .split(/\n{2,}/)
+        .map((p) => `<p class="mb-2 last:mb-0">${p.replace(/\n/g, "<br />")}</p>`)
+        .join("")
+    }
+
+    // Step 3: Re-insert KaTeX tokens
+    mathTokens.forEach((rendered, i) => {
+      formatted = formatted.replace(`__KATEX_TOKEN_${i}__`, rendered)
+    })
+
+    return formatted
   }, [content])
 
   return (

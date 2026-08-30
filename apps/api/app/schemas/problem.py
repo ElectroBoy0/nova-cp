@@ -61,7 +61,8 @@ class ProblemRecommendationRead(BaseModel):
 
 class RecommendationFeedbackCreate(BaseModel):
     problem_id: str
-    event_type: str  # e.g., 'helpful', 'not_relevant', 'skipped'
+    event_type: str  # e.g., 'helpful', 'not_relevant', 'skipped', 'solved_externally', 'started'
+    recommendation_type: str | None = "skill_builder"
 
 class HintResponse(BaseModel):
     hint_level: int

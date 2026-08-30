@@ -99,7 +99,7 @@ async def submit_feedback(
     values = {
         "user_id": user_id,
         "problem_id": feedback.problem_id,
-        "recommendation_type": feedback.recommendation_type,
+        "recommendation_type": feedback.recommendation_type or "skill_builder",
         "event_type": feedback.event_type,
         "score_snapshot": {} # In a real implementation we'd snapshot the score features here
     }

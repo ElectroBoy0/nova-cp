@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useHint, useHintFeedback } from "@/hooks/use-problems"
 import { Button } from "@/components/ui/button"
 import { Lightbulb, ChevronRight, CheckCircle2, ThumbsUp, ThumbsDown, Loader2 } from "lucide-react"
+import { MathText } from "@/components/ui/math-text"
 
 interface HintDrawerProps {
   problemId: string
@@ -92,7 +93,7 @@ export function HintDrawer({ problemId, userId, problemUrl }: HintDrawerProps) {
             Failed to load hint. Please try again.
           </p>
         ) : (
-          <p className="leading-relaxed">{hint?.content}</p>
+          <MathText content={hint?.content} className="text-sm leading-relaxed" />
         )}
       </div>
 
