@@ -20,6 +20,7 @@ import { DEFAULT_TEMPLATES, LANGUAGE_OPTIONS } from "@/lib/code-templates"
 import { getProblemStatementDetails } from "@/lib/problem-statement-helper"
 import { useRunCode } from "@/lib/code-execution"
 import { useProblems, useProblemStatement } from "@/hooks/use-problems"
+import { useSnippets } from "@/hooks/use-snippets"
 import { ProblemSearchCombobox } from "./problem-search-combobox"
 import { SolveTimer } from "./solve-timer"
 import { recordSolveSession } from "@/lib/solve-history"
@@ -45,6 +46,10 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
 
   // Load problem statement if problemIdParam is specified
   const { data: stmtData } = useProblemStatement(problemIdParam || undefined)
+
+  // Load user custom snippets for editor auto-completion
+  const { data: snippetsData } = useSnippets(userId, { limit: 100 })
+  const userSnippets = snippetsData?.items || []
 
   const [selectedProblem, setSelectedProblem] = useState<Problem | ProblemSearchResult | null>(null)
 
@@ -444,6 +449,7 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
               onChange={handleCodeChange}
               fontSize={fontSize}
               onRun={handleRunCode}
+              userSnippets={userSnippets}
             />
           </div>
 
