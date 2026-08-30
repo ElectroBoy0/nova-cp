@@ -277,9 +277,22 @@ export function DashboardClient({ userId, firstName }: { userId: string; firstNa
         <div className="space-y-6 lg:col-span-2">
           {/* Recommendations Section */}
           <div className="stagger-3 animate-fade-up space-y-4">
-            <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-              Smart Recommendations
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                Today&apos;s Target Problems
+              </h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                asChild
+                className="h-7 gap-1 text-xs text-muted-foreground hover:text-foreground"
+              >
+                <Link href="/recommendations">
+                  View all
+                  <ArrowRight className="h-3 w-3" aria-hidden="true" />
+                </Link>
+              </Button>
+            </div>
             <RecommendationWidget
               userId={userId}
               recommendations={recommendations}
