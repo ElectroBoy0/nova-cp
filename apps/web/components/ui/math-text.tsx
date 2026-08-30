@@ -31,7 +31,7 @@ export function MathText({ content = "", className }: MathTextProps) {
     const regex =
       /(\${6}[\s\S]*?\${6}|\${3}[\s\S]*?\${3}|\${2}[\s\S]*?\${2}|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\$[^\$\n]+?\$)/g
 
-    // Step 1: Replace math delimiters with placeholders and render KaTeX
+    // Step 1: Replace math delimiters with collision-proof placeholders and render KaTeX
     const tokenized = content.replace(regex, (match) => {
       try {
         let math = ""
@@ -64,7 +64,7 @@ export function MathText({ content = "", className }: MathTextProps) {
           displayMode,
           throwOnError: false,
         })
-        const token = `__KATEX_TOKEN_${mathTokens.length}__`
+        const token = `\uE000MATH_${mathTokens.length}\uE001`
         mathTokens.push(rendered)
         return token
       } catch (err) {
@@ -77,11 +77,11 @@ export function MathText({ content = "", className }: MathTextProps) {
     let formatted = tokenized
     // Inline code: `code`
     formatted = formatted.replace(/`([^`]+)`/g, "<code>$1</code>")
-    // Bold: **text** or __text__
+    // Bold: **text** or __text__ (ensure doesn't match single or non-paired underscores)
     formatted = formatted.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
-    formatted = formatted.replace(/__([^_]+)__/g, "<strong>$1</strong>")
-    // Italic: *text* or _text_
-    formatted = formatted.replace(/\*([^*]+)\*/g, "<em>$1</em>")
+    formatted = formatted.replace(/\b__([^_]+)__\b/g, "<strong>$1</strong>")
+    // Italic: *text*
+    formatted = formatted.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, "<em>$1</em>")
 
     // Numbered lists at start of line: "1. ", "2. "
     formatted = formatted.replace(
@@ -97,10 +97,11 @@ export function MathText({ content = "", className }: MathTextProps) {
         .join("")
     }
 
-    // Step 3: Re-insert KaTeX tokens
-    mathTokens.forEach((rendered, i) => {
-      formatted = formatted.replace(`__KATEX_TOKEN_${i}__`, rendered)
-    })
+    // Step 3: Re-insert KaTeX tokens accurately
+    formatted = formatted.replace(
+      /\uE000MATH_(\d+)\uE001/g,
+      (_, id) => mathTokens[Number(id)] ?? ""
+    )
 
     return formatted
   }, [content])
