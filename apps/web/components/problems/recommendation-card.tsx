@@ -1,3 +1,4 @@
+import Link from "next/link"
 import {
   Card,
   CardContent,
@@ -8,9 +9,10 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ExternalLink, Target, Clock, CheckCircle2, RefreshCw } from "lucide-react"
+import { ExternalLink, Target, Clock, CheckCircle2, RefreshCw, Terminal } from "lucide-react"
 import type { ProblemRecommendation } from "@/types/problems"
 import { HintDrawer } from "./hint-drawer"
+
 interface RecommendationCardProps {
   rec: ProblemRecommendation
   userId?: string
@@ -49,6 +51,10 @@ export function RecommendationCard({
     rec.explanation?.expected_learning_outcome ||
     `Master problem concepts at the ${rec.problem?.rating || "current"} rating level.`
   const estTime = rec.explanation?.estimated_solve_time_minutes || 20
+
+  const solveParam = rec.problem?.contest_id
+    ? `${rec.problem.contest_id}${rec.problem.index}`
+    : rec.problem?.id || ""
 
   return (
     <Card className="group relative flex h-full flex-col overflow-hidden border-border transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5">
@@ -98,17 +104,44 @@ export function RecommendationCard({
       </CardContent>
 
       <CardFooter className="mt-auto flex-col gap-2 p-5 pt-0">
-        <Button
-          size="sm"
-          className="h-8 w-full"
-          onClick={() => {
-            onSolve(rec.problem.id, recType)
-            window.open(rec.problem.url, "_blank")
-          }}
-        >
-          Solve Now
-          <ExternalLink className="ml-2 h-4 w-4" />
-        </Button>
+        {/* Primary Action Row: Solve in Workspace + Codeforces External Link */}
+        <div className="flex w-full items-center gap-2">
+          <Button
+            size="sm"
+            asChild
+            className="h-8 flex-1 gap-1.5 bg-primary text-xs font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98]"
+          >
+            <Link
+              href={`/solve?problemId=${solveParam}`}
+              onClick={() => onSolve(rec.problem.id, recType)}
+            >
+              <Terminal className="h-3.5 w-3.5" />
+              <span>Solve in Workspace</span>
+            </Link>
+          </Button>
+
+          {rec.problem?.url && (
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="hover:bg-surface-3 h-8 gap-1 border-border/80 bg-surface-2 px-2.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+              title="Solve on Codeforces"
+            >
+              <a
+                href={rec.problem.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => onSolve(rec.problem.id, recType)}
+              >
+                <span>CF</span>
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            </Button>
+          )}
+        </div>
+
+        {/* Secondary Action Row: Re-roll + Mark Solved */}
         <div className="flex w-full gap-2">
           {onSkip && (
             <Button
@@ -135,7 +168,7 @@ export function RecommendationCard({
         </div>
 
         {userId && (
-          <div className="mt-3 w-full">
+          <div className="mt-1 w-full">
             <HintDrawer problemId={rec.problem.id} userId={userId} problemUrl={rec.problem.url} />
           </div>
         )}
