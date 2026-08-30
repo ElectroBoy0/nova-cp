@@ -41,48 +41,82 @@ class DailyMissionService:
         existing_mission = (await self.db.execute(mission_query)).scalar_one_or_none()
 
         if existing_mission:
-            # We need to fetch the problem details
-            prob_query = select(Problem).where(Problem.id == existing_mission.problem_id)
-            problem = (await self.db.execute(prob_query)).scalar_one_or_none()
-            if problem:
-                # Format it similar to how the engine returns it, but without explanation for now
-                # or we could save the explanation in the DB? Let's just return a basic dict
-                return {
-                    "mission_id": str(existing_mission.id),
-                    "is_completed": existing_mission.is_completed,
-                    "date": str(existing_mission.mission_date),
-                    "problem": {
-                        "id": str(problem.id),
-                        "platform": problem.platform,
-                        "platform_problem_id": problem.platform_problem_id,
-                        "contest_id": problem.contest_id,
-                        "index": problem.index,
-                        "name": problem.name,
-                        "rating": problem.rating,
-                        "tags": problem.tags,
-                        "url": problem.url,
-                        "solved_count": problem.solved_count,
-                    },
-                    "explanation": {
-                        "bucket": "todays_mission",
-                        "reasoning": "This is your daily target based on your weak topics."
-                    }
-                }
+            # Check if this mission's problem was skipped / solved externally / solved on CF
+            from app.models.problem import RecommendationFeedback
+            from app.models.submission import Submission
+            from app.services.recommendation.scorers.base import RecommendationContext
+
+            feedback_check = select(RecommendationFeedback.id).where(
+                RecommendationFeedback.user_id == user_id,
+                RecommendationFeedback.problem_id == existing_mission.problem_id,
+                RecommendationFeedback.event_type.in_(["skipped", "solved_externally"])
+            )
+            is_excluded = (await self.db.execute(feedback_check)).scalar_one_or_none()
+
+            if not is_excluded:
+                prob_query = select(Problem).where(Problem.id == existing_mission.problem_id)
+                problem = (await self.db.execute(prob_query)).scalar_one_or_none()
+                if problem:
+                    # Check if solved on CF
+                    solved_check = select(Submission.id).where(
+                        Submission.user_id == user_id,
+                        Submission.contest_id == problem.contest_id,
+                        Submission.problem_index == problem.index,
+                        Submission.verdict == "OK"
+                    )
+                    is_cf_solved = (await self.db.execute(solved_check)).scalar_one_or_none()
+                    if not is_cf_solved:
+                        user_rating = user.cf_handle.rating if (user.cf_handle and user.cf_handle.rating) else 800
+                        context = RecommendationContext(
+                            user_rating=user_rating,
+                            topic_mastery={"implementation": 0.5},
+                            recent_failures={},
+                            target_delta=100
+                        )
+                        sp = self.engine.scorer.score(problem, context)
+                        explanation = self.engine.explainer.generate_explanation(sp, context, "todays_mission")
+                        return {
+                            "mission_id": str(existing_mission.id),
+                            "is_completed": existing_mission.is_completed,
+                            "date": str(existing_mission.mission_date),
+                            "problem": {
+                                "id": str(problem.id),
+                                "platform": problem.platform,
+                                "platform_problem_id": problem.platform_problem_id,
+                                "contest_id": problem.contest_id,
+                                "index": problem.index,
+                                "name": problem.name,
+                                "rating": problem.rating,
+                                "tags": problem.tags,
+                                "url": problem.url,
+                                "solved_count": problem.solved_count,
+                            },
+                            "score": sp.total_score,
+                            "explanation": explanation
+                        }
 
         # Generate new mission
         mission_data = await self.engine.generate_daily_mission(user_id)
         if not mission_data:
             return None
 
-        new_mission = DailyMission(
-            user_id=user_id,
-            mission_date=local_date,
-            problem_id=mission_data["problem"]["id"],
-            is_completed=False
-        )
-        self.db.add(new_mission)
-        await self.db.commit()
-        await self.db.refresh(new_mission)
+        if existing_mission:
+            # Update existing record for today
+            existing_mission.problem_id = mission_data["problem"]["id"]
+            existing_mission.is_completed = False
+            await self.db.commit()
+            await self.db.refresh(existing_mission)
+            new_mission = existing_mission
+        else:
+            new_mission = DailyMission(
+                user_id=user_id,
+                mission_date=local_date,
+                problem_id=mission_data["problem"]["id"],
+                is_completed=False
+            )
+            self.db.add(new_mission)
+            await self.db.commit()
+            await self.db.refresh(new_mission)
 
         mission_data["mission_id"] = str(new_mission.id)
         mission_data["is_completed"] = False

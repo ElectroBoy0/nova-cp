@@ -81,23 +81,40 @@ export function useRecommendationFeedback() {
     onMutate: async ({ userId, feedback }) => {
       if (feedback.event_type === "skipped" || feedback.event_type === "solved_externally") {
         await queryClient.cancelQueries({ queryKey: ["recommendations", userId] })
-        const previous = queryClient.getQueryData<ProblemRecommendation[]>([
+        await queryClient.cancelQueries({ queryKey: ["dailyMission", userId] })
+
+        const prevRecs = queryClient.getQueryData<ProblemRecommendation[]>([
           "recommendations",
           userId,
         ])
+        const prevMission = queryClient.getQueryData<ProblemRecommendation>([
+          "dailyMission",
+          userId,
+        ])
 
-        if (previous) {
+        if (prevRecs) {
           queryClient.setQueryData<ProblemRecommendation[]>(["recommendations", userId], (old) =>
             old ? old.filter((rec) => rec.problem.id !== feedback.problem_id) : []
           )
         }
-        return { previous }
+        if (prevMission && prevMission.problem.id === feedback.problem_id) {
+          queryClient.setQueryData(["dailyMission", userId], null)
+        }
+
+        return { prevRecs, prevMission }
       }
     },
     onError: (err, variables, context: any) => {
-      if (context?.previous) {
-        queryClient.setQueryData(["recommendations", variables.userId], context.previous)
+      if (context?.prevRecs) {
+        queryClient.setQueryData(["recommendations", variables.userId], context.prevRecs)
       }
+      if (context?.prevMission) {
+        queryClient.setQueryData(["dailyMission", variables.userId], context.prevMission)
+      }
+    },
+    onSettled: (_data, _error, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["recommendations", variables.userId] })
+      queryClient.invalidateQueries({ queryKey: ["dailyMission", variables.userId] })
     },
   })
 }

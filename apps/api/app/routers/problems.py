@@ -107,6 +107,15 @@ async def submit_feedback(
     await db.execute(stmt)
     await db.commit()
 
+    if feedback.event_type in ["skipped", "solved_externally"]:
+        # If the problem was today's daily mission, regenerate it
+        try:
+            from app.services.daily_mission_service import DailyMissionService
+            daily_service = DailyMissionService(db)
+            await daily_service.get_or_create_mission_for_today(user_id)
+        except Exception:
+            pass
+
     return {"status": "success"}
 
 @router.post("/sync", status_code=status.HTTP_202_ACCEPTED, dependencies=[Depends(require_internal_key)])
