@@ -47,14 +47,16 @@ export function RecommendationWidget({
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-48 rounded-xl" />
+        {[1, 2, 3, 4].map((i) => (
+          <Skeleton key={i} className="h-44 rounded-xl" />
         ))}
       </div>
     )
   }
 
-  if (!recommendations || recommendations.length === 0) {
+  const displayRecs = (recommendations || []).slice(0, 4)
+
+  if (displayRecs.length === 0) {
     return (
       <div className="flex h-48 flex-col items-center justify-center space-y-4 rounded-xl border border-dashed border-border bg-surface-1/30">
         <BrainCircuit className="h-8 w-8 text-muted-foreground/50" />
@@ -67,7 +69,7 @@ export function RecommendationWidget({
 
   return (
     <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2">
-      {recommendations.map((rec, idx) => (
+      {displayRecs.map((rec, idx) => (
         <RecommendationCard
           key={`${rec.explanation?.recommendation_type || "rec"}-${rec.problem?.id || idx}-${idx}`}
           rec={rec}

@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ExternalLink, Target, Clock, CheckCircle2, RefreshCw, Terminal } from "lucide-react"
+import { ExternalLink, Clock, CheckCircle2, RefreshCw, Terminal } from "lucide-react"
 import type { ProblemRecommendation } from "@/types/problems"
 import { HintDrawer } from "./hint-drawer"
 
@@ -38,18 +38,6 @@ export function RecommendationCard({
 
   const recType =
     rec.explanation?.recommendation_type || (rec.explanation as any)?.bucket || "skill_builder"
-  const reason =
-    rec.explanation?.reason_summary ||
-    (rec.explanation as any)?.reasoning ||
-    (rec.problem?.tags?.length
-      ? `Practice problem targeting ${rec.problem.tags
-          .slice(0, 2)
-          .map((t) => t.toUpperCase())
-          .join(", ")}.`
-      : "Targeted practice tailored to your rating level.")
-  const outcome =
-    rec.explanation?.expected_learning_outcome ||
-    `Master problem concepts at the ${rec.problem?.rating || "current"} rating level.`
   const estTime = rec.explanation?.estimated_solve_time_minutes || 20
 
   const solveParam = rec.problem?.contest_id
@@ -82,21 +70,10 @@ export function RecommendationCard({
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="flex-1 space-y-4 p-5 pt-0">
-        <div className="space-y-3">
-          <div className="flex items-start text-sm">
-            <Target className="mr-2 mt-0.5 h-4 w-4 shrink-0 text-blue-500" />
-            <span className="leading-relaxed text-muted-foreground">{reason}</span>
-          </div>
-          <div className="flex items-start text-sm">
-            <CheckCircle2 className="mr-2 mt-0.5 h-4 w-4 shrink-0 text-green-500" />
-            <span className="leading-relaxed text-muted-foreground">{outcome}</span>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-1 pt-2">
-          {rec.problem.tags?.slice(0, 3).map((tag) => (
-            <Badge key={tag} variant="outline" className="bg-background/50 px-1.5 py-0 text-[10px]">
+      <CardContent className="flex-1 p-5 pt-0">
+        <div className="flex flex-wrap gap-1.5 pt-1">
+          {rec.problem.tags?.slice(0, 4).map((tag) => (
+            <Badge key={tag} variant="outline" className="bg-background/50 px-2 py-0.5 text-[11px]">
               {tag}
             </Badge>
           ))}
