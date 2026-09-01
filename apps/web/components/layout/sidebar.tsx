@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   LayoutDashboard,
   BarChart3,
@@ -161,26 +161,34 @@ const navigation: NavGroup[] = [
 interface SidebarProps {
   className?: string
   userId?: string
+  initialCollapsed?: boolean
 }
 
-export function Sidebar({ className, userId }: SidebarProps) {
+export function Sidebar({ className, userId, initialCollapsed = false }: SidebarProps) {
   const pathname = usePathname()
-  const [collapsed, setCollapsed] = useState<boolean>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        return localStorage.getItem("novacp_sidebar_collapsed") === "true"
-      } catch {
-        return false
-      }
-    }
-    return false
-  })
+  const [collapsed, setCollapsed] = useState<boolean>(initialCollapsed)
+  const [mounted, setMounted] = useState(false)
   const [bugReportOpen, setBugReportOpen] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+    try {
+      const savedLocal = localStorage.getItem("novacp_sidebar_collapsed")
+      if (savedLocal !== null) {
+        const isCollapsed = savedLocal === "true"
+        setCollapsed(isCollapsed)
+        document.cookie = `novacp_sidebar_collapsed=${isCollapsed}; path=/; max-age=31536000; SameSite=Lax`
+      }
+    } catch {
+      // ignore
+    }
+  }, [])
 
   const handleToggleCollapse = (nextState: boolean) => {
     setCollapsed(nextState)
     try {
       localStorage.setItem("novacp_sidebar_collapsed", String(nextState))
+      document.cookie = `novacp_sidebar_collapsed=${nextState}; path=/; max-age=31536000; SameSite=Lax`
     } catch {
       // ignore
     }
@@ -191,7 +199,8 @@ export function Sidebar({ className, userId }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "relative flex h-full flex-col border-r border-border bg-surface-1 transition-all duration-200 ease-out",
+        "relative flex h-full flex-col border-r border-border bg-surface-1",
+        mounted && "transition-all duration-200 ease-out",
         collapsed ? "w-[56px]" : "w-[220px]",
         className
       )}
