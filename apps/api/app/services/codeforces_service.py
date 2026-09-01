@@ -77,15 +77,26 @@ class CodeforcesService:
         Returns None if the handle does not exist or API fails.
         """
         cache_key = f"user_info_{handle.lower()}"
-        cached = _CF_CACHE.get(cache_key)
         now = time.time()
 
-        if not force_refresh and cached and (now - cached[1]) < _CACHE_TTL_SECONDS:
-            return cached[0]
+        if force_refresh:
+            _CF_CACHE.pop(cache_key, None)
+        else:
+            cached = _CF_CACHE.get(cache_key)
+            if cached and (now - cached[1]) < _CACHE_TTL_SECONDS:
+                return cached[0]
 
         url = f"{self.BASE_URL}/user.info"
         try:
-            response = await self._make_request("GET", url, params={"handles": handle})
+            params: dict[str, Any] = {"handles": handle}
+            headers = None
+            if force_refresh:
+                params["_t"] = str(int(now * 1000))
+                headers = {
+                    "Cache-Control": "no-cache, no-store, must-revalidate",
+                    "Pragma": "no-cache",
+                }
+            response = await self._make_request("GET", url, params=params, headers=headers)
             response.raise_for_status()
             data = response.json()
             if data.get("status") == "OK" and data.get("result"):
@@ -104,6 +115,7 @@ class CodeforcesService:
             logger.warning("Unexpected error fetching CF info for %s: %s", handle, e)
 
         # Stale cache fallback if Codeforces is down or failing
+        cached = _CF_CACHE.get(cache_key)
         if not force_refresh and cached:
             logger.info("Serving stale cached user info for %s during downtime", handle)
             return cached[0]

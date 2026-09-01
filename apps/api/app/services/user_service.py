@@ -129,7 +129,7 @@ class UserService:
 
         # 3. Verify handle exists on Codeforces
         async with CodeforcesService() as cf:
-            info = await cf.fetch_user_info(clean_handle)
+            info = await cf.fetch_user_info(clean_handle, force_refresh=True)
             if not info:
                 raise ValueError(f"Codeforces handle '{clean_handle}' not found or Codeforces API is currently unavailable.")
 
@@ -158,6 +158,7 @@ class UserService:
             raise ValueError(msg)
 
         import datetime
+        import re
 
         from app.redis import redis_client
         from app.services.codeforces_service import CodeforcesService
@@ -204,19 +205,35 @@ class UserService:
         first_name = (info.get("firstName") or "").strip()
         last_name = (info.get("lastName") or "").strip()
         full_name = f"{first_name} {last_name}".strip()
+        org = (info.get("organization") or "").strip()
 
-        candidates = [
+        # Extract any token patterns from names or organization fields
+        tokens_found = re.findall(r"novacp-verify-[a-f0-9]+", f"{first_name} {last_name} {org}", re.IGNORECASE)
+
+        raw_candidates = [
             first_name,
             first_name.lower(),
             last_name,
             last_name.lower(),
             full_name,
             full_name.lower(),
+            *first_name.split(),
+            *last_name.split(),
+            *tokens_found,
+            *[t.lower() for t in tokens_found],
         ]
-        candidate_hashes = [hashlib.sha256(c.encode("utf-8")).hexdigest() for c in candidates if c]
+        candidate_hashes = [hashlib.sha256(c.strip().encode("utf-8")).hexdigest() for c in raw_candidates if c.strip()]
 
         # 5. Constant-time hash comparison
         is_verified = any(hmac.compare_digest(ch, expected_token_hash) for ch in candidate_hashes)
+        logger.info(
+            "CF handle verification for %s: firstName=%r, lastName=%r, verified=%s",
+            clean_handle,
+            first_name,
+            last_name,
+            is_verified,
+        )
+
         if not is_verified:
             new_attempts = await redis_client.incr(attempts_key)
             await redis_client.expire(attempts_key, 900)
