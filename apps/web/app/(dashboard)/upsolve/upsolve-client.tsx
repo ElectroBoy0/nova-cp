@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import Link from "next/link"
 import {
   useUpsolveQueue,
@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Input } from "@/components/ui/input"
+import { Slider } from "@/components/ui/slider"
 import {
   CheckCircle2,
   Circle,
@@ -22,11 +24,16 @@ import {
   BookOpen,
   Trophy,
   Terminal,
+  Search,
+  X,
+  SlidersHorizontal,
 } from "lucide-react"
 import { NoteModal } from "@/components/problems/note-modal"
 
 export function UpsolveClient({ userId }: { userId: string }) {
   const [statusFilter, setStatusFilter] = useState("all")
+  const [ratingRange, setRatingRange] = useState<[number, number]>([800, 3500])
+  const [search, setSearch] = useState("")
   const [noteModalProblem, setNoteModalProblem] = useState<{ id: string; name: string } | null>(
     null
   )
@@ -40,6 +47,38 @@ export function UpsolveClient({ userId }: { userId: string }) {
 
   const handleStatusChange = (itemId: string, newStatus: string) => {
     updateStatus.mutate({ userId, itemId, status: newStatus })
+  }
+
+  const rawItems = queueData?.items || []
+
+  const filteredItems = useMemo(() => {
+    return rawItems.filter((item) => {
+      // Rating filter
+      if (item.problem_rating) {
+        if (item.problem_rating < ratingRange[0] || item.problem_rating > ratingRange[1]) {
+          return false
+        }
+      }
+      // Search / tag filter
+      if (search.trim()) {
+        const q = search.toLowerCase().trim()
+        const matchName = item.problem_name.toLowerCase().includes(q)
+        const matchIndex = `${item.contest_id}${item.problem_index}`.toLowerCase().includes(q)
+        const matchTag = item.tags.some((t) => t.toLowerCase().includes(q))
+        const matchContest = (item.contest_name || "").toLowerCase().includes(q)
+        if (!matchName && !matchIndex && !matchTag && !matchContest) {
+          return false
+        }
+      }
+      return true
+    })
+  }, [rawItems, ratingRange, search])
+
+  const hasActiveFilters = ratingRange[0] !== 800 || ratingRange[1] !== 3500 || search.trim() !== ""
+
+  const handleResetFilters = () => {
+    setRatingRange([800, 3500])
+    setSearch("")
   }
 
   return (
@@ -86,33 +125,89 @@ export function UpsolveClient({ userId }: { userId: string }) {
         ))}
       </div>
 
-      <div className="stagger-1 flex animate-fade-up items-center justify-between">
-        <Tabs value={statusFilter} onValueChange={setStatusFilter}>
-          <TabsList>
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="not_started">Not Started</TabsTrigger>
-            <TabsTrigger value="attempted">Attempted</TabsTrigger>
-            <TabsTrigger value="solved">Solved</TabsTrigger>
-          </TabsList>
-        </Tabs>
+      {/* Filter and Search Toolbar */}
+      <div className="stagger-1 flex animate-fade-up flex-col gap-4 rounded-xl border border-border/40 bg-surface-1/40 p-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
+          <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-fit">
+            <TabsList>
+              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="not_started">Not Started</TabsTrigger>
+              <TabsTrigger value="attempted">Attempted</TabsTrigger>
+              <TabsTrigger value="solved">Solved</TabsTrigger>
+            </TabsList>
+          </Tabs>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => generateQueue.mutate(userId)}
-          disabled={generateQueue.isPending}
-          className="gap-2"
-        >
-          <RotateCw className={`h-3 w-3 ${generateQueue.isPending ? "animate-spin" : ""}`} />
-          Refresh Queue
-        </Button>
+          <div className="relative min-w-[200px] max-w-sm flex-1">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by problem name, tag, contest..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-9 pl-9 text-xs"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch("")}
+                className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground"
+                aria-label="Clear search"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Rating Range Filter */}
+        <div className="flex flex-wrap items-center gap-4 sm:flex-nowrap">
+          <div className="flex w-full min-w-[200px] max-w-xs flex-col gap-1.5 sm:w-56">
+            <div className="flex items-center justify-between text-xs">
+              <span className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
+                <SlidersHorizontal className="h-3 w-3 text-primary" /> Rating Range:
+              </span>
+              <span className="font-mono text-xs font-semibold text-primary">
+                {ratingRange[0]} - {ratingRange[1]}
+              </span>
+            </div>
+            <Slider
+              min={800}
+              max={3500}
+              step={100}
+              value={ratingRange}
+              onValueChange={(val) => setRatingRange([val[0] ?? 800, val[1] ?? 3500])}
+            />
+          </div>
+
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleResetFilters}
+              className="h-9 gap-1 px-2.5 text-xs text-muted-foreground hover:text-foreground"
+              title="Clear active filters"
+            >
+              <X className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Reset</span>
+            </Button>
+          )}
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => generateQueue.mutate(userId)}
+            disabled={generateQueue.isPending}
+            className="h-9 gap-2 text-xs"
+          >
+            <RotateCw className={`h-3 w-3 ${generateQueue.isPending ? "animate-spin" : ""}`} />
+            <span>Refresh Queue</span>
+          </Button>
+        </div>
       </div>
 
       {/* Queue List */}
       <div className="stagger-2 animate-fade-up space-y-4">
         {isQueueLoading ? (
           [1, 2, 3].map((i) => <Skeleton key={i} className="h-24 w-full rounded-xl" />)
-        ) : queueData?.items.length === 0 ? (
+        ) : rawItems.length === 0 ? (
           <div className="mx-auto max-w-lg space-y-4 rounded-2xl border border-dashed border-border/80 bg-surface-1/30 p-12 text-center text-muted-foreground">
             <div className="mx-auto w-fit rounded-full border border-primary/20 bg-primary/10 p-3 text-primary">
               <CheckCircle2 className="h-6 w-6" />
@@ -149,8 +244,25 @@ export function UpsolveClient({ userId }: { userId: string }) {
               </Button>
             </div>
           </div>
+        ) : filteredItems.length === 0 ? (
+          <div className="mx-auto max-w-md space-y-3 rounded-2xl border border-dashed border-border/80 bg-surface-1/30 p-8 text-center text-muted-foreground">
+            <SlidersHorizontal className="mx-auto h-6 w-6 text-primary opacity-40" />
+            <h4 className="text-sm font-semibold text-foreground">No matching problems</h4>
+            <p className="text-xs text-muted-foreground">
+              No queue problems found in the rating range {ratingRange[0]} - {ratingRange[1]}
+              {search ? ` matching "${search}"` : ""}.
+            </p>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleResetFilters}
+              className="mt-2 text-xs"
+            >
+              Reset Filters
+            </Button>
+          </div>
         ) : (
-          queueData?.items.map((item, idx) => (
+          filteredItems.map((item, idx) => (
             <div
               key={`${item.id || idx}-${idx}`}
               className={`flex flex-col items-start justify-between gap-4 rounded-xl border p-5 transition-colors sm:flex-row sm:items-center ${
