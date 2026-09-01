@@ -165,8 +165,26 @@ interface SidebarProps {
 
 export function Sidebar({ className, userId }: SidebarProps) {
   const pathname = usePathname()
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        return localStorage.getItem("novacp_sidebar_collapsed") === "true"
+      } catch {
+        return false
+      }
+    }
+    return false
+  })
   const [bugReportOpen, setBugReportOpen] = useState(false)
+
+  const handleToggleCollapse = (nextState: boolean) => {
+    setCollapsed(nextState)
+    try {
+      localStorage.setItem("novacp_sidebar_collapsed", String(nextState))
+    } catch {
+      // ignore
+    }
+  }
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
 
@@ -203,7 +221,7 @@ export function Sidebar({ className, userId }: SidebarProps) {
           <Button
             variant="ghost"
             size="icon-sm"
-            onClick={() => setCollapsed(true)}
+            onClick={() => handleToggleCollapse(true)}
             aria-label="Collapse sidebar"
             className="shrink-0 text-muted-foreground hover:text-foreground"
           >
@@ -217,7 +235,7 @@ export function Sidebar({ className, userId }: SidebarProps) {
         <Button
           variant="ghost"
           size="icon-sm"
-          onClick={() => setCollapsed(false)}
+          onClick={() => handleToggleCollapse(false)}
           aria-label="Expand sidebar"
           className="absolute -right-3 top-[52px] z-10 h-6 w-6 rounded-full border border-border bg-surface-1 text-muted-foreground shadow-sm hover:text-foreground"
         >

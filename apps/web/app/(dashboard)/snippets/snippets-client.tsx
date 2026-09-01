@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Dialog,
   DialogContent,
@@ -40,7 +41,25 @@ export function SnippetsClient({ userId }: { userId: string }) {
   const [language, setLanguage] = useState<string>("")
   const [category] = useState<string>("")
   const [filter, setFilter] = useState<"all" | "favorites" | "mine">("all")
-  const [selectedSnippetId, setSelectedSnippetId] = useState<string | null>(null)
+  const [selectedSnippetId, setSelectedSnippetId] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        return localStorage.getItem("novacp_selected_snippet_id")
+      } catch {
+        return null
+      }
+    }
+    return null
+  })
+
+  const handleSelectSnippet = (id: string) => {
+    setSelectedSnippetId(id)
+    try {
+      localStorage.setItem("novacp_selected_snippet_id", id)
+    } catch {
+      // ignore
+    }
+  }
 
   // Modals
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -92,6 +111,11 @@ export function SnippetsClient({ userId }: { userId: string }) {
       deleteMutation.mutate({ userId, snippetId })
       if (selectedSnippetId === snippetId) {
         setSelectedSnippetId(null)
+        try {
+          localStorage.removeItem("novacp_selected_snippet_id")
+        } catch {
+          // ignore
+        }
       }
     }
   }
@@ -177,7 +201,23 @@ export function SnippetsClient({ userId }: { userId: string }) {
         {/* SNIPPET LIST */}
         <ScrollArea className="flex-1">
           {isLoading ? (
-            <div className="p-4 text-center text-sm text-muted-foreground">Loading...</div>
+            <div className="space-y-2 p-2">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div
+                  key={i}
+                  className="flex flex-col gap-2 rounded-md border border-border/40 bg-surface-1/30 p-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <Skeleton className="h-4 w-28 rounded" />
+                    <Skeleton className="h-3.5 w-3.5 rounded-full" />
+                  </div>
+                  <div className="flex items-center gap-2 pt-1">
+                    <Skeleton className="h-3.5 w-10 rounded" />
+                    <Skeleton className="h-3.5 w-16 rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : snippets.length === 0 ? (
             <div className="flex flex-col items-center p-8 text-center text-sm text-muted-foreground">
               <BookOpen className="mb-2 h-8 w-8 opacity-20" />
@@ -190,7 +230,7 @@ export function SnippetsClient({ userId }: { userId: string }) {
                 return (
                   <button
                     key={`${s.id}-${idx}`}
-                    onClick={() => setSelectedSnippetId(s.id)}
+                    onClick={() => handleSelectSnippet(s.id)}
                     className={cn(
                       "flex w-full flex-col items-start gap-1 rounded-md p-3 text-left transition-colors",
                       isSelected
@@ -228,7 +268,28 @@ export function SnippetsClient({ userId }: { userId: string }) {
 
       {/* RIGHT PANEL (Snippet Detail) */}
       <div className="relative flex min-w-0 flex-1 flex-col bg-background">
-        {selectedSnippet ? (
+        {isLoading ? (
+          <div className="flex flex-1 flex-col space-y-6 p-6">
+            <div className="flex items-center justify-between border-b border-border pb-6">
+              <div className="space-y-2">
+                <Skeleton className="h-7 w-52 rounded" />
+                <Skeleton className="h-4 w-80 rounded" />
+                <div className="flex items-center gap-3 pt-2">
+                  <Skeleton className="h-4 w-20 rounded" />
+                  <Skeleton className="h-4 w-28 rounded" />
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-9 w-9 rounded-md" />
+                <Skeleton className="h-9 w-24 rounded-md" />
+              </div>
+            </div>
+            <div className="flex-1 space-y-4 pt-2">
+              <Skeleton className="h-80 w-full rounded-lg" />
+              <Skeleton className="h-28 w-full rounded-lg" />
+            </div>
+          </div>
+        ) : selectedSnippet ? (
           <>
             {/* Header */}
             <div className="flex items-center justify-between border-b border-border p-6">
