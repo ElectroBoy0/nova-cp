@@ -19,7 +19,7 @@ import { TerminalPanel } from "./terminal-panel"
 import { DEFAULT_TEMPLATES, LANGUAGE_OPTIONS } from "@/lib/code-templates"
 import { getProblemStatementDetails } from "@/lib/problem-statement-helper"
 import { useRunCode } from "@/lib/code-execution"
-import { useProblems, useProblemStatement } from "@/hooks/use-problems"
+import { useProblems, useProblemStatement, useProblemSearch } from "@/hooks/use-problems"
 import { useSnippets } from "@/hooks/use-snippets"
 import { ProblemSearchCombobox } from "./problem-search-combobox"
 import { SolveTimer } from "./solve-timer"
@@ -39,19 +39,48 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
   const router = useRouter()
 
   const problemIdParam = searchParams.get("problemId") || initialProblemId || ""
+  const searchQueryParam =
+    searchParams.get("search") || searchParams.get("name") || searchParams.get("problemName") || ""
 
   // Fetch initial problem set for default fallback
   const { data: problemsData } = useProblems({ limit: 50 })
   const problems = problemsData?.items || []
 
-  // Load problem statement if problemIdParam is specified
-  const { data: stmtData } = useProblemStatement(problemIdParam || undefined)
+  // Dynamic search if query parameter provided
+  const { data: searchResults } = useProblemSearch({
+    q: searchQueryParam,
+    limit: 5,
+  })
+
+  const [selectedProblem, setSelectedProblem] = useState<Problem | ProblemSearchResult | null>(null)
+
+  // Auto-select problem matching search query if no specific problemIdParam is given
+  useEffect(() => {
+    if (
+      !problemIdParam &&
+      searchQueryParam &&
+      searchResults?.results &&
+      searchResults.results.length > 0
+    ) {
+      const exact = searchResults.results.find(
+        (p: ProblemSearchResult) =>
+          (p.name || p.title || "").toLowerCase() === searchQueryParam.toLowerCase()
+      )
+      setSelectedProblem(exact || searchResults.results[0] || null)
+    }
+  }, [searchResults, problemIdParam, searchQueryParam])
+
+  // Load problem statement if problemIdParam or selectedProblem is specified
+  const effectiveProblemId =
+    problemIdParam ||
+    (selectedProblem?.contest_id && selectedProblem?.index
+      ? `${selectedProblem.contest_id}${selectedProblem.index}`
+      : selectedProblem?.id)
+  const { data: stmtData } = useProblemStatement(effectiveProblemId || undefined)
 
   // Load user custom snippets for editor auto-completion
   const { data: snippetsData } = useSnippets(userId, { limit: 100 })
   const userSnippets = snippetsData?.items || []
-
-  const [selectedProblem, setSelectedProblem] = useState<Problem | ProblemSearchResult | null>(null)
 
   const currentProblem: Problem | null = useMemo(() => {
     if (selectedProblem) {

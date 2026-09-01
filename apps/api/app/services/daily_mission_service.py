@@ -125,12 +125,17 @@ class DailyMissionService:
         try:
             from app.services.notification_service import NotificationService
             notif_service = NotificationService(self.db)
+            problem = mission_data.get("problem", {})
+            contest_id = problem.get("contest_id")
+            index = problem.get("index")
+            problem_param = f"{contest_id}{index}" if contest_id and index else problem.get("id", "")
+            solve_link = f"/solve?problemId={problem_param}" if problem_param else "/solve"
             await notif_service.create_notification(
                 user_id=user_id,
                 type="daily_mission",
                 title="Daily Mission Ready",
                 message=f"Today's target: {mission_data['problem']['name']} ({mission_data['problem']['rating'] or 'Unrated'})",
-                link="/dashboard",
+                link=solve_link,
             )
         except Exception:
             pass

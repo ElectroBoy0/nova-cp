@@ -64,6 +64,35 @@ export function NotificationCenter({ userId }: { userId: string }) {
     }
   }
 
+  const resolveNotificationLink = (notif: InAppNotification): string => {
+    if (notif.link && notif.link !== "/dashboard" && notif.link !== "#") {
+      return notif.link
+    }
+
+    if (
+      notif.type === "daily_mission" ||
+      notif.title?.toLowerCase().includes("mission") ||
+      notif.message?.toLowerCase().includes("today's target")
+    ) {
+      const match = notif.message?.match(/Today's target:\s*([^(]+)/i)
+      if (match && match[1]) {
+        const problemName = match[1].trim()
+        return `/solve?search=${encodeURIComponent(problemName)}`
+      }
+      return "/solve"
+    }
+
+    if (notif.type === "contest_reminder") {
+      return "/contests"
+    }
+
+    if (notif.type === "sync_status") {
+      return "/settings?tab=integrations"
+    }
+
+    return notif.link || "/solve"
+  }
+
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
@@ -126,50 +155,73 @@ export function NotificationCenter({ userId }: { userId: string }) {
             </div>
           ) : (
             <div className="divide-y divide-border/40">
-              {notifications.map((notif, idx) => (
-                <div
-                  key={`${notif.id || idx}-${idx}`}
-                  className={cn(
-                    "group relative flex items-start gap-3 p-3.5 text-left transition-colors",
-                    !notif.is_read ? "bg-primary/5 hover:bg-primary/10" : "hover:bg-accent/40"
-                  )}
-                >
-                  <div className="mt-0.5">{getNotificationIcon(notif.type)}</div>
-                  <div className="min-w-0 flex-1 space-y-1">
-                    <div className="flex items-start justify-between gap-2">
-                      <h4
-                        className={cn(
-                          "truncate text-xs leading-snug",
-                          !notif.is_read
-                            ? "font-semibold text-foreground"
-                            : "font-medium text-muted-foreground"
-                        )}
-                      >
-                        {notif.title}
-                      </h4>
-                      {!notif.is_read && (
-                        <button
-                          onClick={(e) => handleMarkRead(e, notif.id)}
-                          title="Mark as read"
-                          className="p-0.5 text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
-                        >
-                          <Check className="h-3.5 w-3.5" />
-                        </button>
-                      )}
-                    </div>
-                    <p className="line-clamp-2 text-[11px] leading-relaxed text-muted-foreground">
-                      {notif.message}
-                    </p>
-                    <div className="flex items-center justify-between pt-1">
-                      <span className="font-mono text-[10px] text-muted-foreground/70">
-                        {new Date(notif.created_at).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
-                      {notif.link && (
+              {notifications.map((notif, idx) => {
+                const destinationLink = resolveNotificationLink(notif)
+                return (
+                  <div
+                    key={`${notif.id || idx}-${idx}`}
+                    className={cn(
+                      "group relative flex items-start gap-3 p-3.5 text-left transition-colors",
+                      !notif.is_read ? "bg-primary/5 hover:bg-primary/10" : "hover:bg-accent/40"
+                    )}
+                  >
+                    <div className="mt-0.5">{getNotificationIcon(notif.type)}</div>
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <div className="flex items-start justify-between gap-2">
                         <Link
-                          href={notif.link}
+                          href={destinationLink}
+                          onClick={() => {
+                            if (!notif.is_read) {
+                              markReadMutation.mutate({ userId, notificationId: notif.id })
+                            }
+                            setIsOpen(false)
+                          }}
+                          className="min-w-0 flex-1 hover:underline"
+                        >
+                          <h4
+                            className={cn(
+                              "truncate text-xs leading-snug",
+                              !notif.is_read
+                                ? "font-semibold text-foreground"
+                                : "font-medium text-muted-foreground"
+                            )}
+                          >
+                            {notif.title}
+                          </h4>
+                        </Link>
+                        {!notif.is_read && (
+                          <button
+                            onClick={(e) => handleMarkRead(e, notif.id)}
+                            title="Mark as read"
+                            className="p-0.5 text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
+                          >
+                            <Check className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
+                      <Link
+                        href={destinationLink}
+                        onClick={() => {
+                          if (!notif.is_read) {
+                            markReadMutation.mutate({ userId, notificationId: notif.id })
+                          }
+                          setIsOpen(false)
+                        }}
+                        className="block"
+                      >
+                        <p className="line-clamp-2 text-[11px] leading-relaxed text-muted-foreground hover:text-foreground/90 transition-colors">
+                          {notif.message}
+                        </p>
+                      </Link>
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="font-mono text-[10px] text-muted-foreground/70">
+                          {new Date(notif.created_at).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                        <Link
+                          href={destinationLink}
                           onClick={() => {
                             if (!notif.is_read) {
                               markReadMutation.mutate({ userId, notificationId: notif.id })
@@ -178,13 +230,14 @@ export function NotificationCenter({ userId }: { userId: string }) {
                           }}
                           className="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline"
                         >
-                          View <ExternalLink className="h-2.5 w-2.5" />
+                          <span>Solve</span>
+                          <ExternalLink className="h-2.5 w-2.5" />
                         </Link>
-                      )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>
