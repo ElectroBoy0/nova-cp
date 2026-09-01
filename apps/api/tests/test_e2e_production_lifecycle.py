@@ -52,7 +52,7 @@ async def test_full_production_lifecycle_and_edge_cases(
     # 3. CF Token generation & Verification
     handle_to_link = f"tourist_{unique_id}"
     
-    async def mock_fetch_initial(self, handle):
+    async def mock_fetch_initial(self, handle, *args, **kwargs):
         return {"handle": handle, "firstName": "original", "rating": 3900, "rank": "legendary grandmaster"}
     monkeypatch.setattr(CodeforcesService, "fetch_user_info", mock_fetch_initial)
 
@@ -67,7 +67,7 @@ async def test_full_production_lifecycle_and_edge_cases(
     assert token.startswith("novacp-verify-")
 
     # Mock user updating CF firstName to token
-    async def mock_fetch_verified(self, handle):
+    async def mock_fetch_verified(self, handle, *args, **kwargs):
         return {"handle": handle, "firstName": token, "rating": 3900, "rank": "legendary grandmaster"}
     monkeypatch.setattr(CodeforcesService, "fetch_user_info", mock_fetch_verified)
 

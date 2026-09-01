@@ -16,7 +16,7 @@ async def test_token_format_and_crypto(db_session, monkeypatch):
     db_session.add(user)
     await db_session.flush()
 
-    async def mock_fetch_user_info(self, handle):
+    async def mock_fetch_user_info(self, handle, *args, **kwargs):
         return {"handle": "tourist", "firstName": "original", "rating": 3800}
 
     monkeypatch.setattr(CodeforcesService, "fetch_user_info", mock_fetch_user_info)
@@ -82,7 +82,7 @@ async def test_link_cf_handle_success_and_immediate_invalidation(db_session, mon
     monkeypatch.setattr(redis_client, "incr", mock_redis_incr)
     monkeypatch.setattr(redis_client, "expire", mock_redis_expire)
 
-    async def mock_fetch_user_info_gen(self, handle):
+    async def mock_fetch_user_info_gen(self, handle, *args, **kwargs):
         return {"handle": "tourist", "firstName": "original", "rating": 3800, "rank": "legendary grandmaster"}
 
     monkeypatch.setattr(CodeforcesService, "fetch_user_info", mock_fetch_user_info_gen)
@@ -91,7 +91,7 @@ async def test_link_cf_handle_success_and_immediate_invalidation(db_session, mon
     token = await service.generate_cf_verification_token(user.id, "tourist")
 
     # Simulate user changing First Name on Codeforces to the exact token
-    async def mock_fetch_user_info_verify(self, handle):
+    async def mock_fetch_user_info_verify(self, handle, *args, **kwargs):
         return {"handle": "tourist", "firstName": token, "rating": 3800, "rank": "legendary grandmaster"}
 
     monkeypatch.setattr(CodeforcesService, "fetch_user_info", mock_fetch_user_info_verify)
@@ -134,7 +134,7 @@ async def test_link_cf_handle_wrong_name_and_lockout(db_session, monkeypatch):
     monkeypatch.setattr(redis_client, "incr", mock_redis_incr)
     monkeypatch.setattr(redis_client, "expire", mock_redis_expire)
 
-    async def mock_fetch_user_info_gen(self, handle):
+    async def mock_fetch_user_info_gen(self, handle, *args, **kwargs):
         return {"handle": "tourist", "firstName": "original", "rating": 3800}
 
     monkeypatch.setattr(CodeforcesService, "fetch_user_info", mock_fetch_user_info_gen)
@@ -143,7 +143,7 @@ async def test_link_cf_handle_wrong_name_and_lockout(db_session, monkeypatch):
     await service.generate_cf_verification_token(user.id, "tourist")
 
     # Codeforces profile returns wrong First Name
-    async def mock_fetch_user_info_wrong(self, handle):
+    async def mock_fetch_user_info_wrong(self, handle, *args, **kwargs):
         return {"handle": "tourist", "firstName": "wrong_name", "rating": 3800}
 
     monkeypatch.setattr(CodeforcesService, "fetch_user_info", mock_fetch_user_info_wrong)
@@ -189,11 +189,11 @@ async def test_handle_conflict_prevention(db_session, monkeypatch):
 @pytest.mark.asyncio
 async def test_cf_api_downtime_error(db_session, monkeypatch):
     """Test graceful error handling when Codeforces API returns None or fails."""
-    user = User(email="downtime@novacp.test", provider="github", provider_account_id="d1")
+    user = User(email="downtime@novacp.test", provider="github", provider_provider_id="d1", provider_account_id="d1") if hasattr(User, "provider_provider_id") else User(email="downtime@novacp.test", provider="github", provider_account_id="d1")
     db_session.add(user)
     await db_session.flush()
 
-    async def mock_fetch_user_info_fail(self, handle):
+    async def mock_fetch_user_info_fail(self, handle, *args, **kwargs):
         return None
 
     monkeypatch.setattr(CodeforcesService, "fetch_user_info", mock_fetch_user_info_fail)

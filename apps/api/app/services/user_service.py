@@ -194,18 +194,30 @@ class UserService:
                 "Please request a new verification token."
             )
 
-        # 4. Fetch Codeforces profile
+        # 4. Fetch Codeforces profile (force_refresh=True ensures fresh fetch from Codeforces)
         async with CodeforcesService() as cf:
-            info = await cf.fetch_user_info(clean_handle)
+            info = await cf.fetch_user_info(clean_handle, force_refresh=True)
 
         if not info:
             raise ValueError(f"Codeforces API is currently unavailable or handle '{clean_handle}' was not found. Please try again shortly.")
 
         first_name = (info.get("firstName") or "").strip()
-        first_name_hash = hashlib.sha256(first_name.encode("utf-8")).hexdigest()
+        last_name = (info.get("lastName") or "").strip()
+        full_name = f"{first_name} {last_name}".strip()
+
+        candidates = [
+            first_name,
+            first_name.lower(),
+            last_name,
+            last_name.lower(),
+            full_name,
+            full_name.lower(),
+        ]
+        candidate_hashes = [hashlib.sha256(c.encode("utf-8")).hexdigest() for c in candidates if c]
 
         # 5. Constant-time hash comparison
-        if not hmac.compare_digest(first_name_hash, expected_token_hash):
+        is_verified = any(hmac.compare_digest(ch, expected_token_hash) for ch in candidate_hashes)
+        if not is_verified:
             new_attempts = await redis_client.incr(attempts_key)
             await redis_client.expire(attempts_key, 900)
             remaining = 5 - new_attempts

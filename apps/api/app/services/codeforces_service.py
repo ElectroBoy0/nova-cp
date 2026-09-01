@@ -70,7 +70,7 @@ class CodeforcesService:
 
         return response
 
-    async def fetch_user_info(self, handle: str) -> dict[str, Any] | None:
+    async def fetch_user_info(self, handle: str, force_refresh: bool = False) -> dict[str, Any] | None:
         """
         Fetch the user profile info from Codeforces.
         Returns a dictionary with 'rating', 'maxRating', 'rank', 'maxRank', etc.
@@ -80,7 +80,7 @@ class CodeforcesService:
         cached = _CF_CACHE.get(cache_key)
         now = time.time()
 
-        if cached and (now - cached[1]) < _CACHE_TTL_SECONDS:
+        if not force_refresh and cached and (now - cached[1]) < _CACHE_TTL_SECONDS:
             return cached[0]
 
         url = f"{self.BASE_URL}/user.info"
@@ -104,7 +104,7 @@ class CodeforcesService:
             logger.warning("Unexpected error fetching CF info for %s: %s", handle, e)
 
         # Stale cache fallback if Codeforces is down or failing
-        if cached:
+        if not force_refresh and cached:
             logger.info("Serving stale cached user info for %s during downtime", handle)
             return cached[0]
 
