@@ -41,6 +41,20 @@ export function AnalyticsClient({ userId }: { userId: string }) {
   const hasLinkedHandle = !!user?.cf_handle
   const isSyncing = syncStatus === "syncing" || linkMutation.isPending
 
+  // Smooth scroll to anchor (e.g. #topic-mastery) once loaded
+  useEffect(() => {
+    if (!isLoading && typeof window !== "undefined" && window.location.hash) {
+      const targetId = window.location.hash.replace("#", "")
+      const el = document.getElementById(targetId)
+      if (el) {
+        const timer = setTimeout(() => {
+          el.scrollIntoView({ behavior: "smooth", block: "start" })
+        }, 150)
+        return () => clearTimeout(timer)
+      }
+    }
+  }, [isLoading])
+
   const handleManualSync = () => {
     if (user?.cf_handle?.handle && !isSyncing) {
       linkMutation.mutate({ userId, handle: user.cf_handle.handle })

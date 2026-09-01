@@ -173,7 +173,7 @@ export function TopicMasteryChart({ topicMastery, isLoading }: TopicMasteryChart
   }, [rawEntries, searchQuery, selectedCategory, sortOption])
 
   return (
-    <div className="shadow-xs rounded-xl border border-border bg-card p-5 sm:p-6">
+    <div id="topic-mastery" className="shadow-xs rounded-xl border border-border bg-card p-5 sm:p-6 scroll-mt-6">
       {/* Header */}
       <div className="flex flex-col gap-4 border-b border-border/60 pb-5 md:flex-row md:items-center md:justify-between">
         <div className="space-y-1">

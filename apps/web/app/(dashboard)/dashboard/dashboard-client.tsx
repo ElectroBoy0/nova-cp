@@ -379,7 +379,7 @@ export function DashboardClient({ userId, firstName }: { userId: string; firstNa
                 <h3 className="text-sm font-semibold text-foreground">Topic Mastery</h3>
               </div>
               <Button variant="ghost" size="sm" asChild className="h-7 gap-1 text-xs">
-                <Link href="/analytics">
+                <Link href="/analytics#topic-mastery">
                   View All
                   <ArrowRight className="h-3 w-3" />
                 </Link>
