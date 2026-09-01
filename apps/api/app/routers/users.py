@@ -112,6 +112,18 @@ async def get_user(
         except Exception:
             pass
 
+    # Auto-recover orphaned sync status if stuck for > 60 seconds
+    if user.cf_handle and user.cf_handle.sync_status in ("syncing", "pending"):
+        if user.cf_handle.last_synced_at:
+            last_dt = user.cf_handle.last_synced_at
+            if last_dt.tzinfo is None:
+                last_dt = last_dt.replace(tzinfo=UTC)
+            age = (datetime.now(UTC) - last_dt).total_seconds()
+            if age > 60:
+                user.cf_handle.sync_status = "completed"
+                await db.commit()
+                await db.refresh(user)
+
     return UserRead.model_validate(user)
 
 
@@ -174,6 +186,36 @@ async def link_cf_handle(
         user = await service.link_cf_handle(user_id, request.handle)
         # Queue the background sync task with is_manual=True
         background_tasks.add_task(_run_sync_task, user_id, request.handle, is_manual=True)
+        return UserRead.model_validate(user)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        ) from e
+
+
+@router.delete(
+    "/{user_id}/cf-handle",
+    response_model=UserRead,
+    status_code=status.HTTP_200_OK,
+    summary="Delink Codeforces handle",
+    description="Disconnects the CF handle, removes synced submissions and analytics.",
+)
+async def delink_cf_handle(
+    user_id: str,
+    db: AsyncSession = Depends(get_db),
+) -> UserRead:
+    service = UserService(db)
+
+    user = await service.get_by_id(user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User {user_id!r} not found.",
+        )
+
+    try:
+        user = await service.delink_cf_handle(user_id)
         return UserRead.model_validate(user)
     except ValueError as e:
         raise HTTPException(

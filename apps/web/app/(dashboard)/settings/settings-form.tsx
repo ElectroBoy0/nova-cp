@@ -6,6 +6,7 @@ import {
   useUserProfile,
   useUserDashboard,
   useLinkHandle,
+  useDelinkHandle,
   useUpdateSettings,
   useGenerateVerificationToken,
   useTriggerTestNotification,
@@ -26,6 +27,7 @@ import {
   RefreshCw,
   User,
   Link as LinkIcon,
+  Unlink,
   Settings,
   Bell,
   Database,
@@ -193,10 +195,12 @@ export function SettingsForm({ userId }: { userId: string }) {
   const { data: dashboardData } = useUserDashboard(userId)
 
   const linkMutation = useLinkHandle()
+  const delinkMutation = useDelinkHandle()
   const updateSettingsMutation = useUpdateSettings()
   const generateTokenMutation = useGenerateVerificationToken()
   const triggerTestNotifMutation = useTriggerTestNotification()
 
+  const [showDelinkConfirm, setShowDelinkConfirm] = useState(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   // Active Tab synchronized with URL query params (?tab=notifications, etc.)
@@ -602,6 +606,27 @@ export function SettingsForm({ userId }: { userId: string }) {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: userKeys.profile(userId) })
           toast.success("Submission sync queued!")
+        },
+      }
+    )
+  }
+
+  const handleDelinkHandle = () => {
+    delinkMutation.mutate(
+      { userId },
+      {
+        onSuccess: () => {
+          setShowDelinkConfirm(false)
+          setHandleInput("")
+          setVerificationToken(null)
+          setIsVerifying(false)
+          setJustVerified(false)
+          toast.success("Codeforces account disconnected successfully.")
+        },
+        onError: (err: any) => {
+          toast.error(
+            err?.response?.data?.detail || err?.message || "Failed to disconnect account."
+          )
         },
       }
     )
@@ -1274,7 +1299,7 @@ export function SettingsForm({ userId }: { userId: string }) {
                     variant="outline"
                     size="sm"
                     className="h-8 gap-1.5 text-xs"
-                    disabled={linkMutation.isPending || cf?.sync_status === "syncing"}
+                    disabled={linkMutation.isPending || delinkMutation.isPending || cf?.sync_status === "syncing"}
                     onClick={handleManualSync}
                   >
                     {cf?.sync_status === "syncing" || linkMutation.isPending ? (
@@ -1287,9 +1312,64 @@ export function SettingsForm({ userId }: { userId: string }) {
                       </>
                     )}
                   </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 gap-1.5 border-destructive/30 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    disabled={delinkMutation.isPending || linkMutation.isPending}
+                    onClick={() => setShowDelinkConfirm((prev) => !prev)}
+                  >
+                    <Unlink className="h-3.5 w-3.5" /> Delink
+                  </Button>
                 </div>
               )}
             </div>
+
+            {/* Delink Confirmation Banner */}
+            {showDelinkConfirm && hasHandle && (
+              <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-4 duration-300 animate-in fade-in">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+                  <div className="flex-1 space-y-2">
+                    <h5 className="text-xs font-semibold text-destructive">
+                      Disconnect Codeforces Account @{currentHandle}?
+                    </h5>
+                    <p className="text-[11px] text-muted-foreground">
+                      This will unlink <strong>@{currentHandle}</strong> from your NovaCP account and clear synced submissions, topic mastery data, and rating graphs.
+                    </p>
+                    <div className="flex items-center gap-2 pt-1">
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="h-7 gap-1.5 text-xs font-medium"
+                        disabled={delinkMutation.isPending}
+                        onClick={handleDelinkHandle}
+                      >
+                        {delinkMutation.isPending ? (
+                          <>
+                            <RefreshCw className="h-3 w-3 animate-spin" /> Disconnecting...
+                          </>
+                        ) : (
+                          <>
+                            <Unlink className="h-3 w-3" /> Confirm Disconnect
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs"
+                        disabled={delinkMutation.isPending}
+                        onClick={() => setShowDelinkConfirm(false)}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Post-verification confirmation banner */}
             {justVerified && hasHandle && (

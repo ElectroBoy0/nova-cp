@@ -344,3 +344,41 @@ class UserService:
         await self.db.flush()
         await self.db.refresh(user, attribute_names=["cf_handle"])
         return user
+
+    async def delink_cf_handle(self, user_id: str) -> User:
+        """
+        Delinks / removes the Codeforces handle and associated synced data for a user.
+        """
+        user = await self.get_by_id(user_id)
+        if user is None:
+            msg = f"User {user_id!r} not found"
+            raise ValueError(msg)
+
+        if user.cf_handle is not None:
+            from sqlalchemy import delete
+
+            from app.models.analytics import UserAnalytics
+            from app.models.submission import Submission
+            from app.models.upsolve import UpsolveItem
+            from app.redis import CacheKey, redis_client
+
+            # Delete submissions, analytics, upsolve items
+            await self.db.execute(delete(Submission).where(Submission.user_id == user_id))
+            await self.db.execute(delete(UserAnalytics).where(UserAnalytics.user_id == user_id))
+            await self.db.execute(delete(UpsolveItem).where(UpsolveItem.user_id == user_id))
+            await self.db.execute(delete(CFHandle).where(CFHandle.user_id == user_id))
+
+            user.cf_handle = None
+            user.onboarding_completed = False
+
+            # Clear Redis caches
+            await redis_client.delete(
+                CacheKey.user_activity(user_id),
+                CacheKey.user_profile(user_id),
+                CacheKey.sync_status(user_id),
+            )
+
+            await self.db.flush()
+            await self.db.refresh(user, attribute_names=["cf_handle"])
+
+        return user

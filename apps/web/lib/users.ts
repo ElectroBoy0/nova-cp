@@ -28,6 +28,10 @@ export async function linkCodeforcesHandle(userId: string, handle: string): Prom
   return apiClient.post<UserProfile>(`/api/v1/users/${userId}/cf-handle`, { handle })
 }
 
+export async function delinkCodeforcesHandle(userId: string): Promise<UserProfile> {
+  return apiClient.delete<UserProfile>(`/api/v1/users/${userId}/cf-handle`)
+}
+
 export async function generateVerificationToken(
   userId: string,
   handle: string
@@ -104,7 +108,7 @@ export function useUserProfile(userId: string | undefined) {
     enabled: !!userId,
     refetchInterval: (query) => {
       const status = query.state.data?.cf_handle?.sync_status
-      return status === "syncing" ? 3000 : false
+      return status === "syncing" || status === "pending" ? 2500 : false
     },
   })
 }
@@ -120,6 +124,21 @@ export function useLinkHandle() {
       queryClient.setQueryData(userKeys.profile(updatedUser.id), updatedUser)
       // Also invalidate dashboard analytics so it refreshes when sync completes
       queryClient.invalidateQueries({ queryKey: analyticsKeys.dashboard(updatedUser.id) })
+    },
+  })
+}
+
+export function useDelinkHandle() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ userId }: { userId: string }) => delinkCodeforcesHandle(userId),
+    onSuccess: (updatedUser) => {
+      queryClient.setQueryData(userKeys.profile(updatedUser.id), updatedUser)
+      queryClient.invalidateQueries({ queryKey: userKeys.profile(updatedUser.id) })
+      queryClient.invalidateQueries({ queryKey: analyticsKeys.dashboard(updatedUser.id) })
+      queryClient.invalidateQueries({ queryKey: ["recommendations"] })
+      queryClient.invalidateQueries({ queryKey: ["upsolve"] })
     },
   })
 }

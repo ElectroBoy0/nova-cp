@@ -25,8 +25,13 @@ export function DashboardClient({ userId, firstName }: { userId: string; firstNa
   const prevSyncStatus = useRef(syncStatus)
 
   useEffect(() => {
-    if (prevSyncStatus.current === "syncing" && syncStatus === "completed") {
+    if (
+      (prevSyncStatus.current === "syncing" || prevSyncStatus.current === "pending") &&
+      (syncStatus === "completed" || syncStatus === "failed")
+    ) {
       queryClient.invalidateQueries({ queryKey: analyticsKeys.dashboard(userId) })
+      queryClient.invalidateQueries({ queryKey: ["recommendations"] })
+      queryClient.invalidateQueries({ queryKey: ["upsolve"] })
     }
     prevSyncStatus.current = syncStatus
   }, [syncStatus, queryClient, userId])
