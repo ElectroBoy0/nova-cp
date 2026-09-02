@@ -7,13 +7,15 @@ import { cn } from "@/lib/utils"
 interface MathTextProps {
   content?: string
   className?: string
+  style?: React.CSSProperties
+  fontSize?: number
 }
 
 /**
  * Parses and renders LaTeX math notation ($$$...$$$, $$...$$, $...$)
  * alongside Markdown formatting (**bold**, *italic*, `code`, lists) with KaTeX.
  */
-export function MathText({ content = "", className }: MathTextProps) {
+export function MathText({ content = "", className, style, fontSize }: MathTextProps) {
   const renderedHtml = useMemo(() => {
     if (!content) return ""
 
@@ -106,15 +108,21 @@ export function MathText({ content = "", className }: MathTextProps) {
     return formatted
   }, [content])
 
+  const combinedStyle: React.CSSProperties = {
+    ...(fontSize ? { fontSize: `${fontSize}px` } : {}),
+    ...style,
+  }
+
   return (
     <div
+      style={combinedStyle}
       className={cn(
-        "font-sans text-xs leading-relaxed text-foreground/90",
+        "font-sans leading-relaxed text-foreground/90",
         "[&_p:last-child]:mb-0 [&_p]:mb-2.5",
         "[&_ul]:my-2 [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5",
         "[&_ol]:my-2 [&_ol]:list-decimal [&_ol]:space-y-1 [&_ol]:pl-5",
         "[&_li]:leading-relaxed",
-        "[&_code]:rounded [&_code]:border [&_code]:border-border [&_code]:bg-surface-2 [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[11px]",
+        "[&_code]:rounded [&_code]:border [&_code]:border-border [&_code]:bg-surface-2 [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.9em]",
         "[&_strong]:font-semibold [&_strong]:text-foreground",
         "[&_em]:italic",
         className

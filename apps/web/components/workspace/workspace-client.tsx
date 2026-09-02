@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useCallback, useMemo } from "react"
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Play, RotateCcw, ExternalLink, Layers, Loader2, Keyboard, Minimize2 } from "lucide-react"
 import {
@@ -163,7 +163,13 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
     }
   }, [])
 
-  // Escape key exits problem maximized focus mode
+  const leftWidthRef = useRef(leftPanelWidth)
+  leftWidthRef.current = leftPanelWidth
+
+  const editorHeightRef = useRef(editorHeightPercent)
+  editorHeightRef.current = editorHeightPercent
+
+  // Escape key exits problem maximized focus mode, and trigger Monaco layout update
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isProblemMaximized) {
@@ -174,35 +180,58 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [isProblemMaximized])
 
-  // Drag listeners
+  useEffect(() => {
+    // When focus/maximize toggles, notify Monaco to resize layout immediately
+    const timer = setTimeout(() => {
+      window.dispatchEvent(new Event("resize"))
+    }, 50)
+    return () => clearTimeout(timer)
+  }, [isProblemMaximized, leftPanelVisible])
+
+  // Drag listeners with rAF and debounced storage for buttery smooth 120fps resizing
   useEffect(() => {
     if (!isDraggingHorizontal && !isDraggingVertical) return
 
+    let rafId: number | null = null
+
     const handleMouseMove = (e: MouseEvent) => {
-      if (isDraggingHorizontal) {
-        const minWidth = 280
-        const maxWidth = Math.max(minWidth, window.innerWidth - 380)
-        const newWidth = Math.min(Math.max(e.clientX, minWidth), maxWidth)
-        setLeftPanelWidth(newWidth)
-        localStorage.setItem("novacp_workspace_left_width", String(newWidth))
-      } else if (isDraggingVertical) {
-        const headerHeight = 48
-        const availableHeight = window.innerHeight - headerHeight
-        const relativeY = e.clientY - headerHeight
-        const newPercent = Math.min(Math.max((relativeY / availableHeight) * 100, 25), 80)
-        setEditorHeightPercent(newPercent)
-        localStorage.setItem("novacp_workspace_editor_height", String(newPercent))
-      }
+      if (rafId !== null) return
+
+      rafId = requestAnimationFrame(() => {
+        rafId = null
+        if (isDraggingHorizontal) {
+          const minWidth = 280
+          const maxWidth = Math.max(minWidth, window.innerWidth - 380)
+          const newWidth = Math.min(Math.max(e.clientX, minWidth), maxWidth)
+          leftWidthRef.current = newWidth
+          setLeftPanelWidth(newWidth)
+        } else if (isDraggingVertical) {
+          const headerHeight = 48
+          const availableHeight = window.innerHeight - headerHeight
+          const relativeY = e.clientY - headerHeight
+          const newPercent = Math.min(Math.max((relativeY / availableHeight) * 100, 25), 80)
+          editorHeightRef.current = newPercent
+          setEditorHeightPercent(newPercent)
+        }
+      })
     }
 
     const handleMouseUp = () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId)
+        rafId = null
+      }
       setIsDraggingHorizontal(false)
       setIsDraggingVertical(false)
+      localStorage.setItem("novacp_workspace_left_width", String(leftWidthRef.current))
+      localStorage.setItem("novacp_workspace_editor_height", String(editorHeightRef.current))
+      window.dispatchEvent(new Event("resize"))
     }
 
     window.addEventListener("mousemove", handleMouseMove)
     window.addEventListener("mouseup", handleMouseUp)
     return () => {
+      if (rafId !== null) cancelAnimationFrame(rafId)
       window.removeEventListener("mousemove", handleMouseMove)
       window.removeEventListener("mouseup", handleMouseUp)
     }
@@ -482,7 +511,8 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
           <div
             style={isProblemMaximized ? undefined : { width: `${leftPanelWidth}px` }}
             className={cn(
-              "h-full overflow-hidden bg-surface-1/30 transition-all duration-150",
+              "h-full overflow-hidden bg-surface-1/30",
+              !isDraggingHorizontal && "transition-[width] duration-150 ease-out",
               isProblemMaximized ? "w-full flex-1" : "hidden shrink-0 md:block"
             )}
           >
@@ -525,45 +555,59 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
           </div>
         )}
 
-        {!isProblemMaximized && (
-          <div className="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
-            <div
-              style={{ height: `${editorHeightPercent}%` }}
-              className="min-h-[160px] shrink-0 overflow-hidden"
-            >
-              <MonacoCodeEditor
-                language={language}
-                value={code}
-                onChange={handleCodeChange}
-                fontSize={fontSize}
-                onRun={handleRunCode}
-                userSnippets={userSnippets}
-              />
-            </div>
-
-            <div
-              onMouseDown={(e) => {
-                e.preventDefault()
-                setIsDraggingVertical(true)
-              }}
-              onDoubleClick={() => setEditorHeightPercent(58)}
-              className={cn(
-                "group z-20 flex h-1.5 shrink-0 cursor-row-resize items-center justify-center border-t border-border/50 transition-all hover:h-2",
-                isDraggingVertical ? "h-2 bg-primary" : "bg-surface-2/60 hover:bg-primary/50"
-              )}
-            >
-              <div className="h-1 w-8 rounded-full bg-muted-foreground/30 transition-colors group-hover:bg-primary-foreground/80" />
-            </div>
-
-            <div className="min-h-[140px] flex-1 overflow-hidden">
-              <TerminalPanel
-                testCases={testCases}
-                onChangeTestCases={setTestCases}
-                lastRunResult={lastRunResult}
-                isRunning={runCodeMutation.isPending}
-              />
-            </div>
+        {/* Keep editor mounted in DOM so toggling focus mode is instantaneous (0ms) without cold-starting Monaco */}
+        <div
+          className={cn(
+            "flex h-full min-w-0 flex-1 flex-col overflow-hidden",
+            isProblemMaximized && "hidden"
+          )}
+        >
+          <div
+            style={{ height: `${editorHeightPercent}%` }}
+            className="min-h-[160px] shrink-0 overflow-hidden"
+          >
+            <MonacoCodeEditor
+              language={language}
+              value={code}
+              onChange={handleCodeChange}
+              fontSize={fontSize}
+              onRun={handleRunCode}
+              userSnippets={userSnippets}
+            />
           </div>
+
+          <div
+            onMouseDown={(e) => {
+              e.preventDefault()
+              setIsDraggingVertical(true)
+            }}
+            onDoubleClick={() => setEditorHeightPercent(58)}
+            className={cn(
+              "group z-20 flex h-1.5 shrink-0 cursor-row-resize items-center justify-center border-t border-border/50 transition-all hover:h-2",
+              isDraggingVertical ? "h-2 bg-primary" : "bg-surface-2/60 hover:bg-primary/50"
+            )}
+          >
+            <div className="h-1 w-8 rounded-full bg-muted-foreground/30 transition-colors group-hover:bg-primary-foreground/80" />
+          </div>
+
+          <div className="min-h-[140px] flex-1 overflow-hidden">
+            <TerminalPanel
+              testCases={testCases}
+              onChangeTestCases={setTestCases}
+              lastRunResult={lastRunResult}
+              isRunning={runCodeMutation.isPending}
+            />
+          </div>
+        </div>
+
+        {/* High-speed capture overlay during drag to prevent Monaco/text event hijacking */}
+        {(isDraggingHorizontal || isDraggingVertical) && (
+          <div
+            className={cn(
+              "fixed inset-0 z-50 select-none bg-transparent",
+              isDraggingHorizontal ? "cursor-col-resize" : "cursor-row-resize"
+            )}
+          />
         )}
       </div>
 

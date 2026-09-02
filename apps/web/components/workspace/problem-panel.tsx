@@ -82,9 +82,12 @@ export function ProblemPanel({
   const cfUrl = `https://codeforces.com/problemset/problem/${problem.contest_id}/${problem.index}`
 
   return (
-    <div className="h-full space-y-6 overflow-y-auto p-5 text-sm text-foreground">
+    <div
+      className="h-full space-y-6 overflow-y-auto p-5 text-foreground"
+      style={{ fontSize: `${fontSize}px` }}
+    >
       {/* Problem Header */}
-      <div className="space-y-3 border-b border-border pb-4">
+      <div className="space-y-3 border-b border-border pb-4 text-sm">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <span className="font-mono text-xs font-semibold text-primary">
@@ -255,7 +258,7 @@ export function ProblemPanel({
           style={{ fontSize: `${fontSize}px`, lineHeight: 1.68 }}
           className="space-y-2 whitespace-pre-line font-sans text-foreground/90"
         >
-          <MathText content={description} />
+          <MathText content={description} fontSize={fontSize} />
         </div>
       </div>
 
@@ -269,7 +272,7 @@ export function ProblemPanel({
             style={{ fontSize: `${fontSize}px`, lineHeight: 1.68 }}
             className="whitespace-pre-line font-sans text-muted-foreground"
           >
-            <MathText content={inputFormat} />
+            <MathText content={inputFormat} fontSize={fontSize} />
           </div>
         </div>
       )}
@@ -284,7 +287,7 @@ export function ProblemPanel({
             style={{ fontSize: `${fontSize}px`, lineHeight: 1.68 }}
             className="whitespace-pre-line font-sans text-muted-foreground"
           >
-            <MathText content={outputFormat} />
+            <MathText content={outputFormat} fontSize={fontSize} />
           </div>
         </div>
       )}
@@ -326,7 +329,10 @@ export function ProblemPanel({
                   )}
                 </button>
               </div>
-              <pre className="overflow-x-auto whitespace-pre rounded border border-border/80 bg-surface-2/60 p-2.5 font-mono text-xs text-foreground">
+              <pre
+                style={{ fontSize: `${Math.max(11, fontSize - 2)}px` }}
+                className="overflow-x-auto whitespace-pre rounded border border-border/80 bg-surface-2/60 p-2.5 font-mono text-foreground"
+              >
                 {sample.input.trim()}
               </pre>
             </div>
@@ -348,7 +354,10 @@ export function ProblemPanel({
                   )}
                 </button>
               </div>
-              <pre className="overflow-x-auto whitespace-pre rounded border border-border/80 bg-surface-2/60 p-2.5 font-mono text-xs text-foreground">
+              <pre
+                style={{ fontSize: `${Math.max(11, fontSize - 2)}px` }}
+                className="overflow-x-auto whitespace-pre rounded border border-border/80 bg-surface-2/60 p-2.5 font-mono text-foreground"
+              >
                 {(sample.expected_output || "").trim()}
               </pre>
             </div>
@@ -371,7 +380,10 @@ export function ProblemPanel({
           <div className="mt-2 space-y-1 rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-xs text-muted-foreground">
             <p className="font-medium text-foreground">💡 Core Invariant:</p>
             <div className="leading-relaxed">
-              <MathText content={fallbackDetails.socraticHint} />
+              <MathText
+                content={fallbackDetails.socraticHint}
+                fontSize={Math.max(12, fontSize - 1)}
+              />
             </div>
           </div>
         )}
