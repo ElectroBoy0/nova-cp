@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
-import { Play, RotateCcw, ExternalLink, Layers, Loader2, Keyboard } from "lucide-react"
+import { Play, RotateCcw, ExternalLink, Layers, Loader2, Keyboard, Minimize2 } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -140,6 +140,10 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
   const [isDraggingHorizontal, setIsDraggingHorizontal] = useState(false)
   const [isDraggingVertical, setIsDraggingVertical] = useState(false)
 
+  // Problem font size & focus maximize state
+  const [problemFontSize, setProblemFontSize] = useState<number>(15)
+  const [isProblemMaximized, setIsProblemMaximized] = useState<boolean>(false)
+
   // Load saved dimensions
   useEffect(() => {
     const savedWidth = localStorage.getItem("novacp_workspace_left_width")
@@ -152,7 +156,23 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
       const parsed = Number(savedHeight)
       if (parsed >= 25 && parsed <= 85) setEditorHeightPercent(parsed)
     }
+    const savedProblemFontSize = localStorage.getItem("novacp_workspace_problem_font_size")
+    if (savedProblemFontSize) {
+      const parsed = Number(savedProblemFontSize)
+      if (parsed >= 12 && parsed <= 24) setProblemFontSize(parsed)
+    }
   }, [])
+
+  // Escape key exits problem maximized focus mode
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isProblemMaximized) {
+        setIsProblemMaximized(false)
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [isProblemMaximized])
 
   // Drag listeners
   useEffect(() => {
@@ -324,12 +344,31 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
           <Button
             variant="ghost"
             size="icon-sm"
-            onClick={() => setLeftPanelVisible(!leftPanelVisible)}
+            onClick={() => {
+              if (isProblemMaximized) {
+                setIsProblemMaximized(false)
+              } else {
+                setLeftPanelVisible(!leftPanelVisible)
+              }
+            }}
             title={leftPanelVisible ? "Hide Problem Statement" : "Show Problem Statement"}
             className="text-muted-foreground hover:text-foreground"
           >
             <Layers className="h-4 w-4" />
           </Button>
+
+          {isProblemMaximized && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsProblemMaximized(false)}
+              className="h-7 gap-1 border-primary/40 bg-primary/10 text-xs font-medium text-primary hover:bg-primary/20"
+              title="Restore side-by-side editor (Esc)"
+            >
+              <Minimize2 className="h-3.5 w-3.5" />
+              <span>Exit Focus Mode</span>
+            </Button>
+          )}
 
           <ProblemSearchCombobox
             currentProblem={currentProblem}
@@ -441,23 +480,42 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
       <div className="relative flex flex-1 overflow-hidden">
         {leftPanelVisible && (
           <div
-            style={{ width: `${leftPanelWidth}px` }}
-            className="hidden h-full shrink-0 overflow-hidden bg-surface-1/30 md:block"
+            style={isProblemMaximized ? undefined : { width: `${leftPanelWidth}px` }}
+            className={cn(
+              "h-full overflow-hidden bg-surface-1/30 transition-all duration-150",
+              isProblemMaximized ? "w-full flex-1" : "hidden shrink-0 md:block"
+            )}
           >
             <ProblemPanel
               problem={currentProblem}
               onLoadSampleTests={(samples) => setTestCases(samples)}
+              fontSize={problemFontSize}
+              onFontSizeChange={(newSize) => {
+                setProblemFontSize(newSize)
+                localStorage.setItem("novacp_workspace_problem_font_size", String(newSize))
+              }}
+              isMaximized={isProblemMaximized}
+              onToggleMaximize={() => setIsProblemMaximized((prev) => !prev)}
+              onSetWidthPreset={(ratio) => {
+                setIsProblemMaximized(false)
+                const newWidth = Math.min(
+                  Math.max(Math.round(window.innerWidth * ratio), 280),
+                  window.innerWidth - 380
+                )
+                setLeftPanelWidth(newWidth)
+                localStorage.setItem("novacp_workspace_left_width", String(newWidth))
+              }}
             />
           </div>
         )}
 
-        {leftPanelVisible && (
+        {leftPanelVisible && !isProblemMaximized && (
           <div
             onMouseDown={(e) => {
               e.preventDefault()
               setIsDraggingHorizontal(true)
             }}
-            onDoubleClick={() => setLeftPanelWidth(480)}
+            onDoubleClick={() => setLeftPanelWidth(Math.round(window.innerWidth * 0.5))}
             className={cn(
               "group z-30 -mr-1 hidden w-1.5 shrink-0 cursor-col-resize items-center justify-center transition-all hover:w-2 md:flex",
               isDraggingHorizontal ? "w-2 bg-primary" : "bg-border/60 hover:bg-primary/50"
@@ -467,44 +525,46 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
           </div>
         )}
 
-        <div className="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
-          <div
-            style={{ height: `${editorHeightPercent}%` }}
-            className="min-h-[160px] shrink-0 overflow-hidden"
-          >
-            <MonacoCodeEditor
-              language={language}
-              value={code}
-              onChange={handleCodeChange}
-              fontSize={fontSize}
-              onRun={handleRunCode}
-              userSnippets={userSnippets}
-            />
-          </div>
+        {!isProblemMaximized && (
+          <div className="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
+            <div
+              style={{ height: `${editorHeightPercent}%` }}
+              className="min-h-[160px] shrink-0 overflow-hidden"
+            >
+              <MonacoCodeEditor
+                language={language}
+                value={code}
+                onChange={handleCodeChange}
+                fontSize={fontSize}
+                onRun={handleRunCode}
+                userSnippets={userSnippets}
+              />
+            </div>
 
-          <div
-            onMouseDown={(e) => {
-              e.preventDefault()
-              setIsDraggingVertical(true)
-            }}
-            onDoubleClick={() => setEditorHeightPercent(58)}
-            className={cn(
-              "group z-20 flex h-1.5 shrink-0 cursor-row-resize items-center justify-center border-t border-border/50 transition-all hover:h-2",
-              isDraggingVertical ? "h-2 bg-primary" : "bg-surface-2/60 hover:bg-primary/50"
-            )}
-          >
-            <div className="h-1 w-8 rounded-full bg-muted-foreground/30 transition-colors group-hover:bg-primary-foreground/80" />
-          </div>
+            <div
+              onMouseDown={(e) => {
+                e.preventDefault()
+                setIsDraggingVertical(true)
+              }}
+              onDoubleClick={() => setEditorHeightPercent(58)}
+              className={cn(
+                "group z-20 flex h-1.5 shrink-0 cursor-row-resize items-center justify-center border-t border-border/50 transition-all hover:h-2",
+                isDraggingVertical ? "h-2 bg-primary" : "bg-surface-2/60 hover:bg-primary/50"
+              )}
+            >
+              <div className="h-1 w-8 rounded-full bg-muted-foreground/30 transition-colors group-hover:bg-primary-foreground/80" />
+            </div>
 
-          <div className="min-h-[140px] flex-1 overflow-hidden">
-            <TerminalPanel
-              testCases={testCases}
-              onChangeTestCases={setTestCases}
-              lastRunResult={lastRunResult}
-              isRunning={runCodeMutation.isPending}
-            />
+            <div className="min-h-[140px] flex-1 overflow-hidden">
+              <TerminalPanel
+                testCases={testCases}
+                onChangeTestCases={setTestCases}
+                lastRunResult={lastRunResult}
+                isRunning={runCodeMutation.isPending}
+              />
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Keyboard Shortcuts Dialog */}

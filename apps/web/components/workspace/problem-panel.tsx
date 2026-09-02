@@ -11,21 +11,37 @@ import {
   HardDrive,
   Lightbulb,
   Loader2,
+  Maximize2,
+  Minimize2,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { MathText } from "@/components/ui/math-text"
 import { getProblemStatementDetails } from "@/lib/problem-statement-helper"
 import { useProblemStatement } from "@/hooks/use-problems"
+import { cn } from "@/lib/utils"
 import type { Problem } from "@/types/problems"
 import type { TestCase } from "@/types/code-execution"
 
 interface ProblemPanelProps {
   problem?: Problem | null
   onLoadSampleTests?: (samples: TestCase[]) => void
+  fontSize?: number
+  onFontSizeChange?: (size: number) => void
+  isMaximized?: boolean
+  onToggleMaximize?: () => void
+  onSetWidthPreset?: (ratio: number) => void
 }
 
-export function ProblemPanel({ problem, onLoadSampleTests }: ProblemPanelProps) {
+export function ProblemPanel({
+  problem,
+  onLoadSampleTests,
+  fontSize = 15,
+  onFontSizeChange,
+  isMaximized = false,
+  onToggleMaximize,
+  onSetWidthPreset,
+}: ProblemPanelProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [showHint, setShowHint] = useState(false)
 
@@ -68,8 +84,8 @@ export function ProblemPanel({ problem, onLoadSampleTests }: ProblemPanelProps) 
   return (
     <div className="h-full space-y-6 overflow-y-auto p-5 text-sm text-foreground">
       {/* Problem Header */}
-      <div className="space-y-2 border-b border-border pb-4">
-        <div className="flex items-start justify-between gap-2">
+      <div className="space-y-3 border-b border-border pb-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <span className="font-mono text-xs font-semibold text-primary">
               {problem.contest_id}
@@ -77,15 +93,104 @@ export function ProblemPanel({ problem, onLoadSampleTests }: ProblemPanelProps) 
             </span>
             <h2 className="text-lg font-bold tracking-tight text-foreground">{problem.name}</h2>
           </div>
-          <a
-            href={cfUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <span>Codeforces</span>
-            <ExternalLink className="h-3 w-3" />
-          </a>
+
+          <div className="flex flex-wrap items-center gap-1.5">
+            {/* Font Size Zoom Controls */}
+            {onFontSizeChange && (
+              <div
+                className="flex items-center rounded-md border border-border/80 bg-surface-2/80 p-0.5 shadow-sm"
+                title="Adjust problem statement text size"
+              >
+                <button
+                  type="button"
+                  onClick={() => onFontSizeChange(Math.max(12, fontSize - 1))}
+                  disabled={fontSize <= 12}
+                  title="Smaller text (A-)"
+                  className="flex h-6 w-6 items-center justify-center rounded text-xs font-semibold text-muted-foreground transition-colors hover:bg-surface-3 hover:text-foreground disabled:opacity-30"
+                >
+                  A-
+                </button>
+                <span className="px-1.5 font-mono text-[11px] font-medium text-foreground select-none">
+                  {fontSize}px
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onFontSizeChange(Math.min(24, fontSize + 1))}
+                  disabled={fontSize >= 24}
+                  title="Larger text (A+)"
+                  className="flex h-6 w-6 items-center justify-center rounded text-xs font-semibold text-muted-foreground transition-colors hover:bg-surface-3 hover:text-foreground disabled:opacity-30"
+                >
+                  A+
+                </button>
+              </div>
+            )}
+
+            {/* Quick Width Presets in Split Mode */}
+            {!isMaximized && onSetWidthPreset && (
+              <div className="hidden items-center rounded-md border border-border/80 bg-surface-2/80 p-0.5 text-[11px] font-mono xl:flex">
+                <button
+                  type="button"
+                  onClick={() => onSetWidthPreset(0.5)}
+                  title="50% Balanced split"
+                  className="rounded px-1.5 py-0.5 text-muted-foreground transition-colors hover:bg-surface-3 hover:text-foreground"
+                >
+                  50%
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSetWidthPreset(0.65)}
+                  title="65% Wide problem view"
+                  className="rounded px-1.5 py-0.5 text-muted-foreground transition-colors hover:bg-surface-3 hover:text-foreground"
+                >
+                  65%
+                </button>
+              </div>
+            )}
+
+            {/* Focus / Maximize Reading Mode Toggle */}
+            {onToggleMaximize && (
+              <Button
+                variant={isMaximized ? "secondary" : "outline"}
+                size="sm"
+                onClick={onToggleMaximize}
+                title={
+                  isMaximized
+                    ? "Exit Focus Mode (Esc)"
+                    : "Maximize Problem Statement (Focus Mode)"
+                }
+                className={cn(
+                  "h-7 gap-1 px-2.5 text-xs transition-colors",
+                  isMaximized
+                    ? "border border-primary/40 bg-primary/15 text-primary hover:bg-primary/25"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {isMaximized ? (
+                  <>
+                    <Minimize2 className="h-3.5 w-3.5" />
+                    <span>Split View</span>
+                  </>
+                ) : (
+                  <>
+                    <Maximize2 className="h-3.5 w-3.5" />
+                    <span>Focus</span>
+                  </>
+                )}
+              </Button>
+            )}
+
+            {/* External CF Link */}
+            <a
+              href={cfUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex h-7 items-center gap-1 rounded-md border border-border px-2 text-xs text-muted-foreground transition-colors hover:bg-surface-2 hover:text-foreground"
+              title="Open problem on Codeforces"
+            >
+              <span>Codeforces</span>
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          </div>
         </div>
 
         {/* Badges & Meta */}
@@ -142,22 +247,28 @@ export function ProblemPanel({ problem, onLoadSampleTests }: ProblemPanelProps) 
       </div>
 
       {/* Problem Description */}
-      <div className="space-y-3 text-xs leading-relaxed text-muted-foreground">
+      <div className="space-y-3 leading-relaxed text-muted-foreground">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground">
           Problem Description
         </h4>
-        <div className="space-y-2 whitespace-pre-line font-sans leading-relaxed text-foreground/90">
+        <div
+          style={{ fontSize: `${fontSize}px`, lineHeight: 1.68 }}
+          className="space-y-2 whitespace-pre-line font-sans text-foreground/90"
+        >
           <MathText content={description} />
         </div>
       </div>
 
       {/* Input Format */}
       {inputFormat && (
-        <div className="space-y-2 text-xs leading-relaxed">
+        <div className="space-y-2 leading-relaxed">
           <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground">
             Input Format
           </h4>
-          <div className="whitespace-pre-line font-sans leading-relaxed text-muted-foreground">
+          <div
+            style={{ fontSize: `${fontSize}px`, lineHeight: 1.68 }}
+            className="whitespace-pre-line font-sans text-muted-foreground"
+          >
             <MathText content={inputFormat} />
           </div>
         </div>
@@ -165,11 +276,14 @@ export function ProblemPanel({ problem, onLoadSampleTests }: ProblemPanelProps) 
 
       {/* Output Format */}
       {outputFormat && (
-        <div className="space-y-2 text-xs leading-relaxed">
+        <div className="space-y-2 leading-relaxed">
           <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground">
             Output Format
           </h4>
-          <div className="whitespace-pre-line font-sans leading-relaxed text-muted-foreground">
+          <div
+            style={{ fontSize: `${fontSize}px`, lineHeight: 1.68 }}
+            className="whitespace-pre-line font-sans text-muted-foreground"
+          >
             <MathText content={outputFormat} />
           </div>
         </div>
