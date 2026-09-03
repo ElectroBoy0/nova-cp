@@ -70,7 +70,7 @@ export function CFSubmitModal({
     }
   }, [savedCookie])
 
-  // Record newest submission ID when modal opens to detect future submissions
+  // Record newest submission ID when modal opens to detect future submissions and display existing verdict
   useEffect(() => {
     if (!isOpen || !problem || !problem.contest_id || !cfHandle) return
 
@@ -78,6 +78,7 @@ export function CFSubmitModal({
     checkLatestCFSubmission(cfHandle, problem.contest_id, problem.index).then((sub) => {
       if (isMounted && sub) {
         initialSubIdRef.current = sub.id
+        setLatestVerdict(sub)
       }
     })
 
@@ -188,27 +189,24 @@ export function CFSubmitModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-xl border-border/80 bg-[#0d1117] p-5 text-foreground shadow-xl sm:rounded-lg">
         {/* HEADER */}
-        <DialogHeader className="space-y-1 text-left">
+        <DialogHeader className="space-y-1.5 text-left">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <span className="rounded border border-blue-500/30 bg-blue-500/10 px-2 py-0.5 font-mono text-xs font-semibold text-blue-400">
-                {problem.contest_id}
-                {problem.index}
-              </span>
-              <DialogTitle className="text-base font-semibold tracking-tight text-foreground">
-                Submit to Codeforces
-              </DialogTitle>
-            </div>
+            <DialogTitle className="text-base font-semibold tracking-tight text-foreground">
+              Submit to Codeforces
+            </DialogTitle>
             {cfHandle && (
               <span className="rounded border border-border/60 bg-surface-1 px-2 py-0.5 font-mono text-[11px] text-muted-foreground">
                 Handle: <strong className="text-foreground">{cfHandle}</strong>
               </span>
             )}
           </div>
-          <p className="font-mono text-xs font-medium text-foreground/90">
-            {problem.contest_id}
-            {problem.index} · {problem.name}
-          </p>
+          <div className="flex items-center gap-2">
+            <span className="rounded border border-blue-500/30 bg-blue-500/10 px-1.5 py-0.5 font-mono text-xs font-semibold text-blue-400">
+              {problem.contest_id}
+              {problem.index}
+            </span>
+            <span className="text-xs font-medium text-foreground/90">{problem.name}</span>
+          </div>
           <DialogDescription className="text-xs text-muted-foreground">
             Your current solution is ready to submit.
           </DialogDescription>
