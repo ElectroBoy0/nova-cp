@@ -13,6 +13,7 @@ import {
   Loader2,
   Maximize2,
   Minimize2,
+  RotateCcw,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -45,7 +46,12 @@ export function ProblemPanel({
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [showHint, setShowHint] = useState(false)
 
-  const { data: stmtData, isLoading: isStmtLoading } = useProblemStatement(problem?.id)
+  const {
+    data: stmtData,
+    isLoading: isStmtLoading,
+    isRefetching,
+    refetch,
+  } = useProblemStatement(problem?.id)
 
   const copyToClipboard = (text: string, id: string) => {
     navigator.clipboard.writeText(text)
@@ -235,16 +241,29 @@ export function ProblemPanel({
 
         {/* Live Contest / Fallback Banner */}
         {stmtData?.is_fallback && (
-          <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-300">
-            <span className="font-bold text-amber-400">ℹ</span>
-            <div className="space-y-1">
-              <p className="font-medium">
-                Live statement fetch is delayed (Codeforces high contest load).
-              </p>
-              <p className="text-[11px] text-amber-300/80">
-                You can code freely in the Monaco editor and test against sample testcases below.
-              </p>
+          <div className="mt-3 flex items-start justify-between gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-300">
+            <div className="flex items-start gap-2">
+              <span className="font-bold text-amber-400">ℹ</span>
+              <div className="space-y-1">
+                <p className="font-medium">
+                  Live statement fetch is delayed (Codeforces high contest load).
+                </p>
+                <p className="text-[11px] text-amber-300/80">
+                  You can code freely in the Monaco editor and test against sample testcases below.
+                </p>
+              </div>
             </div>
+            <button
+              type="button"
+              onClick={() => refetch()}
+              disabled={isRefetching || isStmtLoading}
+              className="flex shrink-0 items-center gap-1 rounded bg-amber-500/20 px-2.5 py-1 font-mono text-[11px] font-medium text-amber-200 transition-colors hover:bg-amber-500/30 disabled:opacity-50"
+            >
+              <RotateCcw
+                className={cn("h-3 w-3", (isRefetching || isStmtLoading) && "animate-spin")}
+              />
+              <span>{isRefetching || isStmtLoading ? "Fetching..." : "Retry"}</span>
+            </button>
           </div>
         )}
       </div>

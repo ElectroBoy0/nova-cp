@@ -35,32 +35,68 @@ def _clean_cf_html(element: Tag | None) -> str:
 
 class CodeforcesStatementService:
     @classmethod
-    def get_statement(cls, contest_id: int | str, index: str) -> dict[str, Any]:
+    async def get_statement(cls, contest_id: int | str, index: str) -> dict[str, Any]:
         cache_key = f"{contest_id}_{index.upper()}"
         if cache_key in _STATEMENT_CACHE:
             return _STATEMENT_CACHE[cache_key]
 
-        # Attempt fetching statement from Codeforces with fallback mirrors and short timeout
+        # Check persistent Redis cache
+        try:
+            import json
+            from app.redis import redis_client
+            cached_str = await redis_client.get(f"stmt:{cache_key}")
+            if cached_str:
+                data = json.loads(cached_str)
+                _STATEMENT_CACHE[cache_key] = data
+                return data
+        except Exception as redis_err:
+            logger.debug("Redis statement cache miss/error: %s", redis_err)
+
+        # Attempt fetching statement from Codeforces with fallback mirrors and 12s timeout
         urls = [
             f"https://codeforces.com/problemset/problem/{contest_id}/{index}",
             f"https://codeforces.com/contest/{contest_id}/problem/{index}",
         ]
 
-        for url in urls:
-            for attempt in range(2):
-                try:
-                    r = requests.get(url, impersonate="chrome120", timeout=6)
-                    if r.status_code == 200:
-                        soup = BeautifulSoup(r.text, "html.parser")
-                        stmt = soup.find("div", class_="problem-statement")
-                        if stmt:
-                            parsed = cls._parse_statement_soup(stmt, contest_id, index)
-                            _STATEMENT_CACHE[cache_key] = parsed
-                            return parsed
-                except Exception as e:
-                    logger.debug("Attempt %d failed to fetch %s: %s", attempt + 1, url, e)
+        headers = {
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Referer": "https://codeforces.com/",
+        }
 
-        logger.warning("Codeforces statement fetch failed for %s%s (contest load or network issue). Serving graceful fallback.", contest_id, index)
+        import asyncio
+
+        def _do_fetch():
+            for url in urls:
+                for attempt in range(2):
+                    try:
+                        r = requests.get(url, headers=headers, impersonate="chrome120", timeout=12)
+                        if r.status_code == 200:
+                            soup = BeautifulSoup(r.text, "html.parser")
+                            stmt = soup.find("div", class_="problem-statement")
+                            if stmt:
+                                parsed = cls._parse_statement_soup(stmt, contest_id, index)
+                                return parsed
+                    except Exception as e:
+                        logger.debug("Attempt %d failed to fetch %s: %s", attempt + 1, url, e)
+            return None
+
+        parsed = await asyncio.to_thread(_do_fetch)
+        if parsed:
+            _STATEMENT_CACHE[cache_key] = parsed
+            try:
+                import json
+                from app.redis import redis_client
+                await redis_client.setex(f"stmt:{cache_key}", 86400 * 14, json.dumps(parsed))
+            except Exception:
+                pass
+            return parsed
+
+        logger.warning(
+            "Codeforces statement fetch failed for %s%s (contest load or network issue). Serving graceful fallback.",
+            contest_id,
+            index,
+        )
 
         # Fallback structure with informative details so the Solve IDE remains 100% usable
         fallback_data = {
@@ -73,12 +109,12 @@ class CodeforcesStatementService:
             "sample_tests": [
                 {
                     "input": "1\n5\n1 2 3 4 5\n",
-                    "output": "15\n"
+                    "output": "15\n",
                 }
             ],
             "note": "",
             "is_fallback": True,
-            "cf_url": f"https://codeforces.com/problemset/problem/{contest_id}/{index}"
+            "cf_url": f"https://codeforces.com/problemset/problem/{contest_id}/{index}",
         }
         return fallback_data
 

@@ -200,7 +200,7 @@ async def get_problem_statement(
     if not problem or not problem.contest_id:
         raise HTTPException(status_code=404, detail="Problem not found")
 
-    statement = CodeforcesStatementService.get_statement(problem.contest_id, problem.index)
+    statement = await CodeforcesStatementService.get_statement(problem.contest_id, problem.index)
     return {
         "problem_id": problem.id,
         "contest_id": problem.contest_id,

@@ -35,7 +35,9 @@ export function useProblemStatement(problemId: string | undefined) {
     queryKey: ["problemStatement", problemId],
     queryFn: () => getProblemStatement(problemId!),
     enabled: !!problemId,
-    staleTime: 1000 * 60 * 60, // 1 hour caching
+    staleTime: (query) => (query.state.data?.is_fallback ? 0 : 1000 * 60 * 60),
+    retry: 2,
+    retryDelay: 1000,
   })
 }
 
