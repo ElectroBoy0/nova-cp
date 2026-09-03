@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
-import { Play, RotateCcw, ExternalLink, Layers, Loader2, Keyboard, Minimize2 } from "lucide-react"
+import { Play, RotateCcw, ExternalLink, Layers, Loader2, Keyboard, Minimize2, Send } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -16,11 +16,13 @@ import { cn } from "@/lib/utils"
 import { ProblemPanel } from "./problem-panel"
 import { MonacoCodeEditor } from "./monaco-code-editor"
 import { TerminalPanel } from "./terminal-panel"
+import { CFSubmitModal } from "./cf-submit-modal"
 import { DEFAULT_TEMPLATES, LANGUAGE_OPTIONS } from "@/lib/code-templates"
 import { getProblemStatementDetails } from "@/lib/problem-statement-helper"
 import { useRunCode } from "@/lib/code-execution"
 import { useProblems, useProblemStatement, useProblemSearch } from "@/hooks/use-problems"
 import { useSnippets } from "@/hooks/use-snippets"
+import { useUserProfile, useUpdateSettings } from "@/lib/users"
 import { ProblemSearchCombobox } from "./problem-search-combobox"
 import { SolveTimer } from "./solve-timer"
 import { recordSolveSession } from "@/lib/solve-history"
@@ -143,6 +145,11 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
   // Problem font size & focus maximize state
   const [problemFontSize, setProblemFontSize] = useState<number>(15)
   const [isProblemMaximized, setIsProblemMaximized] = useState<boolean>(false)
+
+  // Codeforces submit modal & user profile
+  const [showCFSubmitModal, setShowCFSubmitModal] = useState(false)
+  const { data: userProfile } = useUserProfile(userId)
+  const updateSettingsMutation = useUpdateSettings()
 
   // Load saved dimensions
   useEffect(() => {
@@ -470,10 +477,9 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
           </Button>
 
           {currentProblem && (
-            <a
-              href={`https://codeforces.com/problemset/problem/${currentProblem.contest_id}/${currentProblem.index}`}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => {
                 const saved = loadTimerState(currentProblem.id)
                 const duration = saved?.elapsedSolvingSeconds || saved?.seconds || 0
@@ -486,12 +492,13 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
                   status: "submitted",
                   language,
                 })
+                setShowCFSubmitModal(true)
               }}
-              className="hidden items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-surface-2 hover:text-foreground sm:flex"
+              className="hidden items-center gap-1.5 border-border/80 bg-surface-1 px-3 py-1 text-xs text-foreground transition-all hover:border-primary/60 hover:bg-surface-2 hover:text-primary sm:flex"
             >
+              <Send className="h-3 w-3 text-primary" />
               <span>Submit on CF</span>
-              <ExternalLink className="h-3 w-3" />
-            </a>
+            </Button>
           )}
 
           <Button
@@ -698,6 +705,47 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Codeforces Submit Modal */}
+      {currentProblem && (
+        <CFSubmitModal
+          isOpen={showCFSubmitModal}
+          onClose={() => setShowCFSubmitModal(false)}
+          problem={currentProblem}
+          code={code}
+          language={language}
+          userId={userId}
+          cfHandle={userProfile?.cf_handle?.handle}
+          savedCookie={userProfile?.custom_preferences?.cf_session_cookie}
+          onSaveCookie={(cookie) => {
+            if (userId) {
+              updateSettingsMutation.mutate({
+                userId,
+                settings: {
+                  custom_preferences: {
+                    ...(userProfile?.custom_preferences || {}),
+                    cf_session_cookie: cookie,
+                  },
+                },
+              })
+            }
+          }}
+          onAccepted={() => {
+            playSuccessSound()
+            const saved = loadTimerState(currentProblem.id)
+            const duration = saved?.elapsedSolvingSeconds || saved?.seconds || 0
+            recordSolveSession({
+              problemId: currentProblem.id,
+              problemName: currentProblem.name,
+              durationSeconds: duration,
+              startedAt: saved?.sessionStartedAt || new Date().toISOString(),
+              mode: saved?.mode || "count_up",
+              status: "solved",
+              language,
+            })
+          }}
+        />
+      )}
     </div>
   )
 }

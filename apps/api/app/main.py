@@ -13,6 +13,7 @@ from app.routers import (
     bookmarks,
     bug_reports,
     code_execution,
+    codeforces,
     contests,
     daily_missions,
     health,
@@ -235,6 +236,10 @@ app.include_router(
 )
 app.include_router(
     code_execution.router,
+    prefix="/api/v1",
+)
+app.include_router(
+    codeforces.router,
     prefix="/api/v1",
 )
 

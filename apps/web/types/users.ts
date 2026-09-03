@@ -30,6 +30,7 @@ export interface UserCustomPreferences {
   bio?: string
   github_handle?: string
   target_rating?: number
+  cf_session_cookie?: string
 }
 
 export interface NotificationSettings {

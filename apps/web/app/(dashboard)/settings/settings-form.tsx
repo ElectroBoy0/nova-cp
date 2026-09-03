@@ -263,6 +263,7 @@ export function SettingsForm({ userId }: { userId: string }) {
   const [keybinding, setKeybinding] = useState("standard")
   const [soundEffects, setSoundEffects] = useState(true)
   const [timezone, setTimezone] = useState("")
+  const [cfSessionCookie, setCfSessionCookie] = useState("")
 
   // Notification Settings State
   const [contestReminders, setContestReminders] = useState(true)
@@ -299,6 +300,7 @@ export function SettingsForm({ userId }: { userId: string }) {
       if (typeof p.sound_effects === "boolean") setSoundEffects(p.sound_effects)
       if (p.bio) setBioInput(p.bio)
       if (p.github_handle) setGithubInput(p.github_handle)
+      if (p.cf_session_cookie) setCfSessionCookie(p.cf_session_cookie)
       if (p.target_rating) setTargetRatingInput(p.target_rating)
       else if (user.cf_handle?.rating) {
         setTargetRatingInput(Math.min(3000, Math.ceil((user.cf_handle.rating + 100) / 100) * 100))
@@ -411,6 +413,7 @@ export function SettingsForm({ userId }: { userId: string }) {
       target_rating: number
       bio: string
       github_handle: string
+      cf_session_cookie: string
     }>
   ) => {
     const newPrefs = {
@@ -424,6 +427,7 @@ export function SettingsForm({ userId }: { userId: string }) {
       target_rating: updated.target_rating ?? targetRatingInput,
       bio: updated.bio ?? bioInput,
       github_handle: updated.github_handle ?? githubInput,
+      cf_session_cookie: updated.cf_session_cookie ?? cfSessionCookie,
     }
 
     const payload: any = { custom_preferences: newPrefs }
@@ -1594,6 +1598,68 @@ export function SettingsForm({ userId }: { userId: string }) {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Direct Codeforces Submission Session Configuration */}
+          <div className="rounded-xl border border-border/60 bg-surface-1/40 p-5">
+            <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-xs font-semibold text-foreground">
+                    1-Click Direct Codeforces Submission
+                  </h4>
+                  {user?.custom_preferences?.cf_session_cookie ? (
+                    <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-[10px] text-emerald-400">
+                      Configured
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="border-border/60 text-[10px] text-muted-foreground">
+                      Optional
+                    </Badge>
+                  )}
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Save your Codeforces session cookie (JSESSIONID and 39ce7) to submit solutions directly from NovaCP without opening Codeforces tabs.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-3 space-y-2.5">
+              <div className="flex max-w-xl flex-col gap-2 sm:flex-row sm:items-center">
+                <input
+                  type="password"
+                  value={cfSessionCookie}
+                  onChange={(e) => setCfSessionCookie(e.target.value)}
+                  placeholder="Paste JSESSIONID=...; 39ce7=..."
+                  className="flex h-9 flex-1 rounded-lg border border-input bg-background px-3 py-1 font-mono text-xs ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                />
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    className="h-9 text-xs"
+                    onClick={() => handleUpdatePreferences({ cf_session_cookie: cfSessionCookie })}
+                  >
+                    Save Cookie
+                  </Button>
+                  {user?.custom_preferences?.cf_session_cookie && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-9 text-xs text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
+                      onClick={() => {
+                        setCfSessionCookie("")
+                        handleUpdatePreferences({ cf_session_cookie: "" })
+                      }}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </div>
+              </div>
+              <p className="text-[11px] leading-relaxed text-muted-foreground">
+                How to get: Go to <a href="https://codeforces.com" target="_blank" rel="noreferrer" className="text-primary hover:underline">codeforces.com</a>, press F12 (DevTools) → Application → Cookies → copy <code>JSESSIONID</code> and <code>39ce7</code>.
+              </p>
+            </div>
           </div>
 
           {/* Upcoming Platforms Grid */}
