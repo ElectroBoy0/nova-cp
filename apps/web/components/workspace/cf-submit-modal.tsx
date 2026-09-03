@@ -57,7 +57,7 @@ export function CFSubmitModal({
   onAccepted,
 }: CFSubmitModalProps) {
   const [cookieInput, setCookieInput] = useState(savedCookie)
-  const [showCookieConfig, setShowCookieConfig] = useState(!savedCookie)
+  const [showCookieConfig, setShowCookieConfig] = useState(false)
   const [copied, setCopied] = useState(false)
   const [isSubmittingDirect, setIsSubmittingDirect] = useState(false)
   const [directError, setDirectError] = useState<string | null>(null)
@@ -230,14 +230,71 @@ export function CFSubmitModal({
             </div>
           </div>
 
-          {/* Option A: Direct 1-Click Submission */}
-          <div className="space-y-2 rounded-xl border border-primary/20 bg-primary/5 p-4">
+          {/* Option A: Quick Assisted Submission (Zero Setup - Recommended) */}
+          <div className="space-y-3 rounded-xl border border-primary/30 bg-primary/5 p-4 shadow-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Send className="h-4 w-4 text-primary" />
+                <Sparkles className="h-4 w-4 text-primary" />
                 <h4 className="text-xs font-semibold text-foreground">
-                  Direct 1-Click Submission
+                  Instant Codeforces Submission (Zero-Setup)
                 </h4>
+              </div>
+              <span className="rounded bg-primary/20 px-2 py-0.5 font-mono text-[10px] font-semibold text-primary">
+                Recommended
+              </span>
+            </div>
+
+            <p className="text-[11px] leading-relaxed text-muted-foreground">
+              Copies your editor code to clipboard, opens the Codeforces submission page for{" "}
+              <strong className="text-foreground">
+                {problem.contest_id}
+                {problem.index}
+              </strong>{" "}
+              with the problem already selected, and live tracks your verdict.
+            </p>
+
+            <div className="flex flex-col gap-2 pt-1 sm:flex-row sm:items-center">
+              <Button
+                type="button"
+                onClick={handleAssistedSubmit}
+                className="flex-1 gap-2 bg-primary font-semibold text-primary-foreground shadow-md hover:bg-primary/90"
+              >
+                <span>Copy Code & Open Submit Form</span>
+                <ExternalLink className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="default"
+                onClick={handleCopyCode}
+                className="gap-1.5 text-xs"
+              >
+                {copied ? (
+                  <>
+                    <Check className="h-3.5 w-3.5 text-emerald-400" />
+                    <span>Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-3.5 w-3.5" />
+                    <span>Copy Code</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+
+          {/* Option B: Optional Direct Background Submission (via Cookie) */}
+          <div className="rounded-xl border border-border/70 bg-surface-1/40 p-3.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Send className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-foreground">
+                  Direct Background Submission
+                </span>
+                <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                  Optional
+                </span>
               </div>
               <button
                 type="button"
@@ -245,16 +302,16 @@ export function CFSubmitModal({
                 className="flex items-center gap-1 font-mono text-[11px] text-primary transition-colors hover:underline"
               >
                 <KeyRound className="h-3 w-3" />
-                <span>{showCookieConfig ? "Hide Cookie" : "Configure Cookie"}</span>
+                <span>{showCookieConfig ? "Hide" : "Configure Cookie"}</span>
               </button>
             </div>
 
-            <p className="text-[11px] text-muted-foreground">
-              Submits directly to Codeforces without opening browser tabs.
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              Only needed if you want NovaCP to submit in the background without opening Codeforces tabs.
             </p>
 
             {showCookieConfig && (
-              <div className="mt-2 space-y-2 rounded-lg border border-border/60 bg-[#0a0e14] p-3 text-xs">
+              <div className="mt-3 space-y-2 rounded-lg border border-border/60 bg-[#0a0e14] p-3 text-xs">
                 <div className="flex items-center justify-between">
                   <label className="font-mono text-[10px] font-medium uppercase text-muted-foreground">
                     Codeforces Session Cookie (JSESSIONID / 39ce7)
@@ -280,83 +337,34 @@ export function CFSubmitModal({
                   Tip: Open DevTools on codeforces.com (F12) → Application → Cookies → copy{" "}
                   <code>JSESSIONID</code> and <code>39ce7</code>.
                 </p>
+
+                {directError && (
+                  <p className="rounded bg-rose-500/10 p-2 font-mono text-[11px] text-rose-400">
+                    {directError}
+                  </p>
+                )}
+
+                <Button
+                  type="button"
+                  onClick={handleDirectSubmit}
+                  disabled={isSubmittingDirect}
+                  className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+                  size="sm"
+                >
+                  {isSubmittingDirect ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      <span>Submitting to Codeforces...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-3.5 w-3.5" />
+                      <span>Submit Code Directly</span>
+                    </>
+                  )}
+                </Button>
               </div>
             )}
-
-            {directError && (
-              <p className="rounded bg-rose-500/10 p-2 font-mono text-[11px] text-rose-400">
-                {directError}
-              </p>
-            )}
-
-            <Button
-              type="button"
-              onClick={handleDirectSubmit}
-              disabled={isSubmittingDirect}
-              className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
-              size="sm"
-            >
-              {isSubmittingDirect ? (
-                <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  <span>Submitting to Codeforces...</span>
-                </>
-              ) : (
-                <>
-                  <Send className="h-3.5 w-3.5" />
-                  <span>Submit Code Directly</span>
-                </>
-              )}
-            </Button>
-          </div>
-
-          {/* Option B: Assisted Browser Submission */}
-          <div className="space-y-2 rounded-xl border border-border/70 bg-surface-1/50 p-4">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-amber-400" />
-              <h4 className="text-xs font-semibold text-foreground">
-                Assisted Browser Submission (Zero-Setup)
-              </h4>
-            </div>
-            <p className="text-[11px] leading-relaxed text-muted-foreground">
-              Automatically copies your code to clipboard, opens the Codeforces submit form for{" "}
-              <strong>
-                {problem.contest_id}
-                {problem.index}
-              </strong>
-              , and activates live verdict tracking.
-            </p>
-            <div className="flex items-center gap-2 pt-1">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleCopyCode}
-                className="gap-1.5 text-xs"
-              >
-                {copied ? (
-                  <>
-                    <Check className="h-3.5 w-3.5 text-emerald-400" />
-                    <span>Copied!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="h-3.5 w-3.5" />
-                    <span>Copy Code</span>
-                  </>
-                )}
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                onClick={handleAssistedSubmit}
-                className="flex-1 gap-1.5 text-xs"
-              >
-                <span>Copy & Open Codeforces Submit Form</span>
-                <ExternalLink className="h-3.5 w-3.5" />
-              </Button>
-            </div>
           </div>
 
           {/* Live Verdict Tracking Box */}
