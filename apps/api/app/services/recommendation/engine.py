@@ -13,6 +13,73 @@ from .scorers.base import RecommendationContext, ScoredProblem
 from .scorers.hybrid import RuleBasedHybridScorer
 
 
+TOPIC_TO_TAGS: dict[str, list[str]] = {
+    "dynamic programming": ["dp"],
+    "graphs & trees": ["graphs", "trees", "dfs and similar"],
+    "data structures": ["data structures", "dsu"],
+    "math & number theory": ["math", "number theory", "combinatorics"],
+    "greedy": ["greedy"],
+    "binary search": ["binary search"],
+    "strings": ["strings", "string suffix structures"],
+    "two pointers": ["two pointers"],
+    "bitmask": ["bitmasks"],
+    "constructive algorithms": ["constructive algorithms"],
+}
+
+
+def normalize_preferred_topics(preferred_topics: list[str]) -> set[str]:
+    tags: set[str] = set()
+    for topic in preferred_topics:
+        lowered = topic.strip().lower()
+        if lowered in TOPIC_TO_TAGS:
+            tags.update(TOPIC_TO_TAGS[lowered])
+        else:
+            tags.add(lowered)
+    return tags
+
+
+def get_mode_config(mode: str, user_rating: int) -> dict:
+    """
+    Returns (target_delta, min_rating, max_rating, stretch_delta, speed_delta) based on recommendation mode.
+    Comfort Zone: -100 to 0
+    Challenge Mode: +100 to +300
+    Hardcore: +300 to +500
+    """
+    if mode == "comfort":
+        return {
+            "target_delta": -50,
+            "min_rating": max(800, user_rating - 250),
+            "max_rating": user_rating + 50,
+            "stretch_delta": 50,
+            "speed_delta": -150,
+            "daily_min": max(800, user_rating - 150),
+            "daily_max": user_rating,
+            "daily_target_delta": -50,
+        }
+    elif mode == "hardcore":
+        return {
+            "target_delta": 400,
+            "min_rating": max(800, user_rating + 100),
+            "max_rating": user_rating + 550,
+            "stretch_delta": 450,
+            "speed_delta": 100,
+            "daily_min": max(800, user_rating + 250),
+            "daily_max": user_rating + 500,
+            "daily_target_delta": 350,
+        }
+    else:  # challenge (default)
+        return {
+            "target_delta": 200,
+            "min_rating": max(800, user_rating - 100),
+            "max_rating": user_rating + 350,
+            "stretch_delta": 300,
+            "speed_delta": -200,
+            "daily_min": max(800, user_rating),
+            "daily_max": user_rating + 200,
+            "daily_target_delta": 100,
+        }
+
+
 class RecommendationEngine:
     def __init__(self, db: AsyncSession):
         self.db = db
@@ -45,11 +112,20 @@ class RecommendationEngine:
                 if attempts - solved > 0:
                     recent_failures[topic] = attempts - solved
 
+        # Extract user preferences from custom_preferences
+        prefs = user.custom_preferences or {}
+        mode = prefs.get("recommendation_mode", "challenge")
+        preferred_raw = prefs.get("preferred_topics", [])
+        preferred_tags = normalize_preferred_topics(preferred_raw)
+        cfg = get_mode_config(mode, user_rating)
+
         context = RecommendationContext(
             user_rating=user_rating,
             topic_mastery=topic_mastery or {"implementation": 0.5},
             recent_failures=recent_failures,
-            target_delta=100,
+            target_delta=cfg["target_delta"],
+            preferred_tags=preferred_tags,
+            recommendation_mode=mode,
         )
 
         # 2. Candidate Generation
@@ -70,15 +146,23 @@ class RecommendationEngine:
         attempted_keys = {(s.contest_id, s.problem_index) for s in attempted_subs if s.contest_id}
         unsolved_attempted_keys = attempted_keys - solved_keys
 
-        # Fetch candidate problems from DB
-        # Range: user_rating - 400 to user_rating + 400 (only problems with a rating)
+        # Fetch candidate problems from DB based on recommendation mode
         prob_query = select(Problem).where(
             Problem.rating.isnot(None),
-            Problem.rating >= max(800, user_rating - 400),
-            Problem.rating <= user_rating + 400
+            Problem.rating >= cfg["min_rating"],
+            Problem.rating <= cfg["max_rating"]
         ).limit(1000)
 
         candidates = list((await self.db.execute(prob_query)).scalars().all())
+
+        # If strict band has fewer than 10 problems, gracefully fall back to broader range
+        if len(candidates) < 10:
+            fallback_query = select(Problem).where(
+                Problem.rating.isnot(None),
+                Problem.rating >= max(800, user_rating - 400),
+                Problem.rating <= user_rating + 500
+            ).limit(1000)
+            candidates = list((await self.db.execute(fallback_query)).scalars().all())
 
         # Get skipped / solved_externally problem IDs
         feedback_query = select(RecommendationFeedback.problem_id).where(
@@ -128,13 +212,23 @@ class RecommendationEngine:
             user_rating=user_rating,
             topic_mastery=context.topic_mastery,
             recent_failures=context.recent_failures,
-            target_delta=300
+            target_delta=cfg["stretch_delta"],
+            preferred_tags=preferred_tags,
+            recommendation_mode=mode,
         )
+        stretch_min_rating = user_rating + (150 if mode != "comfort" else 0)
         scored_stretch = [
             self.scorer.score(p, stretch_context)
             for p in unsolved_candidates
-            if p.rating and p.rating >= user_rating + 200 and p.id not in seen_problem_ids
+            if p.rating and p.rating >= stretch_min_rating and p.id not in seen_problem_ids
         ]
+        if not scored_stretch:
+            scored_stretch = [
+                self.scorer.score(p, stretch_context)
+                for p in unsolved_candidates
+                if p.id not in seen_problem_ids
+            ]
+
         if scored_stretch:
             top_stretch = self.reranker.rerank(scored_stretch, limit=2)
             for ts in top_stretch:
@@ -148,13 +242,23 @@ class RecommendationEngine:
             user_rating=user_rating,
             topic_mastery=context.topic_mastery,
             recent_failures=context.recent_failures,
-            target_delta=-200
+            target_delta=cfg["speed_delta"],
+            preferred_tags=preferred_tags,
+            recommendation_mode=mode,
         )
+        speed_max_rating = user_rating - (50 if mode != "hardcore" else -100)
         scored_speed = [
             self.scorer.score(p, speed_context)
             for p in unsolved_candidates
-            if p.rating and p.rating <= user_rating - 100 and p.id not in seen_problem_ids
+            if p.rating and p.rating <= speed_max_rating and p.id not in seen_problem_ids
         ]
+        if not scored_speed:
+            scored_speed = [
+                self.scorer.score(p, speed_context)
+                for p in unsolved_candidates
+                if p.id not in seen_problem_ids
+            ]
+
         if scored_speed:
             top_speed = self.reranker.rerank(scored_speed, limit=2)
             for ts in top_speed:
@@ -189,11 +293,20 @@ class RecommendationEngine:
                 if attempts - solved > 0:
                     recent_failures[topic] = attempts - solved
 
+        # Extract user preferences from custom_preferences
+        prefs = user.custom_preferences or {}
+        mode = prefs.get("recommendation_mode", "challenge")
+        preferred_raw = prefs.get("preferred_topics", [])
+        preferred_tags = normalize_preferred_topics(preferred_raw)
+        cfg = get_mode_config(mode, user_rating)
+
         context = RecommendationContext(
             user_rating=user_rating,
-            topic_mastery=topic_mastery or {"implementation": 0.5}, # fallback
+            topic_mastery=topic_mastery or {"implementation": 0.5},  # fallback
             recent_failures=recent_failures,
-            target_delta=100
+            target_delta=cfg["daily_target_delta"],
+            preferred_tags=preferred_tags,
+            recommendation_mode=mode,
         )
 
         # 2. Candidate Generation
@@ -205,11 +318,20 @@ class RecommendationEngine:
 
         prob_query = select(Problem).where(
             Problem.rating.isnot(None),
-            Problem.rating >= max(800, user_rating),
-            Problem.rating <= user_rating + 200
+            Problem.rating >= cfg["daily_min"],
+            Problem.rating <= cfg["daily_max"]
         ).limit(2000)
 
         candidates = list((await self.db.execute(prob_query)).scalars().all())
+
+        if not candidates:
+            # Fallback range if strict daily band has no problems
+            fallback_query = select(Problem).where(
+                Problem.rating.isnot(None),
+                Problem.rating >= max(800, user_rating - 200),
+                Problem.rating <= user_rating + 400
+            ).limit(2000)
+            candidates = list((await self.db.execute(fallback_query)).scalars().all())
 
         feedback_query = select(RecommendationFeedback.problem_id).where(
             RecommendationFeedback.user_id == user_id,

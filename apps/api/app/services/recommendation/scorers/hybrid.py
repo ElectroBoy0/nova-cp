@@ -28,21 +28,29 @@ class RuleBasedHybridScorer(BaseScorer):
         # 1. Topic Fit & Skill Gap
         max_topic_score = 0.0
         max_weakness = 0.0
+        has_preferred_tag = False
 
         if candidate.tags:
             for tag in candidate.tags:
-                mastery = context.topic_mastery.get(tag, 0.5) # Default 50% if unknown
+                mastery = context.topic_mastery.get(tag, 0.5)  # Default 50% if unknown
                 weakness = 1.0 - mastery
                 if weakness > max_weakness:
                     max_weakness = weakness
 
                 failures = context.recent_failures.get(tag, 0)
                 topic_score = weakness + (min(failures, 5) / 5.0) * 0.5
+
+                # Boost when problem matches user's preferred topics
+                if context.preferred_tags and tag in context.preferred_tags:
+                    has_preferred_tag = True
+                    topic_score += 0.6  # Priority boost for explicitly chosen topics
+
                 if topic_score > max_topic_score:
                     max_topic_score = topic_score
 
         features["topic_fit"] = max_topic_score
         features["skill_gap"] = max_weakness
+        features["preferred_match"] = 1.0 if has_preferred_tag else 0.0
 
         # 2. Difficulty Fit (Gaussian around user_rating + target_delta)
         target_rating = context.user_rating + context.target_delta
@@ -60,3 +68,4 @@ class RuleBasedHybridScorer(BaseScorer):
         total_score = sum(features.get(k, 0) * w for k, w in self.weights.items())
 
         return ScoredProblem(candidate, total_score, features)
+

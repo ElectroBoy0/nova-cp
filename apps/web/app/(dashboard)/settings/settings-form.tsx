@@ -436,6 +436,8 @@ export function SettingsForm({ userId }: { userId: string }) {
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: userKeys.profile(userId) })
+          queryClient.invalidateQueries({ queryKey: ["recommendations", userId] })
+          queryClient.invalidateQueries({ queryKey: ["daily-mission", userId] })
           toast.success("Preferences updated")
         },
       }

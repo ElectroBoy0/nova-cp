@@ -45,7 +45,12 @@ class ExplainabilityEngine:
             est_time = 10
 
         # 4. Reason summary & Outcome
-        reason = f"Targets your {mastery_pct}% mastery in {weakest_tag.title()}."
+        is_preferred = weakest_tag in context.preferred_tags or any(t in context.preferred_tags for t in problem.tags)
+        if is_preferred:
+            reason = f"Prioritizes your preferred topic in {weakest_tag.title()} ({mastery_pct}% mastery)."
+        else:
+            reason = f"Targets your {mastery_pct}% mastery in {weakest_tag.title()}."
+
         if recent_fails > 0:
             reason += f" You recently struggled with {recent_fails} problems in this topic."
 

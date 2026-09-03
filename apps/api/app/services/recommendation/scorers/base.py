@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from app.models.problem import Problem
 
@@ -16,9 +16,12 @@ class RecommendationContext:
     topic_mastery: dict[str, float]
     recent_failures: dict[str, int]
     target_delta: int = 100
+    preferred_tags: set[str] = field(default_factory=set)
+    recommendation_mode: str = "challenge"
 
 class BaseScorer(ABC):
     @abstractmethod
     def score(self, candidate: Problem, context: RecommendationContext) -> ScoredProblem:
         """Score a problem based on the given context."""
         pass
+
