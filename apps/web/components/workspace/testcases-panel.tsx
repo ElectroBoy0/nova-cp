@@ -3,6 +3,7 @@
 import React, { useState } from "react"
 import { Plus, Trash2, CheckCircle2, XCircle, AlertTriangle, Clock, Cpu } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import type { TestCase } from "@/types/code-execution"
 
 interface TestcasesPanelProps {
@@ -165,26 +166,31 @@ export function TestcasesPanel({ testCases, onChangeTestCases }: TestcasesPanelP
 
           {/* Expected & Actual Outputs */}
           <div className="flex flex-col space-y-2">
-            <div className="space-y-1">
+            <div className={cn("space-y-1 flex flex-col", currentCase.actual_output === undefined ? "flex-1" : "")}>
               <label className="font-mono text-[11px] font-medium text-muted-foreground">
                 Expected Output (optional)
               </label>
               <textarea
-                rows={2}
+                rows={currentCase.actual_output !== undefined ? 4 : 6}
                 value={currentCase.expected_output || ""}
                 onChange={(e) => handleUpdateCurrent("expected_output", e.target.value)}
                 placeholder="Expected output for automated pass/fail diffing..."
-                className="w-full resize-none rounded border border-border/80 bg-[#090d13] p-2.5 font-mono text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary"
+                className={cn(
+                  "w-full rounded border border-border/80 bg-[#090d13] p-2.5 font-mono text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary",
+                  currentCase.actual_output === undefined
+                    ? "flex-1 min-h-[120px] resize-none"
+                    : "min-h-[90px] resize-y"
+                )}
               />
             </div>
 
             {currentCase.actual_output !== undefined && (
-              <div className="flex-1 space-y-1">
+              <div className="flex flex-1 flex-col space-y-1">
                 <label className="font-mono text-[11px] font-medium text-muted-foreground">
                   Actual Output (stdout)
                 </label>
                 <pre
-                  className={`min-h-[50px] w-full overflow-x-auto rounded border p-2.5 font-mono text-xs ${
+                  className={`min-h-[80px] flex-1 w-full overflow-x-auto overflow-y-auto rounded border p-2.5 font-mono text-xs ${
                     currentCase.status === "PASSED"
                       ? "border-emerald-500/30 bg-emerald-950/20 text-emerald-300"
                       : currentCase.status === "WRONG_ANSWER"
