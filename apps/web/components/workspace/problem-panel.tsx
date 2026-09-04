@@ -313,121 +313,155 @@ export function ProblemPanel({
         )}
       </div>
 
-      {/* Problem Description */}
-      <div className="space-y-3 leading-relaxed text-muted-foreground">
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground">
-          Problem Description
-        </h4>
-        <div
-          style={{ fontSize: `${fontSize}px`, lineHeight: 1.68 }}
-          className="space-y-2 whitespace-pre-line font-sans text-foreground/90"
-        >
-          <MathText content={description} fontSize={fontSize} />
-        </div>
-      </div>
-
-      {/* Input Format */}
-      {inputFormat && (
-        <div className="space-y-2 leading-relaxed">
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground">
-            Input Format
-          </h4>
-          <div
-            style={{ fontSize: `${fontSize}px`, lineHeight: 1.68 }}
-            className="whitespace-pre-line font-sans text-muted-foreground"
-          >
-            <MathText content={inputFormat} fontSize={fontSize} />
+      {/* Problem Description & Content / Loading Skeleton */}
+      {isStmtLoading &&
+      !stmtData &&
+      fallbackDetails.description.includes("follow the step-by-step") ? (
+        <div className="space-y-6 animate-pulse py-2">
+          <div className="space-y-3">
+            <div className="h-3.5 w-32 rounded bg-muted/60" />
+            <div className="space-y-2">
+              <div className="h-3.5 w-full rounded bg-muted/30" />
+              <div className="h-3.5 w-[94%] rounded bg-muted/30" />
+              <div className="h-3.5 w-[88%] rounded bg-muted/30" />
+              <div className="h-3.5 w-[75%] rounded bg-muted/30" />
+            </div>
+          </div>
+          <div className="space-y-3">
+            <div className="h-3.5 w-28 rounded bg-muted/60" />
+            <div className="space-y-2">
+              <div className="h-3.5 w-[82%] rounded bg-muted/30" />
+              <div className="h-3.5 w-[68%] rounded bg-muted/30" />
+            </div>
+          </div>
+          <div className="space-y-3">
+            <div className="h-3.5 w-28 rounded bg-muted/60" />
+            <div className="h-3.5 w-[72%] rounded bg-muted/30" />
+          </div>
+          <div className="space-y-3 pt-2">
+            <div className="h-3.5 w-24 rounded bg-muted/60" />
+            <div className="h-28 w-full rounded-md border border-border/40 bg-muted/20" />
           </div>
         </div>
-      )}
-
-      {/* Output Format */}
-      {outputFormat && (
-        <div className="space-y-2 leading-relaxed">
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground">
-            Output Format
-          </h4>
-          <div
-            style={{ fontSize: `${fontSize}px`, lineHeight: 1.68 }}
-            className="whitespace-pre-line font-sans text-muted-foreground"
-          >
-            <MathText content={outputFormat} fontSize={fontSize} />
-          </div>
-        </div>
-      )}
-
-      {/* Sample Test Cases */}
-      {sampleTests.map((sample, idx) => (
-        <div key={sample.id || idx} className="space-y-3 border-t border-border/60 pt-4">
-          <div className="flex items-center justify-between">
+      ) : (
+        <>
+          {/* Problem Description */}
+          <div className="space-y-3 leading-relaxed text-muted-foreground">
             <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground">
-              {sample.name || `Sample ${idx + 1}`}
+              Problem Description
             </h4>
-            {onLoadSampleTests && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onLoadSampleTests(sampleTests)}
-                className="h-6 px-2 text-[11px]"
-              >
-                Load into Testcases
-              </Button>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {/* Sample Input */}
-            <div className="space-y-1">
-              <div className="flex items-center justify-between font-mono text-[11px] text-muted-foreground">
-                <span>Input</span>
-                <button
-                  type="button"
-                  onClick={() => copyToClipboard(sample.input, `in-${idx}`)}
-                  className="transition-colors hover:text-foreground"
-                  title="Copy sample input"
-                >
-                  {copiedId === `in-${idx}` ? (
-                    <Check className="h-3 w-3 text-emerald-400" />
-                  ) : (
-                    <Copy className="h-3 w-3" />
-                  )}
-                </button>
-              </div>
-              <pre
-                style={{ fontSize: `${Math.max(11, fontSize - 2)}px` }}
-                className="overflow-x-auto whitespace-pre rounded border border-border/80 bg-surface-2/60 p-2.5 font-mono text-foreground"
-              >
-                {sample.input.trim()}
-              </pre>
-            </div>
-
-            {/* Sample Output */}
-            <div className="space-y-1">
-              <div className="flex items-center justify-between font-mono text-[11px] text-muted-foreground">
-                <span>Expected Output</span>
-                <button
-                  type="button"
-                  onClick={() => copyToClipboard(sample.expected_output || "", `out-${idx}`)}
-                  className="transition-colors hover:text-foreground"
-                  title="Copy sample output"
-                >
-                  {copiedId === `out-${idx}` ? (
-                    <Check className="h-3 w-3 text-emerald-400" />
-                  ) : (
-                    <Copy className="h-3 w-3" />
-                  )}
-                </button>
-              </div>
-              <pre
-                style={{ fontSize: `${Math.max(11, fontSize - 2)}px` }}
-                className="overflow-x-auto whitespace-pre rounded border border-border/80 bg-surface-2/60 p-2.5 font-mono text-foreground"
-              >
-                {(sample.expected_output || "").trim()}
-              </pre>
+            <div
+              style={{ fontSize: `${fontSize}px`, lineHeight: 1.68 }}
+              className="space-y-2 whitespace-pre-line font-sans text-foreground/90"
+            >
+              <MathText content={description} fontSize={fontSize} />
             </div>
           </div>
-        </div>
-      ))}
+
+          {/* Input Format */}
+          {inputFormat && (
+            <div className="space-y-2 leading-relaxed">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                Input Format
+              </h4>
+              <div
+                style={{ fontSize: `${fontSize}px`, lineHeight: 1.68 }}
+                className="whitespace-pre-line font-sans text-muted-foreground"
+              >
+                <MathText content={inputFormat} fontSize={fontSize} />
+              </div>
+            </div>
+          )}
+
+          {/* Output Format */}
+          {outputFormat && (
+            <div className="space-y-2 leading-relaxed">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                Output Format
+              </h4>
+              <div
+                style={{ fontSize: `${fontSize}px`, lineHeight: 1.68 }}
+                className="whitespace-pre-line font-sans text-muted-foreground"
+              >
+                <MathText content={outputFormat} fontSize={fontSize} />
+              </div>
+            </div>
+          )}
+
+          {/* Sample Test Cases */}
+          {sampleTests.map((sample, idx) => (
+            <div key={sample.id || idx} className="space-y-3 border-t border-border/60 pt-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                  {sample.name || `Sample ${idx + 1}`}
+                </h4>
+                {onLoadSampleTests && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onLoadSampleTests(sampleTests)}
+                    className="h-6 px-2 text-[11px]"
+                  >
+                    Load into Testcases
+                  </Button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {/* Sample Input */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between font-mono text-[11px] text-muted-foreground">
+                    <span>Input</span>
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(sample.input, `in-${idx}`)}
+                      className="transition-colors hover:text-foreground"
+                      title="Copy sample input"
+                    >
+                      {copiedId === `in-${idx}` ? (
+                        <Check className="h-3 w-3 text-emerald-400" />
+                      ) : (
+                        <Copy className="h-3 w-3" />
+                      )}
+                    </button>
+                  </div>
+                  <pre
+                    style={{ fontSize: `${Math.max(11, fontSize - 2)}px` }}
+                    className="overflow-x-auto whitespace-pre rounded border border-border/80 bg-surface-2/60 p-2.5 font-mono text-foreground"
+                  >
+                    {sample.input.trim()}
+                  </pre>
+                </div>
+
+                {/* Sample Output */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between font-mono text-[11px] text-muted-foreground">
+                    <span>Expected Output</span>
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(sample.expected_output || "", `out-${idx}`)}
+                      className="transition-colors hover:text-foreground"
+                      title="Copy sample output"
+                    >
+                      {copiedId === `out-${idx}` ? (
+                        <Check className="h-3 w-3 text-emerald-400" />
+                      ) : (
+                        <Copy className="h-3 w-3" />
+                      )}
+                    </button>
+                  </div>
+                  <pre
+                    style={{ fontSize: `${Math.max(11, fontSize - 2)}px` }}
+                    className="overflow-x-auto whitespace-pre rounded border border-border/80 bg-surface-2/60 p-2.5 font-mono text-foreground"
+                  >
+                    {(sample.expected_output || "").trim()}
+                  </pre>
+                </div>
+              </div>
+            </div>
+          ))}
+        </>
+      )}
 
       {/* Algorithmic Hints Toggle */}
       <div className="border-t border-border/60 pt-3">

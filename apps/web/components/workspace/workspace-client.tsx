@@ -20,7 +20,7 @@ import { CFSubmitModal } from "./cf-submit-modal"
 import { DEFAULT_TEMPLATES, LANGUAGE_OPTIONS } from "@/lib/code-templates"
 import { getProblemStatementDetails } from "@/lib/problem-statement-helper"
 import { useRunCode } from "@/lib/code-execution"
-import { useProblems, useProblemStatement, useProblemSearch } from "@/hooks/use-problems"
+import { useProblems, useProblem, useProblemStatement, useProblemSearch } from "@/hooks/use-problems"
 import { useSnippets } from "@/hooks/use-snippets"
 import { useUserProfile, useUpdateSettings } from "@/lib/users"
 import { ProblemSearchCombobox } from "./problem-search-combobox"
@@ -47,6 +47,9 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
   // Fetch initial problem set for default fallback
   const { data: problemsData } = useProblems({ limit: 50 })
   const problems = problemsData?.items || []
+
+  // Direct fast metadata fetch for currently requested problem ID
+  const { data: directProblem } = useProblem(problemIdParam || undefined)
 
   // Dynamic search if query parameter provided
   const { data: searchResults } = useProblemSearch({
@@ -108,6 +111,8 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
         (p) => p.id === problemIdParam || `${p.contest_id}${p.index}` === problemIdParam
       )
       if (found) return found
+
+      if (directProblem) return directProblem
 
       if (stmtData) {
         return {
@@ -272,10 +277,17 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
     if (!stmtData?.is_fallback && stmtData?.sample_tests && stmtData.sample_tests.length > 0) {
       setTestCases(stmtData.sample_tests)
       setLastRunResult(null)
-    } else if (currentProblem) {
+    } else if (stmtData?.is_fallback && currentProblem) {
       const details = getProblemStatementDetails(currentProblem)
       setTestCases(details.sampleTests)
       setLastRunResult(null)
+    } else if (currentProblem && !stmtData) {
+      // If problem has curated official samples (e.g. 166A, 2064B), load them immediately
+      const details = getProblemStatementDetails(currentProblem)
+      if (details.sampleTests.length > 0 && !details.description.includes("follow the step-by-step")) {
+        setTestCases(details.sampleTests)
+        setLastRunResult(null)
+      }
     }
   }, [currentProblem?.id, stmtData?.is_fallback, stmtData?.sample_tests])
 

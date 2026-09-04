@@ -12,6 +12,7 @@ from app.schemas.problem import (
     HintFeedbackCreate,
     HintResponse,
     ProblemListResponse,
+    ProblemRead,
     ProblemRecommendationRead,
     ProblemSearchResponse,
     RecommendationFeedbackCreate,
@@ -167,6 +168,41 @@ async def submit_hint_feedback(
     await db.commit()
 
     return {"status": "success"}
+
+@router.get("/{problem_id}", response_model=ProblemRead)
+async def get_problem(
+    problem_id: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get problem metadata by ID, platform_problem_id, or CF code (e.g. 2026B).
+    Returns instantly from the database without external scraping.
+    """
+    from app.models.problem import Problem
+    from sqlalchemy import select, or_
+    import re
+
+    stmt = select(Problem).where(
+        or_(
+            Problem.id == problem_id,
+            Problem.platform_problem_id == problem_id,
+        )
+    )
+    res = await db.execute(stmt)
+    problem = res.scalar_one_or_none()
+
+    if not problem:
+        match = re.match(r"^(\d+)([A-Za-z]\d*)$", problem_id)
+        if match:
+            c_id, p_idx = int(match.group(1)), match.group(2).upper()
+            stmt = select(Problem).where(Problem.contest_id == c_id, Problem.index == p_idx)
+            res = await db.execute(stmt)
+            problem = res.scalar_one_or_none()
+
+    if not problem:
+        raise HTTPException(status_code=404, detail="Problem not found")
+
+    return problem
 
 @router.get("/{problem_id}/statement")
 async def get_problem_statement(

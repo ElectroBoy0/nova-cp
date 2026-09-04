@@ -8,6 +8,7 @@ import {
   getHint,
   submitHintFeedback,
   getProblemStatement,
+  getProblem,
   type ProblemStatementResponse,
 } from "@/lib/problems"
 import type {
@@ -27,6 +28,15 @@ export function useProblemSearch(params: {
     queryKey: ["problemSearch", params],
     queryFn: () => searchProblems(params),
     staleTime: 1000 * 60 * 5, // 5 minutes cache
+  })
+}
+
+export function useProblem(problemId: string | undefined) {
+  return useQuery({
+    queryKey: ["problem", problemId],
+    queryFn: () => getProblem(problemId!),
+    enabled: !!problemId,
+    staleTime: 1000 * 60 * 60, // 1 hour cache
   })
 }
 

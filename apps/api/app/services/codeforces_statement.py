@@ -93,7 +93,7 @@ class CodeforcesStatementService:
             # 1. Attempt direct fetch from Codeforces with browser impersonation and session cookie
             for url in urls:
                 try:
-                    r = requests.get(url, headers=headers, impersonate="chrome120", timeout=5)
+                    r = requests.get(url, headers=headers, impersonate="chrome120", timeout=2.5)
                     if r.status_code == 200:
                         soup = BeautifulSoup(r.text, "html.parser")
                         stmt = soup.find("div", class_="problem-statement")
@@ -111,13 +111,13 @@ class CodeforcesStatementService:
             canonical_cf_url = f"https://codeforces.com/problemset/problem/{contest_id}/{index}"
             try:
                 api_url = f"https://archive.org/wayback/available?url={canonical_cf_url}"
-                res = requests.get(api_url, timeout=5)
+                res = requests.get(api_url, timeout=2.5)
                 if res.status_code == 200:
                     data = res.json()
                     snap = data.get("archived_snapshots", {}).get("closest")
                     if snap and snap.get("available") and snap.get("url"):
                         snap_url = snap["url"]
-                        snap_resp = requests.get(snap_url, timeout=10)
+                        snap_resp = requests.get(snap_url, timeout=4.0)
                         if snap_resp.status_code == 200:
                             soup = BeautifulSoup(snap_resp.text, "html.parser")
                             stmt = soup.find("div", class_="problem-statement")
@@ -135,7 +135,17 @@ class CodeforcesStatementService:
 
             return None
 
-        parsed = await asyncio.to_thread(_do_fetch)
+        try:
+            parsed = await asyncio.wait_for(asyncio.to_thread(_do_fetch), timeout=4.5)
+        except asyncio.TimeoutError:
+            logger.info(
+                "Statement fetch exceeded 4.5s for %s%s; continuing in background",
+                contest_id,
+                index,
+            )
+            parsed = None
+            asyncio.create_task(cls._bg_fetch_and_cache(contest_id, index, session_cookie))
+
         if parsed:
             parsed["is_fallback"] = False
             parsed["cf_url"] = f"https://codeforces.com/problemset/problem/{contest_id}/{index}"
@@ -168,6 +178,50 @@ class CodeforcesStatementService:
             "cf_url": f"https://codeforces.com/problemset/problem/{contest_id}/{index}",
         }
         return fallback_data
+
+    @classmethod
+    async def _bg_fetch_and_cache(
+        cls,
+        contest_id: int | str,
+        index: str,
+        session_cookie: str | None,
+    ) -> None:
+        import asyncio
+        from bs4 import BeautifulSoup
+        import json
+
+        def _bg_worker():
+            canonical_cf_url = f"https://codeforces.com/problemset/problem/{contest_id}/{index}"
+            try:
+                api_url = f"https://archive.org/wayback/available?url={canonical_cf_url}"
+                res = requests.get(api_url, timeout=5)
+                if res.status_code == 200:
+                    data = res.json()
+                    snap = data.get("archived_snapshots", {}).get("closest")
+                    if snap and snap.get("available") and snap.get("url"):
+                        snap_url = snap["url"]
+                        snap_resp = requests.get(snap_url, timeout=8)
+                        if snap_resp.status_code == 200:
+                            soup = BeautifulSoup(snap_resp.text, "html.parser")
+                            stmt = soup.find("div", class_="problem-statement")
+                            if stmt:
+                                return cls._parse_statement_soup(stmt, contest_id, index)
+            except Exception as e:
+                logger.debug("Background statement fetch error: %s", e)
+            return None
+
+        try:
+            parsed = await asyncio.to_thread(_bg_worker)
+            if parsed:
+                parsed["is_fallback"] = False
+                parsed["cf_url"] = f"https://codeforces.com/problemset/problem/{contest_id}/{index}"
+                cache_key = f"{contest_id}_{index.upper()}"
+                _STATEMENT_CACHE[cache_key] = parsed
+                from app.redis import redis_client
+                await redis_client.setex(f"stmt:{cache_key}", 86400 * 14, json.dumps(parsed))
+                logger.info("Background worker cached statement for %s%s in Redis", contest_id, index)
+        except Exception as e:
+            logger.debug("Background worker error for %s%s: %s", contest_id, index, e)
 
     @classmethod
     def _parse_statement_soup(cls, stmt: Tag, contest_id: int | str, index: str) -> dict[str, Any]:

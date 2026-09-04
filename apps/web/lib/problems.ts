@@ -1,5 +1,6 @@
 import { apiClient } from "./api-client"
 import type {
+  Problem,
   ProblemListResponse,
   ProblemRecommendation,
   RecommendationFeedback,
@@ -108,4 +109,8 @@ export async function getProblemStatement(
 ): Promise<ProblemStatementResponse> {
   const query = sessionCookie ? `?session_cookie=${encodeURIComponent(sessionCookie)}` : ""
   return apiClient.get<ProblemStatementResponse>(`/api/v1/problems/${problemId}/statement${query}`)
+}
+
+export async function getProblem(problemId: string): Promise<Problem> {
+  return apiClient.get<Problem>(`/api/v1/problems/${encodeURIComponent(problemId)}`)
 }
