@@ -244,14 +244,17 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
     }
   }, [isDraggingHorizontal, isDraggingVertical])
 
-  // Update test cases when problem changes
+  // Update test cases when problem changes or when live sample tests arrive from Codeforces
   useEffect(() => {
-    if (currentProblem) {
+    if (stmtData?.sample_tests && stmtData.sample_tests.length > 0) {
+      setTestCases(stmtData.sample_tests)
+      setLastRunResult(null)
+    } else if (currentProblem) {
       const details = getProblemStatementDetails(currentProblem)
       setTestCases(details.sampleTests)
       setLastRunResult(null)
     }
-  }, [currentProblem?.id])
+  }, [currentProblem?.id, stmtData?.sample_tests])
 
   useEffect(() => {
     const storageKey = `novacp_workspace_${currentProblem?.id || "scratch"}_${language}`
