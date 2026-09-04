@@ -11,13 +11,104 @@ export interface ProblemStatementDetails {
   memoryLimit: string
 }
 
+const CURATED_PROBLEMS: Record<string, Partial<ProblemStatementDetails>> = {
+  "166A": {
+    description: `Another Codeforces Round has just finished! It has gathered $n$ participants, and each of them got a certain score, resulting in a ranking table.
+
+Each participant has solved a certain number of problems and accumulated a certain penalty time.
+A participant $A$ is ranked higher than participant $B$ if:
+1. Participant $A$ solved strictly more problems than participant $B$;
+2. Or they solved the same number of problems, but participant $A$ has strictly less penalty time.
+
+If two participants solved the same number of problems and accumulated the same penalty time, they share the same rank.
+
+You are given the results of all $n$ participants and an integer $k$. Find how many participants share the same rank as the participant in the $k$-th position of the sorted rank list.`,
+    inputFormat: `The first line contains two integers $n$ and $k$ ($1 \\le k \\le n \\le 50$) — the number of participants and the target rank.
+
+The next $n$ lines contain two integers each: $p_i$ ($0 \\le p_i \\le 50$) — number of problems solved by the $i$-th participant, and $t_i$ ($0 \\le t_i \\le 1000$) — penalty time of the $i$-th participant.`,
+    outputFormat: `Print a single integer — the number of participants that got the same rank as the participant at the $k$-th place.`,
+    socraticHint: `Sort the participants in descending order by problems solved ($p_i$), and in ascending order by penalty time ($t_i$) on ties. The $k$-th participant is at 0-indexed position $k-1$. Count how many participants in the sorted list have identical $(p_i, t_i)$.`,
+    sampleTests: [
+      {
+        id: "sample-1",
+        name: "Sample 1",
+        input: "7 2\n4 10\n4 10\n4 10\n3 20\n2 1\n2 1\n1 10\n",
+        expected_output: "3\n",
+      },
+      {
+        id: "sample-2",
+        name: "Sample 2",
+        input: "11 6\n3 15\n4 20\n4 20\n4 20\n3 15\n3 15\n2 10\n2 10\n2 10\n1 1\n1 1\n",
+        expected_output: "2\n",
+      },
+    ],
+    timeLimit: "2.0s",
+    memoryLimit: "256MB",
+  },
+  "4A": {
+    description: `One hot summer day Pete and his friend Billy decided to buy a watermelon. They chose the biggest and the ripest one, in their opinion. After that the watermelon was weighed, and the scales showed $w$ kilos. They rushed home, dying of thirst, and decided to divide the berry, however they faced a hard problem.
+
+Pete and Billy are great fans of even numbers, that's why they want to divide the watermelon in such a way that each of the two parts weighs even number of kilos, at the same time it is not obligatory that the parts are equal. The boys are extremely tired and want to start their meal as soon as possible, that's why you should help them and find out, if they can divide the watermelon in the way they want. For sure, each of them should get a part of positive weight.`,
+    inputFormat: `The first (and the only) input line contains integer number $w$ ($1 \\le w \\le 100$) — the weight of the watermelon bought by the boys.`,
+    outputFormat: `Print \`YES\`, if the boys can divide the watermelon into two parts, each of them weighing even number of kilos; and \`NO\` in the opposite case.`,
+    socraticHint: `Can an odd number be represented as the sum of two positive even integers? What is the smallest positive even number that can be split into two even positive parts?`,
+    sampleTests: [
+      {
+        id: "sample-1",
+        name: "Sample 1",
+        input: "8\n",
+        expected_output: "YES\n",
+      },
+    ],
+    timeLimit: "1.0s",
+    memoryLimit: "64MB",
+  },
+  "71A": {
+    description: `Sometimes some words like "localization" or "internationalization" are so long that writing them many times in one text is quite tiresome.
+
+Let's consider a word too long, if its length is strictly more than 10 characters. All too long words should be replaced with a special abbreviation.
+
+This abbreviation is made like this: we write down the first and the last letter of a word and between them we write the number of letters between the first and the last letters. That number is in decimal system and doesn't contain any leading zeroes.
+
+Thus, "localization" will be spelt as "l10n", and "internationalization" will be spelt as "i18n".
+
+You are suggested to automatize the process of changing the words with abbreviations. At that all too long words should be replaced by the abbreviation and the words that are not too long should not undergo any changes.`,
+    inputFormat: `The first line contains an integer $n$ ($1 \\le n \\le 100$). Each of the following $n$ lines contains one word. All the words consist of lowercase Latin letters and possess the lengths of from 1 to 100 characters.`,
+    outputFormat: `Print $n$ lines. The $i$-th line should contain the result of replacing of the $i$-th word from the input data.`,
+    socraticHint: `Check if word length $> 10$. If so, print \`\${word[0]}\${length - 2}\${word[length - 1]}\`. Otherwise, print the word as is.`,
+    sampleTests: [
+      {
+        id: "sample-1",
+        name: "Sample 1",
+        input: "4\nword\nlocalization\ninternationalization\npneumonoultramicroscopicsilicovolcanoconiosis\n",
+        expected_output: "word\nl10n\ni18n\np43s\n",
+      },
+    ],
+    timeLimit: "1.0s",
+    memoryLimit: "256MB",
+  },
+}
+
 /**
  * Generates tailored, problem-specific statement details, input/output specifications,
  * algorithmic invariants, and sample testcases based on the problem's metadata, tags, and rating.
  */
 export function getProblemStatementDetails(problem: Problem): ProblemStatementDetails {
   const { name, contest_id, index, rating = 1200, tags = [] } = problem
-  const problemCode = `${contest_id || ""}${index}`
+  const problemCode = `${contest_id || ""}${index}`.toUpperCase()
+
+  if (CURATED_PROBLEMS[problemCode]) {
+    const curated = CURATED_PROBLEMS[problemCode]
+    return {
+      description: curated.description || "",
+      inputFormat: curated.inputFormat || "",
+      outputFormat: curated.outputFormat || "",
+      sampleTests: curated.sampleTests || [],
+      socraticHint: curated.socraticHint || "",
+      timeLimit: curated.timeLimit || "2.0s",
+      memoryLimit: curated.memoryLimit || "256MB",
+    }
+  }
 
   // Categorize primary domain from tags
   const isDP = tags.includes("dp") || tags.includes("dynamic programming")

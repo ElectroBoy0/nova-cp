@@ -30,10 +30,10 @@ export function useProblemSearch(params: {
   })
 }
 
-export function useProblemStatement(problemId: string | undefined) {
+export function useProblemStatement(problemId: string | undefined, sessionCookie?: string) {
   return useQuery({
-    queryKey: ["problemStatement", problemId],
-    queryFn: () => getProblemStatement(problemId!),
+    queryKey: ["problemStatement", problemId, sessionCookie],
+    queryFn: () => getProblemStatement(problemId!, sessionCookie),
     enabled: !!problemId,
     staleTime: (query) => (query.state.data?.is_fallback ? 0 : 1000 * 60 * 60),
     retry: 2,

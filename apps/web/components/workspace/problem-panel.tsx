@@ -32,6 +32,7 @@ interface ProblemPanelProps {
   isMaximized?: boolean
   onToggleMaximize?: () => void
   onSetWidthPreset?: (ratio: number) => void
+  sessionCookie?: string
 }
 
 export function ProblemPanel({
@@ -42,16 +43,22 @@ export function ProblemPanel({
   isMaximized = false,
   onToggleMaximize,
   onSetWidthPreset,
+  sessionCookie,
 }: ProblemPanelProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [showHint, setShowHint] = useState(false)
+
+  const effectiveId =
+    problem?.contest_id && problem?.index
+      ? `${problem.contest_id}${problem.index}`
+      : problem?.id
 
   const {
     data: stmtData,
     isLoading: isStmtLoading,
     isRefetching,
     refetch,
-  } = useProblemStatement(problem?.id)
+  } = useProblemStatement(effectiveId || undefined, sessionCookie)
 
   const copyToClipboard = (text: string, id: string) => {
     navigator.clipboard.writeText(text)
@@ -75,13 +82,23 @@ export function ProblemPanel({
   }
 
   const fallbackDetails = getProblemStatementDetails(problem)
-  const description = stmtData?.description || fallbackDetails.description
-  const inputFormat = stmtData?.input_specification || fallbackDetails.inputFormat
-  const outputFormat = stmtData?.output_specification || fallbackDetails.outputFormat
+  const isFallback = Boolean(stmtData?.is_fallback)
+  const description =
+    !isFallback && stmtData?.description
+      ? stmtData.description
+      : fallbackDetails.description || stmtData?.description || ""
+  const inputFormat =
+    !isFallback && stmtData?.input_specification
+      ? stmtData.input_specification
+      : fallbackDetails.inputFormat || stmtData?.input_specification || ""
+  const outputFormat =
+    !isFallback && stmtData?.output_specification
+      ? stmtData.output_specification
+      : fallbackDetails.outputFormat || stmtData?.output_specification || ""
   const timeLimit = stmtData?.time_limit || fallbackDetails.timeLimit
   const memoryLimit = stmtData?.memory_limit || fallbackDetails.memoryLimit
   const sampleTests =
-    stmtData?.sample_tests && stmtData.sample_tests.length > 0
+    !isFallback && stmtData?.sample_tests && stmtData.sample_tests.length > 0
       ? stmtData.sample_tests
       : fallbackDetails.sampleTests
 
@@ -239,31 +256,45 @@ export function ProblemPanel({
           </div>
         )}
 
-        {/* Live Contest / Fallback Banner */}
+        {/* Live Contest / Cloudflare Fallback Notice */}
         {stmtData?.is_fallback && (
-          <div className="mt-3 flex items-start justify-between gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-300">
-            <div className="flex items-start gap-2">
-              <span className="font-bold text-amber-400">ℹ</span>
-              <div className="space-y-1">
-                <p className="font-medium">
-                  Live statement fetch is delayed (Codeforces high contest load).
+          <div className="mt-3 flex flex-col gap-2.5 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-2.5">
+              <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-amber-500/20 text-[10px] font-bold text-amber-300">
+                !
+              </span>
+              <div className="space-y-0.5">
+                <p className="font-medium text-amber-200">
+                  Live statement protected by Codeforces bot challenge
                 </p>
                 <p className="text-[11px] text-amber-300/80">
-                  You can code freely in the Monaco editor and test against sample testcases below.
+                  Algorithmic specifications and test cases are ready below. You can also view the original statement on Codeforces.
                 </p>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => refetch()}
-              disabled={isRefetching || isStmtLoading}
-              className="flex shrink-0 items-center gap-1 rounded bg-amber-500/20 px-2.5 py-1 font-mono text-[11px] font-medium text-amber-200 transition-colors hover:bg-amber-500/30 disabled:opacity-50"
-            >
-              <RotateCcw
-                className={cn("h-3 w-3", (isRefetching || isStmtLoading) && "animate-spin")}
-              />
-              <span>{isRefetching || isStmtLoading ? "Fetching..." : "Retry"}</span>
-            </button>
+            <div className="flex shrink-0 items-center gap-2 pt-1 sm:pt-0">
+              <a
+                href={cfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 rounded bg-amber-500/25 px-2.5 py-1 font-mono text-[11px] font-medium text-amber-100 transition-colors hover:bg-amber-500/40"
+              >
+                <span>Open on Codeforces</span>
+                <ExternalLink className="h-3 w-3" />
+              </a>
+              <button
+                type="button"
+                onClick={() => refetch()}
+                disabled={isRefetching || isStmtLoading}
+                title="Retry syncing statement from Codeforces"
+                className="flex items-center gap-1 rounded border border-amber-500/30 bg-amber-500/10 px-2 py-1 font-mono text-[11px] text-amber-300 transition-colors hover:bg-amber-500/20 disabled:opacity-50"
+              >
+                <RotateCcw
+                  className={cn("h-3 w-3", (isRefetching || isStmtLoading) && "animate-spin")}
+                />
+                <span>{isRefetching || isStmtLoading ? "Syncing..." : "Retry"}</span>
+              </button>
+            </div>
           </div>
         )}
       </div>

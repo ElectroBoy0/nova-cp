@@ -102,6 +102,10 @@ export interface ProblemStatementResponse {
   cf_url?: string
 }
 
-export async function getProblemStatement(problemId: string): Promise<ProblemStatementResponse> {
-  return apiClient.get<ProblemStatementResponse>(`/api/v1/problems/${problemId}/statement`)
+export async function getProblemStatement(
+  problemId: string,
+  sessionCookie?: string
+): Promise<ProblemStatementResponse> {
+  const query = sessionCookie ? `?session_cookie=${encodeURIComponent(sessionCookie)}` : ""
+  return apiClient.get<ProblemStatementResponse>(`/api/v1/problems/${problemId}/statement${query}`)
 }

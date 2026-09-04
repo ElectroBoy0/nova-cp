@@ -72,13 +72,17 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
     }
   }, [searchResults, problemIdParam, searchQueryParam])
 
+  // User profile for saved Codeforces cookie & preferences
+  const { data: userProfile } = useUserProfile(userId)
+  const cfCookie = userProfile?.custom_preferences?.cf_session_cookie
+
   // Load problem statement if problemIdParam or selectedProblem is specified
   const effectiveProblemId =
     problemIdParam ||
     (selectedProblem?.contest_id && selectedProblem?.index
       ? `${selectedProblem.contest_id}${selectedProblem.index}`
       : selectedProblem?.id)
-  const { data: stmtData } = useProblemStatement(effectiveProblemId || undefined)
+  const { data: stmtData } = useProblemStatement(effectiveProblemId || undefined, cfCookie)
 
   // Load user custom snippets for editor auto-completion
   const { data: snippetsData } = useSnippets(userId, { limit: 100 })
@@ -121,6 +125,26 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
           solved_count: null,
         }
       }
+
+      // If problemIdParam is formatted like '166A', synthesize immediate problem representation
+      // so the workspace never flashes "No Problem Selected" or unrelated problems[0]
+      const match = problemIdParam ? problemIdParam.match(/^(\d+)([A-Za-z]\d*)$/) : null
+      if (match && match[1] && match[2]) {
+        const contestId = parseInt(match[1], 10)
+        const idx = match[2].toUpperCase()
+        return {
+          id: problemIdParam,
+          platform: "codeforces",
+          platform_problem_id: `CF_${contestId}_${idx}`,
+          contest_id: contestId,
+          index: idx,
+          name: `${contestId}${idx}`,
+          rating: null,
+          tags: [],
+          url: `https://codeforces.com/problemset/problem/${contestId}/${idx}`,
+          solved_count: null,
+        }
+      }
     }
     return problems[0] ?? null
   }, [selectedProblem, problemIdParam, problems, stmtData])
@@ -146,9 +170,8 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
   const [problemFontSize, setProblemFontSize] = useState<number>(15)
   const [isProblemMaximized, setIsProblemMaximized] = useState<boolean>(false)
 
-  // Codeforces submit modal & user profile
+  // Codeforces submit modal
   const [showCFSubmitModal, setShowCFSubmitModal] = useState(false)
-  const { data: userProfile } = useUserProfile(userId)
   const updateSettingsMutation = useUpdateSettings()
 
   // Load saved dimensions
@@ -246,7 +269,7 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
 
   // Update test cases when problem changes or when live sample tests arrive from Codeforces
   useEffect(() => {
-    if (stmtData?.sample_tests && stmtData.sample_tests.length > 0) {
+    if (!stmtData?.is_fallback && stmtData?.sample_tests && stmtData.sample_tests.length > 0) {
       setTestCases(stmtData.sample_tests)
       setLastRunResult(null)
     } else if (currentProblem) {
@@ -254,7 +277,7 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
       setTestCases(details.sampleTests)
       setLastRunResult(null)
     }
-  }, [currentProblem?.id, stmtData?.sample_tests])
+  }, [currentProblem?.id, stmtData?.is_fallback, stmtData?.sample_tests])
 
   useEffect(() => {
     const storageKey = `novacp_workspace_${currentProblem?.id || "scratch"}_${language}`
@@ -528,6 +551,7 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
           >
             <ProblemPanel
               problem={currentProblem}
+              sessionCookie={cfCookie}
               onLoadSampleTests={(samples) => setTestCases(samples)}
               fontSize={problemFontSize}
               onFontSizeChange={(newSize) => {

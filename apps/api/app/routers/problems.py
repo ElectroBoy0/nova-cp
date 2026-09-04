@@ -171,11 +171,13 @@ async def submit_hint_feedback(
 @router.get("/{problem_id}/statement")
 async def get_problem_statement(
     problem_id: str,
+    session_cookie: str | None = Query(None),
     db: AsyncSession = Depends(get_db)
 ):
     from app.services.codeforces_statement import CodeforcesStatementService
     from app.models.problem import Problem
     from sqlalchemy import select, or_
+    import re
 
     # Find problem by ID or platform_problem_id or contest_id+index
     stmt = select(Problem).where(
@@ -188,26 +190,47 @@ async def get_problem_statement(
     problem = res.scalar_one_or_none()
 
     if not problem:
-        # Check if problem_id is formatted like '1999A'
-        import re
+        # Check if problem_id is formatted like '166A' or '1999B1'
         match = re.match(r"^(\d+)([A-Za-z]\d*)$", problem_id)
         if match:
-            c_id, p_idx = int(match.group(1)), match.group(2)
+            c_id, p_idx = int(match.group(1)), match.group(2).upper()
             stmt = select(Problem).where(Problem.contest_id == c_id, Problem.index == p_idx)
             res = await db.execute(stmt)
             problem = res.scalar_one_or_none()
 
-    if not problem or not problem.contest_id:
-        raise HTTPException(status_code=404, detail="Problem not found")
+    if problem and problem.contest_id:
+        contest_id = problem.contest_id
+        problem_index = problem.index
+        problem_name = problem.name
+        problem_rating = problem.rating
+        problem_tags = problem.tags or []
+        resolved_pid = problem.id
+    else:
+        # If not present in DB, attempt direct parsing for valid contest+index patterns
+        match = re.match(r"^(\d+)([A-Za-z]\d*)$", problem_id)
+        if match:
+            contest_id = int(match.group(1))
+            problem_index = match.group(2).upper()
+            problem_name = f"Problem {contest_id}{problem_index}"
+            problem_rating = None
+            problem_tags = []
+            resolved_pid = problem_id
+        else:
+            raise HTTPException(status_code=404, detail="Problem not found")
 
-    statement = await CodeforcesStatementService.get_statement(problem.contest_id, problem.index)
+    statement = await CodeforcesStatementService.get_statement(
+        contest_id=contest_id,
+        index=problem_index,
+        session_cookie=session_cookie,
+        problem_name=problem_name,
+    )
     return {
-        "problem_id": problem.id,
-        "contest_id": problem.contest_id,
-        "index": problem.index,
-        "name": problem.name,
-        "rating": problem.rating,
-        "tags": problem.tags,
+        "problem_id": resolved_pid,
+        "contest_id": contest_id,
+        "index": problem_index,
+        "name": problem_name,
+        "rating": problem_rating,
+        "tags": problem_tags,
         **statement
     }
 

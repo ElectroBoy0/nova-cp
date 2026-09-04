@@ -35,7 +35,13 @@ def _clean_cf_html(element: Tag | None) -> str:
 
 class CodeforcesStatementService:
     @classmethod
-    async def get_statement(cls, contest_id: int | str, index: str) -> dict[str, Any]:
+    async def get_statement(
+        cls,
+        contest_id: int | str,
+        index: str,
+        session_cookie: str | None = None,
+        problem_name: str | None = None,
+    ) -> dict[str, Any]:
         cache_key = f"{contest_id}_{index.upper()}"
         if cache_key in _STATEMENT_CACHE:
             return _STATEMENT_CACHE[cache_key]
@@ -63,6 +69,8 @@ class CodeforcesStatementService:
             "Accept-Language": "en-US,en;q=0.9",
             "Referer": "https://codeforces.com/",
         }
+        if session_cookie:
+            headers["Cookie"] = session_cookie
 
         import asyncio
 
@@ -83,6 +91,8 @@ class CodeforcesStatementService:
 
         parsed = await asyncio.to_thread(_do_fetch)
         if parsed:
+            parsed["is_fallback"] = False
+            parsed["cf_url"] = f"https://codeforces.com/problemset/problem/{contest_id}/{index}"
             _STATEMENT_CACHE[cache_key] = parsed
             try:
                 import json
@@ -98,20 +108,15 @@ class CodeforcesStatementService:
             index,
         )
 
-        # Fallback structure with informative details so the Solve IDE remains 100% usable
+        # Fallback structure without dummy placeholders so frontend algorithmic details render cleanly
         fallback_data = {
             "title": f"Problem {contest_id}{index.upper()}",
             "time_limit": "2.0s",
             "memory_limit": "256MB",
-            "description": f"<p class='text-muted-foreground italic'>The live statement for <strong>{contest_id}{index.upper()}</strong> is temporarily unavailable from Codeforces. You can view the original problem directly on Codeforces or test your solution using custom test cases below.</p>",
+            "description": "",
             "input_specification": "",
             "output_specification": "",
-            "sample_tests": [
-                {
-                    "input": "1\n5\n1 2 3 4 5\n",
-                    "output": "15\n",
-                }
-            ],
+            "sample_tests": [],
             "note": "",
             "is_fallback": True,
             "cf_url": f"https://codeforces.com/problemset/problem/{contest_id}/{index}",
