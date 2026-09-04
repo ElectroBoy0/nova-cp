@@ -30,6 +30,29 @@ describe("Problem Statement Helper & Details", () => {
     assert.equal(details.memoryLimit, "256MB")
   })
 
+  it("provides exact curated statement for 2064B (Variety is Discouraged)", () => {
+    const problem: Problem = {
+      id: "2064B",
+      platform: "codeforces",
+      platform_problem_id: "CF_2064_B",
+      contest_id: 2064,
+      index: "B",
+      name: "Variety is Discouraged",
+      rating: 1100,
+      tags: ["binary search", "constructive algorithms", "greedy", "two pointers"],
+      url: "https://codeforces.com/problemset/problem/2064/B",
+      solved_count: 8500,
+    }
+
+    const details = getProblemStatementDetails(problem)
+    assert.ok(details.description.includes("Define the score of an arbitrary array"))
+    assert.ok(details.description.includes("minimizes the score of the remaining array"))
+    assert.equal(details.sampleTests.length, 1)
+    assert.equal(details.sampleTests[0]?.input, "3\n1\n1\n5\n1 1 1 1 1\n4\n2 1 3 2\n")
+    assert.equal(details.sampleTests[0]?.expected_output, "1 1\n0\n2 3\n")
+    assert.equal(details.timeLimit, "1.5s")
+  })
+
   it("generates tailored problem details for dynamic programming problem", () => {
     const problem: Problem = {
       id: "dp-1",

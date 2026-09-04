@@ -9,8 +9,9 @@ async def test_problem_statement_direct_id_fallback(client: AsyncClient):
     assert data["contest_id"] == 166
     assert data["index"] == "A"
     assert "is_fallback" in data
-    assert data["description"] == ""
-    assert data["sample_tests"] == []
+    # Successfully fetched official statement via archive fallback
+    assert len(data["description"]) > 0
+    assert len(data["sample_tests"]) > 0
     assert "codeforces.com" in data["cf_url"]
 
 @pytest.mark.asyncio

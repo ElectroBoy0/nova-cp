@@ -87,6 +87,37 @@ You are suggested to automatize the process of changing the words with abbreviat
     timeLimit: "1.0s",
     memoryLimit: "256MB",
   },
+  "2064B": {
+    description: `Define the score of an arbitrary array $b$ to be the length of $b$ minus the number of distinct elements in $b$. For example:
+- The score of $[1, 2, 2, 4]$ is $1$, as it has length $4$ and only $3$ distinct elements ($1, 2, 4$).
+- The score of $[1, 1, 1]$ is $2$, as it has length $3$ and only $1$ distinct element ($1$).
+- The score of $[1, 2, 3]$ is $0$, as it has length $3$ and $3$ distinct elements ($1, 2, 3$).
+
+You are given an array $a$ of length $n$. You can choose at most one subsegment $[l, r]$ ($1 \\le l \\le r \\le n$) of $a$ and delete it, concatenating the remaining parts: $[a_1, a_2, \\dots, a_{l-1}, a_{r+1}, \\dots, a_n]$. If you choose not to delete any subsegment, the resulting array is simply $a$.
+
+Find a subsegment $[l, r]$ such that deleting it minimizes the score of the remaining array. If there are multiple such subsegments, choose the one with the maximum length $r - l + 1$. If there is still a tie, you may output any such subsegment. If you choose not to delete any subsegment, output $0$.`,
+    inputFormat: `Each test contains multiple test cases. The first line contains the number of test cases $t$ ($1 \\le t \\le 10^4$). The description of the test cases follows.
+
+The first line of each test case contains a single integer $n$ ($1 \\le n \\le 2 \\cdot 10^5$) — the length of the array $a$.
+
+The second line of each test case contains $n$ integers $a_1, a_2, \\dots, a_n$ ($1 \\le a_i \\le n$).
+
+It is guaranteed that the sum of $n$ over all test cases does not exceed $2 \\cdot 10^5$.`,
+    outputFormat: `For each test case, if the optimal choice is not to delete any subsegment, output a single integer $0$.
+
+Otherwise, output two integers $l$ and $r$ ($1 \\le l \\le r \\le n$) denoting the chosen subsegment to delete.`,
+    socraticHint: `Observe that elements that appear exactly once in the entire array are valuable because deleting them cannot reduce duplicates. In fact, deleting a contiguous subarray of unique elements increases variety! Find the longest contiguous subarray where every element has total frequency 1.`,
+    sampleTests: [
+      {
+        id: "sample-1",
+        name: "Sample 1",
+        input: "3\n1\n1\n5\n1 1 1 1 1\n4\n2 1 3 2\n",
+        expected_output: "1 1\n0\n2 3\n",
+      },
+    ],
+    timeLimit: "1.5s",
+    memoryLimit: "256MB",
+  },
 }
 
 /**

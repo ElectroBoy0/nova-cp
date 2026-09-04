@@ -268,7 +268,21 @@ export function ProblemPanel({
                   Live statement protected by Codeforces bot challenge
                 </p>
                 <p className="text-[11px] text-amber-300/80">
-                  Algorithmic specifications and test cases are ready below. You can also view the original statement on Codeforces.
+                  Algorithmic specifications and test cases are ready below. You can also view the original statement on Codeforces
+                  {!sessionCookie ? (
+                    <>
+                      , or{" "}
+                      <a
+                        href="/settings?tab=integrations"
+                        className="font-medium text-amber-200 underline decoration-amber-400/50 underline-offset-2 hover:text-white"
+                      >
+                        configure your Codeforces session cookie
+                      </a>{" "}
+                      in Settings.
+                    </>
+                  ) : (
+                    "."
+                  )}
                 </p>
               </div>
             </div>

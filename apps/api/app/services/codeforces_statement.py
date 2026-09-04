@@ -17,6 +17,8 @@ def _clean_cf_html(element: Tag | None) -> str:
     if not element:
         return ""
 
+    import re
+
     # Decompose section title
     for title in element.find_all("div", class_="section-title"):
         title.decompose()
@@ -28,6 +30,19 @@ def _clean_cf_html(element: Tag | None) -> str:
         bf.name = "strong"
     for tt in element.find_all("span", class_="tex-font-style-tt"):
         tt.name = "code"
+
+    # Normalize image URLs to direct Codeforces / espresso assets
+    for img in element.find_all("img"):
+        src = img.get("src", "")
+        if not src:
+            continue
+        archive_match = re.search(r"https?://(?:web\.)?archive\.org/web/\d+[a-z_]*/(https?://.+)", src)
+        if archive_match:
+            img["src"] = archive_match.group(1)
+        elif src.startswith("//"):
+            img["src"] = f"https:{src}"
+        elif src.startswith("/"):
+            img["src"] = f"https://codeforces.com{src}"
 
     # Clean inner HTML
     return "".join(str(c) for c in element.children).strip()
@@ -75,18 +90,49 @@ class CodeforcesStatementService:
         import asyncio
 
         def _do_fetch():
+            # 1. Attempt direct fetch from Codeforces with browser impersonation and session cookie
             for url in urls:
-                for attempt in range(2):
-                    try:
-                        r = requests.get(url, headers=headers, impersonate="chrome120", timeout=12)
-                        if r.status_code == 200:
-                            soup = BeautifulSoup(r.text, "html.parser")
+                try:
+                    r = requests.get(url, headers=headers, impersonate="chrome120", timeout=5)
+                    if r.status_code == 200:
+                        soup = BeautifulSoup(r.text, "html.parser")
+                        stmt = soup.find("div", class_="problem-statement")
+                        if stmt:
+                            parsed = cls._parse_statement_soup(stmt, contest_id, index)
+                            return parsed
+                    elif r.status_code == 403:
+                        # Cloudflare Bot Challenge (403) detected on datacenter IP; immediately use archive mirror
+                        logger.debug("Codeforces Cloudflare challenge (403) on %s, switching to archive fallback", url)
+                        break
+                except Exception as e:
+                    logger.debug("Failed direct fetch for %s: %s", url, e)
+
+            # 2. Secondary fallback: Web Archive mirror for public problemset problems
+            canonical_cf_url = f"https://codeforces.com/problemset/problem/{contest_id}/{index}"
+            try:
+                api_url = f"https://archive.org/wayback/available?url={canonical_cf_url}"
+                res = requests.get(api_url, timeout=5)
+                if res.status_code == 200:
+                    data = res.json()
+                    snap = data.get("archived_snapshots", {}).get("closest")
+                    if snap and snap.get("available") and snap.get("url"):
+                        snap_url = snap["url"]
+                        snap_resp = requests.get(snap_url, timeout=10)
+                        if snap_resp.status_code == 200:
+                            soup = BeautifulSoup(snap_resp.text, "html.parser")
                             stmt = soup.find("div", class_="problem-statement")
                             if stmt:
                                 parsed = cls._parse_statement_soup(stmt, contest_id, index)
-                                return parsed
-                    except Exception as e:
-                        logger.debug("Attempt %d failed to fetch %s: %s", attempt + 1, url, e)
+                                if parsed:
+                                    logger.info(
+                                        "Successfully fetched statement for %s%s from web archive mirror",
+                                        contest_id,
+                                        index,
+                                    )
+                                    return parsed
+            except Exception as arc_err:
+                logger.debug("Archive fetch error for %s: %s", canonical_cf_url, arc_err)
+
             return None
 
         parsed = await asyncio.to_thread(_do_fetch)
