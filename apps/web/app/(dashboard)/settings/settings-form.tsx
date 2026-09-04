@@ -1631,6 +1631,7 @@ export function SettingsForm({ userId }: { userId: string }) {
                   value={cfSessionCookie}
                   onChange={(e) => setCfSessionCookie(e.target.value)}
                   placeholder="Paste JSESSIONID=...; 39ce7=..."
+                  title="Hover tip: Log into codeforces.com → Press F12 → Application → Cookies → Copy JSESSIONID and 39ce7"
                   className="flex h-9 flex-1 rounded-lg border border-input bg-background px-3 py-1 font-mono text-xs ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 />
                 <div className="flex items-center gap-2">

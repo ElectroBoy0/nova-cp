@@ -20,7 +20,14 @@ import {
   AlertTriangle,
   KeyRound,
   ArrowRight,
+  HelpCircle,
 } from "lucide-react"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { toast } from "sonner"
 import type { Problem } from "@/types/problems"
 import {
@@ -327,17 +334,68 @@ export function CFSubmitModal({
             {/* Optional Inline Cookie Input */}
             {showInlineCookieInput && (
               <div className="mt-3 space-y-2 rounded-md border border-border/70 bg-[#090d13] p-3 text-xs">
-                <div className="flex items-center justify-between font-mono text-[10px] uppercase text-muted-foreground">
-                  <span>Session Cookie (JSESSIONID / 39ce7)</span>
-                  <KeyRound className="h-3 w-3" />
-                </div>
-                <input
-                  type="password"
-                  value={cookieInput}
-                  onChange={(e) => setCookieInput(e.target.value)}
-                  placeholder="Paste JSESSIONID=...; 39ce7=..."
-                  className="w-full rounded border border-border bg-[#05080c] px-2.5 py-1.5 font-mono text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                />
+                <TooltipProvider delayDuration={150}>
+                  <div className="flex items-center justify-between font-mono text-[10px] uppercase text-muted-foreground">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex cursor-help items-center gap-1.5 transition-colors hover:text-foreground">
+                          <span>Session Cookie (JSESSIONID / 39ce7)</span>
+                          <HelpCircle className="h-3.5 w-3.5 text-blue-400" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent
+                        side="top"
+                        align="start"
+                        className="max-w-[310px] border border-border/90 bg-[#121820] p-3 text-xs text-foreground shadow-2xl"
+                      >
+                        <p className="font-semibold text-foreground">How to get your Codeforces cookie:</p>
+                        <ol className="mt-1 list-decimal space-y-1 pl-4 text-[11px] leading-relaxed text-muted-foreground">
+                          <li>
+                            Log into <strong className="text-foreground">codeforces.com</strong> in your browser.
+                          </li>
+                          <li>
+                            Press <kbd className="rounded border border-border bg-surface-2 px-1 py-0.5 font-mono text-[10px] text-foreground">F12</kbd> (or right-click → Inspect).
+                          </li>
+                          <li>
+                            Go to <strong className="text-foreground">Application</strong> → <strong className="text-foreground">Cookies</strong> → <span className="font-mono text-[10px] text-foreground">codeforces.com</span>.
+                          </li>
+                          <li>
+                            Copy values for <code className="rounded bg-muted px-1 font-mono text-[10px] text-blue-300">JSESSIONID</code> and <code className="rounded bg-muted px-1 font-mono text-[10px] text-blue-300">39ce7</code>.
+                          </li>
+                        </ol>
+                        <div className="mt-2 rounded border border-border/60 bg-[#070b10] p-1.5 font-mono text-[10px] text-muted-foreground">
+                          Format: <span className="text-foreground">JSESSIONID=...; 39ce7=...</span>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                    <KeyRound className="h-3 w-3 text-muted-foreground/60" />
+                  </div>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <input
+                        type="password"
+                        value={cookieInput}
+                        onChange={(e) => setCookieInput(e.target.value)}
+                        placeholder="Paste JSESSIONID=...; 39ce7=..."
+                        title="Press F12 on codeforces.com → Application → Cookies → Copy JSESSIONID & 39ce7"
+                        className="w-full rounded border border-border bg-[#05080c] px-2.5 py-1.5 font-mono text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent
+                      side="bottom"
+                      align="start"
+                      className="max-w-[280px] border border-border/80 bg-[#121820] p-2 font-mono text-[11px] text-muted-foreground shadow-xl"
+                    >
+                      <span>Press F12 on codeforces.com → Application → Cookies → copy JSESSIONID & 39ce7</span>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                <p className="text-[10px] text-muted-foreground/70">
+                  Tip: Hover over the label above for step-by-step extraction instructions.
+                </p>
+
                 <Button
                   type="button"
                   size="sm"
