@@ -31,18 +31,34 @@ def _clean_cf_html(element: Tag | None) -> str:
     for tt in element.find_all("span", class_="tex-font-style-tt"):
         tt.name = "code"
 
-    # Normalize image URLs to direct Codeforces / espresso assets
+    # Normalize image URLs to resilient, unblocked HTTPS mirrors
     for img in element.find_all("img"):
         src = img.get("src", "")
         if not src:
             continue
-        archive_match = re.search(r"https?://(?:web\.)?archive\.org/web/\d+[a-z_]*/(https?://.+)", src)
-        if archive_match:
-            img["src"] = archive_match.group(1)
+
+        if "archive.org/web/" in src:
+            # Preserve working archive mirror, upgrading http to secure https to prevent mixed content blocking
+            if src.startswith("http://"):
+                src = "https://" + src[7:]
+            img["src"] = src
+        elif "espresso.codeforces.com" in src or "codeforces.com" in src:
+            # Direct Codeforces / espresso images block cross-origin requests with Cloudflare Turnstile 403.
+            # Route through the Web Archive mirror which serves the assets with CORS headers.
+            clean_cf_url = src
+            if clean_cf_url.startswith("//"):
+                clean_cf_url = f"https:{clean_cf_url}"
+            elif clean_cf_url.startswith("/"):
+                clean_cf_url = f"https://codeforces.com{clean_cf_url}"
+            img["src"] = f"https://web.archive.org/web/2/{clean_cf_url}"
         elif src.startswith("//"):
             img["src"] = f"https:{src}"
         elif src.startswith("/"):
-            img["src"] = f"https://codeforces.com{src}"
+            img["src"] = f"https://web.archive.org/web/2/https://codeforces.com{src}"
+
+        # Add resilient display attributes
+        img["loading"] = "lazy"
+        img["referrerpolicy"] = "no-referrer"
 
     # Clean inner HTML
     return "".join(str(c) for c in element.children).strip()

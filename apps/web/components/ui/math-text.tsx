@@ -91,6 +91,39 @@ export function MathText({ content = "", className, style, fontSize }: MathTextP
       "$1<strong class='text-amber-500 font-semibold'>$2. </strong>"
     )
 
+    // Normalize and fix Codeforces problem images (prevent Cloudflare Turnstile 403 & mixed content)
+    formatted = formatted.replace(
+      /<img\s+([^>]*?)src=["']([^"']+)["']([^>]*?)\/?>/gi,
+      (match, pre, src, post) => {
+        let cleanSrc = src.trim()
+
+        // 1. Upgrade insecure http archive URLs to secure https to prevent browser mixed content blocking
+        if (cleanSrc.startsWith("http://web.archive.org/")) {
+          cleanSrc = "https://" + cleanSrc.slice(7)
+        }
+
+        // 2. If it is direct espresso or codeforces image, route via web archive mirror
+        // to bypass Cloudflare Turnstile 403 hotlink protection
+        if (
+          !cleanSrc.includes("archive.org/web/") &&
+          (cleanSrc.includes("espresso.codeforces.com") ||
+            cleanSrc.includes("codeforces.com") ||
+            cleanSrc.startsWith("//") ||
+            cleanSrc.startsWith("/"))
+        ) {
+          if (cleanSrc.startsWith("//")) {
+            cleanSrc = "https:" + cleanSrc
+          } else if (cleanSrc.startsWith("/")) {
+            cleanSrc = "https://codeforces.com" + cleanSrc
+          }
+          cleanSrc = `https://web.archive.org/web/2/${cleanSrc}`
+        }
+
+        const cleanPost = (post || "").replace(/\/$/, "").trim()
+        return `<img ${pre}src="${cleanSrc}" referrerpolicy="no-referrer" loading="lazy" class="max-w-full h-auto rounded-md border border-border/80 bg-white/95 p-1.5 my-3 inline-block shadow-sm" ${cleanPost ? cleanPost + " " : ""}onerror="if(!this.dataset.retried){this.dataset.retried='1';this.src=this.src.replace('web.archive.org/web/2/','');}" />`
+      }
+    )
+
     // Paragraph breaks: convert double newline to paragraph space, single newline to br if no tags
     if (!formatted.includes("<p>") && !formatted.includes("<div>")) {
       formatted = formatted
@@ -125,6 +158,7 @@ export function MathText({ content = "", className, style, fontSize }: MathTextP
         "[&_code]:rounded [&_code]:border [&_code]:border-border [&_code]:bg-surface-2 [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.9em]",
         "[&_strong]:font-semibold [&_strong]:text-foreground",
         "[&_em]:italic",
+        "[&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-md [&_img]:border [&_img]:border-border/80 [&_img]:bg-white/95 [&_img]:p-1.5 [&_img]:my-3 [&_img]:inline-block [&_img]:shadow-sm",
         className
       )}
       dangerouslySetInnerHTML={{ __html: renderedHtml }}

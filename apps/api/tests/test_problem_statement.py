@@ -31,3 +31,24 @@ async def test_get_problem_by_id_direct(client: AsyncClient):
     response = await client.get("/api/v1/problems/99999Z")
     # Non-existent problem should 404 cleanly
     assert response.status_code == 404
+
+def test_clean_cf_html_image_normalization():
+    from bs4 import BeautifulSoup
+    from app.services.codeforces_statement import _clean_cf_html
+
+    html = '''
+    <div>
+      <p>Problem text</p>
+      <img src="http://web.archive.org/web/20210419213529im_/https://espresso.codeforces.com/071dc9d1b557ca7a31a6824fa5b992cd2b98acb0.png" />
+      <img src="https://espresso.codeforces.com/test.png" />
+    </div>
+    '''
+    soup = BeautifulSoup(html, "html.parser")
+    cleaned = _clean_cf_html(soup.find("div"))
+
+    # Archive image should be preserved and upgraded to https
+    assert "https://web.archive.org/web/20210419213529im_/https://espresso.codeforces.com/071dc9d1b557ca7a31a6824fa5b992cd2b98acb0.png" in cleaned
+    # Direct espresso should be routed via web archive mirror
+    assert "https://web.archive.org/web/2/https://espresso.codeforces.com/test.png" in cleaned
+    assert 'referrerpolicy="no-referrer"' in cleaned
+
