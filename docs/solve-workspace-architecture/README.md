@@ -21,17 +21,17 @@ The Solve Workspace is a high-performance, three-tier competitive programming en
 
 ```mermaid
 flowchart TD
-    subgraph Client ["Client Layer (Next.js 15 App Router / React 19)"]
-        UI["/solve?problemId=..."]
-        WC["WorkspaceClient (State Orchestrator)"]
-        PP["ProblemPanel (LaTeX + MathText)"]
-        ME["Monaco Editor (C++, Py, Java)"]
-        TP["TerminalPanel (Test Runner)"]
-        SM["CFSubmitModal (Background Submit)"]
+    subgraph Client ["Client Layer - Next.js 15 App Router"]
+        UI["/solve Page"]
+        WC["WorkspaceClient Controller"]
+        PP["ProblemPanel"]
+        ME["Monaco Editor"]
+        TP["TerminalPanel"]
+        SM["CFSubmitModal"]
     end
 
-    subgraph API ["Application Layer (FastAPI Backend)"]
-        R_PROB["/api/v1/problems/*"]
+    subgraph API ["Application Layer - FastAPI Backend"]
+        R_PROB["/api/v1/problems"]
         R_CODE["/api/v1/code/run"]
         R_SUB["/api/v1/codeforces/submit"]
         
@@ -40,26 +40,31 @@ flowchart TD
         S_SUB["CodeforcesSubmitService"]
     end
 
-    subgraph Infrastructure ["Persistence & External Services"]
-        PG[("PostgreSQL\n(Metadata & Solves)")]
-        RD[("Redis 7.0\n(Statement Cache)")]
-        CF[("Codeforces.com\n(Live Platform)")]
-        IA[("Internet Archive\n(Wayback Mirror)")]
+    subgraph Infrastructure ["Persistence and External Services"]
+        PG[("PostgreSQL Database")]
+        RD[("Redis 7.0 Cache")]
+        CF[("Codeforces.com Platform")]
+        IA[("Internet Archive Mirror")]
     end
 
     UI --> WC
-    WC --> PP & ME & TP & SM
+    WC --> PP
+    WC --> ME
+    WC --> TP
+    WC --> SM
 
-    PP -->|1. Fetch Metadata & Statement| R_PROB
+    PP -->|"1. Fetch Metadata and Statement"| R_PROB
     R_PROB --> PG
     R_PROB --> S_STMT
-    S_STMT --> RD & CF & IA
+    S_STMT --> RD
+    S_STMT --> CF
+    S_STMT --> IA
 
-    TP -->|2. Run Code (stdin + code)| R_CODE
+    TP -->|"2. Run Code with Test Cases"| R_CODE
     R_CODE --> S_EXEC
-    S_EXEC -->|3. Native Subprocess Isolation| S_EXEC
+    S_EXEC -->|"3. Native Subprocess Isolation"| S_EXEC
 
-    SM -->|4. Automated Background Submit| R_SUB
+    SM -->|"4. Automated Background Submit"| R_SUB
     R_SUB --> S_SUB
     S_SUB --> CF
 ```
