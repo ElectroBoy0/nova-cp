@@ -168,6 +168,7 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
   // Split Panel Width & Height Resizing
   const [leftPanelWidth, setLeftPanelWidth] = useState<number>(480)
   const [editorHeightPercent, setEditorHeightPercent] = useState<number>(58)
+  const [isTerminalCollapsed, setIsTerminalCollapsed] = useState<boolean>(false)
   const [isDraggingHorizontal, setIsDraggingHorizontal] = useState(false)
   const [isDraggingVertical, setIsDraggingVertical] = useState(false)
 
@@ -196,6 +197,10 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
       const parsed = Number(savedProblemFontSize)
       if (parsed >= 12 && parsed <= 24) setProblemFontSize(parsed)
     }
+    const savedTerminalCollapsed = localStorage.getItem("novacp_workspace_terminal_collapsed")
+    if (savedTerminalCollapsed === "true") {
+      setIsTerminalCollapsed(true)
+    }
   }, [])
 
   const leftWidthRef = useRef(leftPanelWidth)
@@ -203,6 +208,15 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
 
   const editorHeightRef = useRef(editorHeightPercent)
   editorHeightRef.current = editorHeightPercent
+
+  const toggleTerminalCollapse = useCallback(() => {
+    setIsTerminalCollapsed((prev) => {
+      const next = !prev
+      localStorage.setItem("novacp_workspace_terminal_collapsed", String(next))
+      setTimeout(() => window.dispatchEvent(new Event("resize")), 50)
+      return next
+    })
+  }, [])
 
   // Escape key exits problem maximized focus mode, and trigger Monaco layout update
   useEffect(() => {
@@ -244,9 +258,18 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
           const headerHeight = 48
           const availableHeight = window.innerHeight - headerHeight
           const relativeY = e.clientY - headerHeight
-          const newPercent = Math.min(Math.max((relativeY / availableHeight) * 100, 25), 80)
-          editorHeightRef.current = newPercent
-          setEditorHeightPercent(newPercent)
+          const ratio = relativeY / availableHeight
+          if (ratio > 0.88) {
+            setIsTerminalCollapsed(true)
+            localStorage.setItem("novacp_workspace_terminal_collapsed", "true")
+            setTimeout(() => window.dispatchEvent(new Event("resize")), 50)
+          } else {
+            const newPercent = Math.min(Math.max(ratio * 100, 25), 82)
+            editorHeightRef.current = newPercent
+            setEditorHeightPercent(newPercent)
+            setIsTerminalCollapsed(false)
+            localStorage.setItem("novacp_workspace_terminal_collapsed", "false")
+          }
         }
       })
     }
@@ -318,6 +341,11 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
   // Run user code
   const handleRunCode = useCallback(async () => {
     if (runCodeMutation.isPending) return
+    if (isTerminalCollapsed) {
+      setIsTerminalCollapsed(false)
+      localStorage.setItem("novacp_workspace_terminal_collapsed", "false")
+      setTimeout(() => window.dispatchEvent(new Event("resize")), 50)
+    }
     try {
       const result = await runCodeMutation.mutateAsync({
         language,
@@ -354,7 +382,7 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
     } catch (err: any) {
       console.error("Run code error:", err)
     }
-  }, [runCodeMutation, language, code, testCases])
+  }, [runCodeMutation, language, code, testCases, isTerminalCollapsed])
 
   // Keyboard Shortcuts Registration
   const [showShortcutsModal, setShowShortcutsModal] = useState(false)
@@ -601,7 +629,7 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
           </div>
         )}
 
-        {/* Keep editor mounted in DOM so toggling focus mode is instantaneous (0ms) without cold-starting Monaco */}
+        {/* Right Panel: Code Editor + Sandboxed Test Cases Terminal */}
         <div
           className={cn(
             "flex h-full min-w-0 flex-1 flex-col overflow-hidden",
@@ -609,8 +637,15 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
           )}
         >
           <div
-            style={{ height: `${editorHeightPercent}%` }}
-            className="min-h-[160px] shrink-0 overflow-hidden"
+            style={
+              isTerminalCollapsed
+                ? { height: "calc(100% - 38px)" }
+                : { height: `${editorHeightPercent}%` }
+            }
+            className={cn(
+              "shrink-0 overflow-hidden",
+              isTerminalCollapsed ? "min-h-0 flex-1" : "min-h-[160px]"
+            )}
           >
             <MonacoCodeEditor
               language={language}
@@ -622,26 +657,39 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
             />
           </div>
 
+          {!isTerminalCollapsed && (
+            <div
+              onMouseDown={(e) => {
+                e.preventDefault()
+                setIsDraggingVertical(true)
+              }}
+              onDoubleClick={() => {
+                setEditorHeightPercent(58)
+                localStorage.setItem("novacp_workspace_editor_height", "58")
+                setTimeout(() => window.dispatchEvent(new Event("resize")), 50)
+              }}
+              className={cn(
+                "group z-20 flex h-1.5 shrink-0 cursor-row-resize items-center justify-center border-t border-border/50 transition-all hover:h-2",
+                isDraggingVertical ? "h-2 bg-primary" : "bg-surface-2/60 hover:bg-primary/50"
+              )}
+            >
+              <div className="h-1 w-8 rounded-full bg-muted-foreground/30 transition-colors group-hover:bg-primary-foreground/80" />
+            </div>
+          )}
+
           <div
-            onMouseDown={(e) => {
-              e.preventDefault()
-              setIsDraggingVertical(true)
-            }}
-            onDoubleClick={() => setEditorHeightPercent(58)}
             className={cn(
-              "group z-20 flex h-1.5 shrink-0 cursor-row-resize items-center justify-center border-t border-border/50 transition-all hover:h-2",
-              isDraggingVertical ? "h-2 bg-primary" : "bg-surface-2/60 hover:bg-primary/50"
+              "overflow-hidden",
+              isTerminalCollapsed ? "h-[38px] shrink-0" : "min-h-[140px] flex-1"
             )}
           >
-            <div className="h-1 w-8 rounded-full bg-muted-foreground/30 transition-colors group-hover:bg-primary-foreground/80" />
-          </div>
-
-          <div className="min-h-[140px] flex-1 overflow-hidden">
             <TerminalPanel
               testCases={testCases}
               onChangeTestCases={setTestCases}
               lastRunResult={lastRunResult}
               isRunning={runCodeMutation.isPending}
+              isCollapsed={isTerminalCollapsed}
+              onToggleCollapse={toggleTerminalCollapse}
             />
           </div>
         </div>

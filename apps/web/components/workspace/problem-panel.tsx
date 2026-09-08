@@ -151,27 +151,7 @@ export function ProblemPanel({
               </div>
             )}
 
-            {/* Quick Width Presets in Split Mode */}
-            {!isMaximized && onSetWidthPreset && (
-              <div className="hidden items-center rounded-md border border-border/80 bg-surface-2/80 p-0.5 text-[11px] font-mono xl:flex">
-                <button
-                  type="button"
-                  onClick={() => onSetWidthPreset(0.5)}
-                  title="50% Balanced split"
-                  className="rounded px-1.5 py-0.5 text-muted-foreground transition-colors hover:bg-surface-3 hover:text-foreground"
-                >
-                  50%
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onSetWidthPreset(0.65)}
-                  title="65% Wide problem view"
-                  className="rounded px-1.5 py-0.5 text-muted-foreground transition-colors hover:bg-surface-3 hover:text-foreground"
-                >
-                  65%
-                </button>
-              </div>
-            )}
+
 
             {/* Focus / Maximize Reading Mode Toggle */}
             {onToggleMaximize && (

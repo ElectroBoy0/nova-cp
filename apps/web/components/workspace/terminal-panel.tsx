@@ -12,7 +12,9 @@ import {
   Loader2,
   Sparkles,
   FileCode2,
+  ChevronDown,
 } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { TestcasesPanel } from "./testcases-panel"
 import type { CodeRunResponse, TestCase } from "@/types/code-execution"
 
@@ -21,6 +23,8 @@ interface TerminalPanelProps {
   onChangeTestCases: (testCases: TestCase[]) => void
   lastRunResult?: CodeRunResponse | null
   isRunning?: boolean
+  isCollapsed?: boolean
+  onToggleCollapse?: () => void
 }
 
 export function TerminalPanel({
@@ -28,6 +32,8 @@ export function TerminalPanel({
   onChangeTestCases,
   lastRunResult,
   isRunning = false,
+  isCollapsed = false,
+  onToggleCollapse,
 }: TerminalPanelProps) {
   const [activeTab, setActiveTab] = useState<"tests" | "console" | "compiler">("tests")
 
@@ -91,14 +97,27 @@ export function TerminalPanel({
   return (
     <div className="flex h-full flex-col border-t border-border bg-[#0a0e14]">
       {/* Header bar */}
-      <div className="flex items-center justify-between border-b border-border/80 bg-surface-1 px-4 py-2">
+      <div
+        onDoubleClick={onToggleCollapse}
+        className={cn(
+          "flex h-[38px] shrink-0 items-center justify-between bg-surface-1 px-4 py-1.5 select-none transition-colors",
+          !isCollapsed && "border-b border-border/80"
+        )}
+      >
         {/* Navigation Tabs */}
         <div className="flex items-center gap-1">
           <button
             type="button"
-            onClick={() => setActiveTab("tests")}
+            onClick={() => {
+              if (isCollapsed && onToggleCollapse) {
+                onToggleCollapse()
+              } else if (activeTab === "tests" && onToggleCollapse) {
+                onToggleCollapse()
+              }
+              setActiveTab("tests")
+            }}
             className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors ${
-              activeTab === "tests"
+              activeTab === "tests" && !isCollapsed
                 ? "border border-border bg-surface-2 font-semibold text-foreground"
                 : "text-muted-foreground hover:bg-surface-2/40 hover:text-foreground"
             }`}
@@ -111,9 +130,16 @@ export function TerminalPanel({
 
           <button
             type="button"
-            onClick={() => setActiveTab("console")}
+            onClick={() => {
+              if (isCollapsed && onToggleCollapse) {
+                onToggleCollapse()
+              } else if (activeTab === "console" && onToggleCollapse) {
+                onToggleCollapse()
+              }
+              setActiveTab("console")
+            }}
             className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors ${
-              activeTab === "console"
+              activeTab === "console" && !isCollapsed
                 ? "border border-border bg-surface-2 font-semibold text-foreground"
                 : "text-muted-foreground hover:bg-surface-2/40 hover:text-foreground"
             }`}
@@ -125,9 +151,16 @@ export function TerminalPanel({
           {lastRunResult?.compile_output && (
             <button
               type="button"
-              onClick={() => setActiveTab("compiler")}
+              onClick={() => {
+                if (isCollapsed && onToggleCollapse) {
+                  onToggleCollapse()
+                } else if (activeTab === "compiler" && onToggleCollapse) {
+                  onToggleCollapse()
+                }
+                setActiveTab("compiler")
+              }}
               className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium text-rose-400 transition-colors ${
-                activeTab === "compiler"
+                activeTab === "compiler" && !isCollapsed
                   ? "border border-rose-500/30 bg-rose-500/10 font-semibold"
                   : "hover:bg-rose-500/10"
               }`}
@@ -138,8 +171,8 @@ export function TerminalPanel({
           )}
         </div>
 
-        {/* Status Pill & Summary Metrics */}
-        <div className="flex items-center gap-3">
+        {/* Status Pill, Summary Metrics & Collapse Toggle Button */}
+        <div className="flex items-center gap-2 sm:gap-3">
           {lastRunResult && (
             <div className="hidden items-center gap-3 font-mono text-[11px] text-muted-foreground sm:flex">
               <span className="flex items-center gap-1">
@@ -151,14 +184,34 @@ export function TerminalPanel({
             </div>
           )}
           {getOverallStatusPill()}
+
+          {onToggleCollapse && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                onToggleCollapse()
+              }}
+              title={isCollapsed ? "Expand testcases (or double-click bar)" : "Collapse testcases completely"}
+              className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground transition-all hover:bg-surface-2 hover:text-foreground active:scale-95"
+            >
+              <ChevronDown
+                className={cn(
+                  "h-4 w-4 transition-transform duration-200",
+                  isCollapsed ? "rotate-180" : "rotate-0"
+                )}
+              />
+            </button>
+          )}
         </div>
       </div>
 
       {/* Tab Contents */}
-      <div className="flex-1 overflow-hidden">
-        {activeTab === "tests" && (
-          <TestcasesPanel testCases={testCases} onChangeTestCases={onChangeTestCases} />
-        )}
+      {!isCollapsed && (
+        <div className="flex-1 overflow-hidden">
+          {activeTab === "tests" && (
+            <TestcasesPanel testCases={testCases} onChangeTestCases={onChangeTestCases} />
+          )}
 
         {activeTab === "console" && (
           <div className="h-full space-y-2 overflow-y-auto bg-[#090d13] p-4 font-mono text-xs text-foreground/90">
@@ -215,6 +268,7 @@ export function TerminalPanel({
           </div>
         )}
       </div>
-    </div>
-  )
+    )}
+  </div>
+)
 }
