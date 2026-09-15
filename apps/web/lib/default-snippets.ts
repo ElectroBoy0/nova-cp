@@ -291,15 +291,20 @@ cin.tie(NULL);`,
     code: `#include <bits/stdc++.h>
 using namespace std;
 
+#define FAST_IO ios_base::sync_with_stdio(false); cin.tie(NULL);
+#define int long long
+#define all(v) (v).begin(), (v).end()
+#define pb push_back
+
 void solve() {
-    $0
+    
+  //write your code here baby
+  $0
 }
 
-int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-
-    int t = 1;
+int32_t main() {
+    FAST_IO;
+    int t;
     cin >> t;
     while (t--) {
         solve();

@@ -17,7 +17,7 @@ import { ProblemPanel } from "./problem-panel"
 import { MonacoCodeEditor } from "./monaco-code-editor"
 import { TerminalPanel } from "./terminal-panel"
 import { CFSubmitModal } from "./cf-submit-modal"
-import { DEFAULT_TEMPLATES, LANGUAGE_OPTIONS } from "@/lib/code-templates"
+import { DEFAULT_TEMPLATES, LANGUAGE_OPTIONS, isLegacyDefaultTemplate } from "@/lib/code-templates"
 import { getProblemStatementDetails } from "@/lib/problem-statement-helper"
 import { useRunCode } from "@/lib/code-execution"
 import { useProblems, useProblem, useProblemStatement, useProblemSearch } from "@/hooks/use-problems"
@@ -317,10 +317,12 @@ export function WorkspaceClient({ userId, initialProblemId }: WorkspaceClientPro
   useEffect(() => {
     const storageKey = `novacp_workspace_${currentProblem?.id || "scratch"}_${language}`
     const saved = localStorage.getItem(storageKey)
-    if (saved) {
+    if (saved && !isLegacyDefaultTemplate(saved, language)) {
       setCode(saved)
     } else {
-      setCode(DEFAULT_TEMPLATES[language])
+      const defaultBoilerplate = DEFAULT_TEMPLATES[language]
+      setCode(defaultBoilerplate)
+      localStorage.setItem(storageKey, defaultBoilerplate)
     }
   }, [currentProblem?.id, language])
 

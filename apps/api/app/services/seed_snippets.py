@@ -18,18 +18,20 @@ OFFICIAL_SNIPPETS = [
         "code": """#include <bits/stdc++.h>
 using namespace std;
 
-#define fast_io ios_base::sync_with_stdio(false); cin.tie(NULL); cout.tie(NULL);
-#define ll long long
+#define FAST_IO ios_base::sync_with_stdio(false); cin.tie(NULL);
+#define int long long
+#define all(v) (v).begin(), (v).end()
 #define pb push_back
-#define all(x) (x).begin(), (x).end()
 
 void solve() {
-    // Write your code here
+    
+  //write your code here baby
+  
 }
 
-int main() {
-    fast_io;
-    int t = 1;
+int32_t main() {
+    FAST_IO;
+    int t;
     cin >> t;
     while (t--) {
         solve();

@@ -10,21 +10,14 @@ using namespace std;
 #define pb push_back
 
 void solve() {
-    int n;
-    if (!(cin >> n)) return;
     
-    vector<int> a(n);
-    for (int i = 0; i < n; i++) {
-        cin >> a[i];
-    }
-    
-    // Write your solution here
-    cout << n << "\\n";
+  //write your code here baby
+  
 }
 
 int32_t main() {
     FAST_IO;
-    int t = 1;
+    int t;
     cin >> t;
     while (t--) {
         solve();
@@ -114,3 +107,19 @@ export const LANGUAGE_OPTIONS: {
   { value: "python", label: "Python (3.12)", monacoLang: "python", ext: "py" },
   { value: "java", label: "Java (OpenJDK 17)", monacoLang: "java", ext: "java" },
 ]
+
+/**
+ * Detects whether the saved code is the legacy initial boilerplate
+ * (which had `vector<int> a(n)` and `cout << n << "\\n"`), so it can be cleanly
+ * auto-upgraded to the new default template without overwriting custom user code.
+ */
+export function isLegacyDefaultTemplate(code: string, language: SupportedLanguage): boolean {
+  if (language === "cpp") {
+    return (
+      code.includes("vector<int> a(n);") &&
+      code.includes("// Write your solution here")
+    )
+  }
+  return false
+}
+
