@@ -1,5 +1,5 @@
 ---
-name: 🚀 Feature Request
+name: Feature Request
 about: Suggest an idea or feature for NovaCP
 title: "[FEAT] "
 labels: enhancement

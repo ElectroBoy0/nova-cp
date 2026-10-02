@@ -6,12 +6,12 @@ Fixes #(issue number)
 
 ## Type of Change
 
-- [ ] 🐛 Bug fix (non-breaking change which fixes an issue)
-- [ ] 🚀 New feature (non-breaking change which adds functionality)
-- [ ] ⚡ Performance optimization
-- [ ] 🎨 UI / UX refinement
-- [ ] 📝 Documentation update
-- [ ] 🔧 Refactoring / Code quality
+- [ ] Bug fix (non-breaking change which fixes an issue)
+- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Performance optimization
+- [ ] UI / UX refinement
+- [ ] Documentation update
+- [ ] Refactoring / Code quality
 
 ## Checklist
 

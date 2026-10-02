@@ -1,6 +1,6 @@
 <div align="center">
 
-# ⚡ NovaCP
+# NovaCP
 
 ### _The Operating System for Competitive Programmers_
 
@@ -13,43 +13,43 @@
 [![Redis](https://img.shields.io/badge/Redis-7-DC382D?style=flat&logo=redis)](https://upstash.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-**[🚀 Live Demo](https://nova-cp-web.vercel.app/)** • **[⚡ Backend Status](https://novacpweb-production.up.railway.app/health/detailed)** • **[📖 Documentation](docs/DEPLOYMENT.md)** • **[🐛 Report a Bug](https://github.com/ElectroBoy0/nova-cp/issues)**
+**[Live Demo](https://nova-cp-web.vercel.app/)** • **[Backend Status](https://novacpweb-production.up.railway.app/health/detailed)** • **[Documentation](docs/DEPLOYMENT.md)** • **[Report an Issue](https://github.com/ElectroBoy0/nova-cp/issues)**
 
 </div>
 
 ---
 
-## 💡 What is NovaCP?
+## Overview
 
-Most competitive programmers practice by solving random problems or copy-pasting failed submissions into AI tools with huge spoilers. **NovaCP** is built to bridge the gap between practice and mastery: it analyzes your submissions, identifies the exact algorithmic blind spots holding you back, suggests non-spoiler progressive hints, and organizes your training workflow from end to end.
-
----
-
-## ✨ Key Features
-
-| Feature                                     | Description                                                                                                                                         |
-| :------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 🎯 **AI Diagnostics & Progressive Hints**   | Get 3-tiered hints (Algorithmic Concept $\rightarrow$ Key Invariant $\rightarrow$ Full Solution) powered by Gemini AI without spoiling the problem. |
-| 📊 **Deep Performance Analytics**           | Interactive rating history graphs, submission heatmaps, tag mastery radars, and solve speed percentile distributions.                               |
-| ⚔️ **Rivalry Comparison Engine**            | Head-to-head comparison with rivals: rating trajectories, shared solve diffs, speed breakdown, and weakness exploitation.                           |
-| 📅 **Multi-Platform Contest Aggregator**    | Live contest schedule and countdown timers aggregated from Codeforces, CodeChef, and AtCoder with auto-refreshing background sync.                  |
-| 🧩 **Smart Upsolve Queue**                  | Automatically finds the problems you _almost_ solved in past contests and prioritizes them in a structured practice queue.                          |
-| 💻 **Integrated Code Execution Sandbox**    | Monaco-powered editor supporting C++, Python, and Java with custom test case execution and compilation diagnostics.                                 |
-| ⚡ **Snippet Vault & Problem Notes**        | Save reusable templates (Segment Trees, DSU, FFT) and take rich Markdown notes linked directly to specific problems.                                |
-| 🔒 **Cryptographic CF Handle Verification** | Verify ownership of your Codeforces handle through a secure one-time token mechanism without sharing credentials.                                   |
+Most competitive programmers practice by solving random problems or copy-pasting failed submissions into AI tools with major spoilers. **NovaCP** is built to bridge the gap between practice and mastery: it analyzes your submissions, identifies the exact algorithmic blind spots holding you back, suggests progressive non-spoiler hints, and organizes your training workflow from end to end.
 
 ---
 
-## 🏗️ Architecture & Monorepo Design
+## Core Features
+
+| Feature                                | Description                                                                                                                                  |
+| :------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------- |
+| **AI Diagnostics & Progressive Hints** | 3-tiered hints (Algorithmic Concept $\rightarrow$ Key Invariant $\rightarrow$ Full Solution) powered by Gemini without spoiling the problem. |
+| **Performance Analytics**              | Interactive rating history graphs, submission heatmaps, tag mastery radars, and solve speed percentile distributions.                        |
+| **Rival Comparison Engine**            | Head-to-head comparison with rivals: rating trajectories, shared solve diffs, speed breakdown, and weakness exploitation.                    |
+| **Multi-Platform Contest Aggregator**  | Live contest schedules and countdown timers aggregated from Codeforces, CodeChef, and AtCoder with auto-refreshing background sync.          |
+| **Smart Upsolve Queue**                | Automatically captures problems you attempted in past contests and prioritizes them in a structured practice queue.                          |
+| **Sandboxed Code Execution Engine**    | Native multi-language sandbox supporting C++, Python, and Java with process-group isolation, resource limits, and custom testcase execution. |
+| **Snippet Vault & Problem Notes**      | Save reusable templates (Segment Trees, DSU, Fast I/O) and take Markdown notes linked directly to specific problems.                         |
+| **Codeforces Handle Verification**     | Verify ownership of your Codeforces handle through a secure one-time token mechanism without sharing credentials.                            |
+
+---
+
+## Architecture & Monorepo Design
 
 ```mermaid
 graph TD
-    User([👤 User Browser])
-    Vercel["🌐 Next.js 15 Web App<br/>(Vercel Edge / Node SSR)"]
-    FastAPI["⚡ FastAPI Backend<br/>(Python 3.12 on Railway)"]
-    Neon[("🐘 Neon PostgreSQL<br/>(Async SQLAlchemy + Alembic)")]
-    Upstash[("🔴 Upstash Redis<br/>(Cache & Distributed Locks)")]
-    CF["🌐 External APIs<br/>(Codeforces, CodeChef, AtCoder, Gemini)"]
+    User([User Browser])
+    Vercel["Next.js 15 Web App<br/>(Vercel Edge / Node SSR)"]
+    FastAPI["FastAPI Backend<br/>(Python 3.12 on Railway)"]
+    Neon[("Neon PostgreSQL<br/>(Async SQLAlchemy + Alembic)")]
+    Upstash[("Upstash Redis<br/>(Cache & Distributed Locks)")]
+    CF["External APIs<br/>(Codeforces, CodeChef, AtCoder, Gemini)"]
 
     User -->|HTTPS| Vercel
     Vercel -->|BFF Proxy + Server Actions| FastAPI
@@ -73,7 +73,7 @@ nova-cp/
 
 ---
 
-## 🚀 Quickstart & Local Development
+## Quickstart & Local Development
 
 ### 1. Prerequisites
 
@@ -139,14 +139,14 @@ uv run uvicorn app.main:app --reload --port 8000
 - **Local API Docs (Swagger UI)**: [http://localhost:8000/docs](http://localhost:8000/docs)
 
 > [!TIP]
-> Looking for the live deployed app? Visit the production links at the top of the page:
+> Looking for the live deployed app? Visit the production links:
 >
 > - **Production Web App**: [https://nova-cp-web.vercel.app/](https://nova-cp-web.vercel.app/)
 > - **Production API**: [https://novacpweb-production.up.railway.app/](https://novacpweb-production.up.railway.app/)
 
 ---
 
-## 🧪 Testing & Code Quality
+## Testing & Quality Assurance
 
 NovaCP maintains strict test coverage and static analysis across both frontend and backend:
 
@@ -168,7 +168,7 @@ pnpm format:check
 ```bash
 cd apps/api
 
-# Run 91+ unit & integration tests with coverage
+# Run 100+ unit & integration tests with coverage
 uv run pytest tests/ -v --cov=app
 
 # Run Ruff linter and formatter
@@ -178,12 +178,12 @@ uv run ruff format --check .
 
 ---
 
-## 🌐 Production Deployment
+## Production Deployment
 
 NovaCP is architected for zero-maintenance managed cloud infrastructure:
 
 - **Frontend**: [Vercel](https://vercel.com) — Global edge routing with Next.js 15 SSR.
-- **Backend**: [Railway](https://railway.app) — Containerized FastAPI application with Uvicorn multi-workers.
+- **Backend**: [Railway](https://railway.app) — Containerized FastAPI application with Uvicorn serverless runtime.
 - **Database**: [Neon](https://neon.tech) — Serverless PostgreSQL with connection pooling.
 - **Cache**: [Upstash](https://upstash.com) — Serverless TLS Redis with distributed locks.
 
@@ -191,16 +191,16 @@ For full instructions, environment configurations, and OAuth callback setup, see
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-Contributions are welcome! Please read **[CONTRIBUTING.md](CONTRIBUTING.md)** for details on our code of conduct, development workflow, and submitting pull requests.
+Contributions are welcome. Please read **[CONTRIBUTING.md](CONTRIBUTING.md)** for details on our code of conduct, development workflow, and submitting pull requests.
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the **[LICENSE](LICENSE)** file for details.
 
 <div align="center">
-  <sub>Built with ❤️ for competitive programmers worldwide.</sub>
+  <sub>Built for competitive programmers worldwide.</sub>
 </div>

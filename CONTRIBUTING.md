@@ -1,18 +1,18 @@
-# Contributing to NovaCP 🚀
+# Contributing to NovaCP
 
-Thank you for your interest in contributing to **NovaCP** — The OS for Competitive Programmers! We welcome contributions from developers, competitive programmers, designers, and educators of all skill levels.
-
----
-
-## 🌟 Code of Conduct
-
-We are committed to providing a welcoming, inclusive, and harassment-free environment for everyone. Please be respectful, constructive, and kind in all interactions within issues, pull requests, and discussions.
+Thank you for your interest in contributing to **NovaCP**. We welcome contributions from developers, competitive programmers, designers, and educators of all skill levels.
 
 ---
 
-## 🛠️ Local Development Setup
+## Code of Conduct
 
-NovaCP is organized as a modern monorepo powered by **Turborepo** and **pnpm**:
+We are committed to providing a welcoming, inclusive, and harassment-free environment for everyone. Please be respectful, constructive, and collaborative in all interactions across issues, pull requests, and discussions.
+
+---
+
+## Local Development Setup
+
+NovaCP is organized as a monorepo powered by **Turborepo** and **pnpm**:
 
 ### Prerequisites
 
@@ -75,9 +75,9 @@ NovaCP is organized as a modern monorepo powered by **Turborepo** and **pnpm**:
 
 ---
 
-## 🧪 Testing & Code Quality
+## Testing & Quality Assurance
 
-Before submitting a Pull Request, make sure all tests and quality checks pass:
+Before submitting a Pull Request, ensure that all tests and quality checks pass locally:
 
 ### Frontend
 
@@ -107,7 +107,7 @@ uv run ruff format --check .
 
 ---
 
-## 🌿 Branching & Pull Request Guidelines
+## Branching & Pull Request Guidelines
 
 1. **Create a branch**:
    ```bash
@@ -128,6 +128,6 @@ uv run ruff format --check .
 
 ---
 
-## 💬 Community & Questions
+## Community & Support
 
 Have ideas or questions? Feel free to open a [GitHub Discussion](https://github.com/ElectroBoy0/nova-cp/discussions) or submit an [Issue](https://github.com/ElectroBoy0/nova-cp/issues).
