@@ -63,3 +63,6 @@ pnpm-debug.log*
 
 # Alembic — versions are committed, but not generated cache
 apps/api/migrations/versions/__pycache__/
+
+# User Uploads & Temporary Media
+apps/api/static/uploads/
