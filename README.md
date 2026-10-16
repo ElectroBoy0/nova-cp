@@ -13,7 +13,7 @@
 [![Redis](https://img.shields.io/badge/Redis-7-DC382D?style=flat&logo=redis)](https://upstash.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-**[Live Demo](https://nova-cp-web.vercel.app/)** • **[Backend Status](https://novacpweb-production.up.railway.app/health/detailed)** • **[Documentation](docs/DEPLOYMENT.md)** • **[Report an Issue](https://github.com/ElectroBoy0/nova-cp/issues)**
+**[Live Demo](https://nova-cp-web.vercel.app/)** • **[Backend Status](https://novacp-api.onrender.com/health/detailed)** • **[Documentation](docs/DEPLOYMENT.md)** • **[Report an Issue](https://github.com/ElectroBoy0/nova-cp/issues)**
 
 </div>
 
@@ -142,7 +142,7 @@ uv run uvicorn app.main:app --reload --port 8000
 > Looking for the live deployed app? Visit the production links:
 >
 > - **Production Web App**: [https://nova-cp-web.vercel.app/](https://nova-cp-web.vercel.app/)
-> - **Production API**: [https://novacpweb-production.up.railway.app/](https://novacpweb-production.up.railway.app/)
+> - **Production API**: [https://novacp-api.onrender.com/](https://novacp-api.onrender.com/)
 
 ---
 
@@ -183,7 +183,7 @@ uv run ruff format --check .
 NovaCP is architected for zero-maintenance managed cloud infrastructure:
 
 - **Frontend**: [Vercel](https://vercel.com) — Global edge routing with Next.js 15 SSR.
-- **Backend**: [Railway](https://railway.app) — Containerized FastAPI application with Uvicorn serverless runtime.
+- **Backend**: [Render](https://render.com) — Containerized FastAPI application with Uvicorn.
 - **Database**: [Neon](https://neon.tech) — Serverless PostgreSQL with connection pooling.
 - **Cache**: [Upstash](https://upstash.com) — Serverless TLS Redis with distributed locks.
 
